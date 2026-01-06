@@ -1,0 +1,9 @@
+localStorage.clear()
+location.reload()
+
+
+Quando faço login com admin admin123 e fico conectado a uma conta de administrador, depois ao dar logout e a voltar atras aparece Administrador em cima e essas cenas, não é suposto. Porque depois se criamos uma conta nova ela fica automaticamnete admin.
+É so suposto isso do administrador aparecer em cima quando se está conectado a uma conta do administrador. 
+
+Ideia a ser discutida - Um administrador abre e fecha as obras , porque como isto esta feito, cada pessoa tinha que abrir a obra para depois poder começar
+a contar as horas, era melhor o administrador abrir e aparecer ja aberta para todos os utilizador e o mesmo caso o administrador fechasse a obra.0
