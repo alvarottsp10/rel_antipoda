@@ -132,7 +132,7 @@
                     <label>Departamento / Tipo de Projeto</label>
                     <select id="editProjectType" onchange="updateEditSubcategories()">
                         <option value="">Selecione o departamento</option>
-                        <option value="mecanico">Mecânico</option>
+                        <option value="projeto">Projeto</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -208,7 +208,7 @@
                     <label>Departamento / Tipo de Projeto</label>
                     <select id="manualProjectType" onchange="updateManualSubcategories()">
                         <option value="">Selecione o departamento</option>
-                        <option value="mecanico">Mecânico</option>
+                        <option value="projeto">Projeto</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -330,7 +330,7 @@
                 <label for="regDepartment">Departamento Padrão</label>
                 <select id="regDepartment">
                     <option value="">Selecione seu departamento</option>
-                    <option value="mecanico">Mecânico</option>
+                    <option value="projeto">Projeto</option>
                     <option value="eletrico">Elétrico</option>
                     <option value="desenvolvimento">Desenvolvimento</option>
                     <option value="orcamentacao">Orçamentação</option>
@@ -395,7 +395,7 @@
                         <label for="projectType">Departamento / Tipo de Projeto</label>
                         <select id="projectType" onchange="updateSubcategories()">
                             <option value="">Selecione o departamento</option>
-                            <option value="mecanico">Mecânico</option>
+                            <option value="projeto">Projeto</option>
                             <option value="eletrico">Elétrico</option>
                             <option value="desenvolvimento">Desenvolvimento</option>
                             <option value="orcamentacao">Orçamentação</option>
@@ -456,6 +456,29 @@
             <div id="projectsTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">📁 Gestão de Obras</h3>
                 <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
+                
+                <div id="projectsStatsPanel" class="info-panel" style="margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 10px; color: var(--primary-color);">📊 Estatísticas Rápidas</h4>
+                    <div class="stats-grid" style="margin-top: 10px;">
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--success-color);" id="statsOpenProjects">0</div>
+                            <div style="font-size: 11px; color: #6c757d;">Obras Abertas</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsClosedProjects">0</div>
+                            <div style="font-size: 11px; color: #6c757d;">Obras Fechadas</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--warning-color);" id="statsClientReopens">0</div>
+                            <div style="font-size: 11px; color: #6c757d;">Reaberturas (Cliente)</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsErrorReopens">0</div>
+                            <div style="font-size: 11px; color: #6c757d;">Reaberturas (Erro Nosso)</div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="filter-section">
                     <label>Filtrar Obras</label>
                     <select id="projectStatusFilter" onchange="loadProjectsList()">
@@ -506,7 +529,7 @@
                     <label>Filtrar por Departamento</label>
                     <select id="reportFilter" onchange="updateReports()">
                         <option value="all">Todos os Departamentos</option>
-                        <option value="mecanico">Mecânico</option>
+                        <option value="projeto">Projeto</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -591,7 +614,7 @@
                     <label for="profileDepartment">Departamento Padrão</label>
                     <select id="profileDepartment">
                         <option value="">Selecione o departamento</option>
-                        <option value="mecanico">Mecânico</option>
+                        <option value="projeto">Projeto</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -663,7 +686,7 @@
                     <label>Filtrar por Departamento</label>
                     <select id="globalDepartmentFilter" onchange="updateGlobalHistory()">
                         <option value="all">Todos os Departamentos</option>
-                        <option value="mecanico">Mecânico</option>
+                        <option value="projeto">Projeto</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -713,8 +736,8 @@
                 <h4 style="margin: 30px 0 10px 0;">🏢 Por Departamento</h4>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value" id="deptMecanicoHours">0h</div>
-                        <div class="stat-label">Mecânico</div>
+                        <div class="stat-value" id="deptProjetoHours">0h</div>
+                        <div class="stat-label">Projeto</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="deptEletricoHours">0h</div>
@@ -740,6 +763,30 @@
                         <div class="stat-label">Formações</div>
                     </div>
                 </div>
+                <h4 style="margin: 30px 0 10px 0;">🔄 Reaberturas de Obras</h4>
+                <div class="info-panel" style="margin-bottom: 20px;">
+                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Análise dos motivos de reabertura de obras concluídas.</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalReopens">0</div>
+                        <div class="stat-label">Total de Reaberturas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="clientChangeReopens">0</div>
+                        <div class="stat-label">Alteração do Cliente</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="ourErrorReopens">0</div>
+                        <div class="stat-label">Erro Nosso</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="reopenPercentage">0%</div>
+                        <div class="stat-label">% de Obras Reabertas</div>
+                    </div>
+                </div>
+                <h4 style="margin: 30px 0 10px 0;">📋 Detalhes de Reaberturas</h4>
+                <div id="reopenDetailsBreakdown" class="work-history"></div>
                 <h4 style="margin: 30px 0 10px 0;">👥 Por Utilizador</h4>
                 <div id="userStatsBreakdown" class="work-history"></div>
             </div>

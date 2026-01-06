@@ -15,7 +15,7 @@ let pausedSeconds = 0;
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
 
 const subcategories = {
-    'mecanico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
+    'projeto': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
     'eletrico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
     'desenvolvimento': [],
     'orcamentacao': ['Orçamento', 'Ordem de produção']
@@ -449,7 +449,7 @@ function formatHours(seconds) {
 }
 
 function getDepartmentName(departmentCode) {
-    const departments = { 'mecanico': 'Mecânico', 'eletrico': 'Elétrico', 'desenvolvimento': 'Desenvolvimento', 'orcamentacao': 'Orçamentação' };
+    const departments = { 'projeto': 'Projeto', 'eletrico': 'Elétrico', 'desenvolvimento': 'Desenvolvimento', 'orcamentacao': 'Orçamentação' };
     return departments[departmentCode] || departmentCode;
 }
 
@@ -1253,6 +1253,9 @@ function loadProjectsList() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const isAdmin = user && user.isAdmin === true;
     
+    // Calcular estatísticas de reabertura
+    updateProjectsStats(projects);
+    
     let filteredProjects = projects;
     if (statusFilter === 'open') { filteredProjects = projects.filter(p => p.status === 'open'); }
     else if (statusFilter === 'closed') { filteredProjects = projects.filter(p => p.status === 'closed'); }
@@ -1277,7 +1280,10 @@ function loadProjectsList() {
             const reopenDate = new Date(lastReopen.date);
             const reopenDateStr = `${reopenDate.getDate()}/${reopenDate.getMonth() + 1}/${reopenDate.getFullYear()}`;
             const reasonText = lastReopen.reason === 'client_change' ? 'Alteração do Cliente' : 'Erro Nosso';
-            reopenInfoHtml = `<div class="reopen-info"><strong>🔄 Reaberta:</strong> ${reopenDateStr} - ${reasonText}${lastReopen.comment ? `<br><em>${lastReopen.comment}</em>` : ''}</div>`;
+            const reasonColor = lastReopen.reason === 'client_change' ? '#f39c12' : '#e74c3c';
+            const reopenCount = project.reopenHistory.length;
+            const reopenLabel = reopenCount > 1 ? `(${reopenCount}x reabertas)` : '';
+            reopenInfoHtml = `<div class="reopen-info" style="border-color: ${reasonColor};"><strong>🔄 Reaberta ${reopenLabel}:</strong> ${reopenDateStr} - <span style="color: ${reasonColor}; font-weight: 600;">${reasonText}</span>${lastReopen.comment ? `<br><em>${lastReopen.comment}</em>` : ''}</div>`;
         }
         
         // Apenas admins podem fechar/reabrir obras
@@ -1302,6 +1308,31 @@ function loadProjectsList() {
             </div>
         `;
     }).join('');
+}
+
+function updateProjectsStats(projects) {
+    const openCount = projects.filter(p => p.status === 'open').length;
+    const closedCount = projects.filter(p => p.status === 'closed').length;
+    
+    let clientReopens = 0;
+    let errorReopens = 0;
+    
+    projects.forEach(project => {
+        if (project.reopenHistory && project.reopenHistory.length > 0) {
+            project.reopenHistory.forEach(reopen => {
+                if (reopen.reason === 'client_change') {
+                    clientReopens++;
+                } else if (reopen.reason === 'our_error') {
+                    errorReopens++;
+                }
+            });
+        }
+    });
+    
+    document.getElementById('statsOpenProjects').textContent = openCount;
+    document.getElementById('statsClosedProjects').textContent = closedCount;
+    document.getElementById('statsClientReopens').textContent = clientReopens;
+    document.getElementById('statsErrorReopens').textContent = errorReopens;
 }
 
 function closeProject(projectId) {

@@ -314,12 +314,12 @@ function updateCompanyStats() {
     document.getElementById('companyTotalSessions').textContent = allHistory.length;
     document.getElementById('companyTotalHours').textContent = formatHours(totalHours);
     
-    const deptMecanico = allHistory.filter(s => s.projectType === 'mecanico').reduce((sum, s) => sum + s.duration, 0);
+    const deptProjeto = allHistory.filter(s => s.projectType === 'projeto').reduce((sum, s) => sum + s.duration, 0);
     const deptEletrico = allHistory.filter(s => s.projectType === 'eletrico').reduce((sum, s) => sum + s.duration, 0);
     const deptDesenvolvimento = allHistory.filter(s => s.projectType === 'desenvolvimento').reduce((sum, s) => sum + s.duration, 0);
     const deptOrcamentacao = allHistory.filter(s => s.projectType === 'orcamentacao').reduce((sum, s) => sum + s.duration, 0);
     
-    document.getElementById('deptMecanicoHours').textContent = formatHours(deptMecanico);
+    document.getElementById('deptProjetoHours').textContent = formatHours(deptProjeto);
     document.getElementById('deptEletricoHours').textContent = formatHours(deptEletrico);
     document.getElementById('deptDesenvolvimentoHours').textContent = formatHours(deptDesenvolvimento);
     document.getElementById('deptOrcamentacaoHours').textContent = formatHours(deptOrcamentacao);
@@ -329,6 +329,67 @@ function updateCompanyStats() {
     
     document.getElementById('internalReuniaoHours').textContent = formatHours(internalReuniao);
     document.getElementById('internalFormacaoHours').textContent = formatHours(internalFormacao);
+    
+    // Estatísticas de Reabertura
+    let totalReopens = 0;
+    let clientChangeReopens = 0;
+    let ourErrorReopens = 0;
+    const projectsWithReopens = [];
+    
+    allProjects.forEach(project => {
+        if (project.reopenHistory && project.reopenHistory.length > 0) {
+            const reopenCount = project.reopenHistory.length;
+            totalReopens += reopenCount;
+            
+            project.reopenHistory.forEach(reopen => {
+                if (reopen.reason === 'client_change') {
+                    clientChangeReopens++;
+                } else if (reopen.reason === 'our_error') {
+                    ourErrorReopens++;
+                }
+            });
+            
+            projectsWithReopens.push({
+                workCode: project.workCode,
+                name: project.name,
+                reopenCount: reopenCount,
+                history: project.reopenHistory
+            });
+        }
+    });
+    
+    const reopenPercentage = allProjects.length > 0 ? ((projectsWithReopens.length / allProjects.length) * 100).toFixed(1) : 0;
+    
+    document.getElementById('totalReopens').textContent = totalReopens;
+    document.getElementById('clientChangeReopens').textContent = clientChangeReopens;
+    document.getElementById('ourErrorReopens').textContent = ourErrorReopens;
+    document.getElementById('reopenPercentage').textContent = `${reopenPercentage}%`;
+    
+    // Detalhes de Reaberturas
+    const reopenContainer = document.getElementById('reopenDetailsBreakdown');
+    if (projectsWithReopens.length === 0) {
+        reopenContainer.innerHTML = '<p style="text-align: center; color: #95a5a6; padding: 20px;">Nenhuma obra foi reaberta</p>';
+    } else {
+        reopenContainer.innerHTML = projectsWithReopens.sort((a, b) => b.reopenCount - a.reopenCount).map(project => {
+            const reopensHtml = project.history.map(reopen => {
+                const date = new Date(reopen.date);
+                const dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                const reasonText = reopen.reason === 'client_change' ? '🟡 Alteração do Cliente' : '🔴 Erro Nosso';
+                const reasonColor = reopen.reason === 'client_change' ? '#f39c12' : '#e74c3c';
+                return `<div style="font-size: 12px; margin: 3px 0; padding-left: 10px;">
+                    <span style="color: ${reasonColor}; font-weight: 600;">${reasonText}</span> - ${dateStr}
+                    ${reopen.comment ? `<br><em style="color: #6c757d; padding-left: 10px;">"${reopen.comment}"</em>` : ''}
+                </div>`;
+            }).join('');
+            
+            return `
+                <div class="history-item">
+                    <div class="hist-project">📋 ${project.workCode} - ${project.name} <span class="hist-badge badge-edited">${project.reopenCount}x reabertas</span></div>
+                    ${reopensHtml}
+                </div>
+            `;
+        }).join('');
+    }
     
     const userStats = users.map(user => {
         const userHistory = allHistory.filter(s => {
@@ -401,6 +462,7 @@ function setupAdminUI() {
         
         populateGlobalUserFilter();
     } else {
+        // Esconder botão de criar obra para utilizadores normais
         const newProjectBtn = document.getElementById('newProjectBtn');
         if (newProjectBtn) {
             newProjectBtn.classList.add('hidden');
@@ -408,6 +470,7 @@ function setupAdminUI() {
     }
 }
 
+// Inicializar admin quando a aplicação carrega
 window.addEventListener('load', () => {
     initializeDefaultAdmin();
 });
