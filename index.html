@@ -132,7 +132,7 @@
                     <label>Departamento / Tipo de Projeto</label>
                     <select id="editProjectType" onchange="updateEditSubcategories()">
                         <option value="">Selecione o departamento</option>
-                        <option value="projeto">Projeto</option>
+                        <option value="mecanico">Mecânico</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -208,7 +208,7 @@
                     <label>Departamento / Tipo de Projeto</label>
                     <select id="manualProjectType" onchange="updateManualSubcategories()">
                         <option value="">Selecione o departamento</option>
-                        <option value="projeto">Projeto</option>
+                        <option value="mecanico">Mecânico</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -330,7 +330,7 @@
                 <label for="regDepartment">Departamento Padrão</label>
                 <select id="regDepartment">
                     <option value="">Selecione seu departamento</option>
-                    <option value="projeto">Projeto</option>
+                    <option value="mecanico">Mecânico</option>
                     <option value="eletrico">Elétrico</option>
                     <option value="desenvolvimento">Desenvolvimento</option>
                     <option value="orcamentacao">Orçamentação</option>
@@ -395,7 +395,7 @@
                         <label for="projectType">Departamento / Tipo de Projeto</label>
                         <select id="projectType" onchange="updateSubcategories()">
                             <option value="">Selecione o departamento</option>
-                            <option value="projeto">Projeto</option>
+                            <option value="mecanico">Mecânico</option>
                             <option value="eletrico">Elétrico</option>
                             <option value="desenvolvimento">Desenvolvimento</option>
                             <option value="orcamentacao">Orçamentação</option>
@@ -455,7 +455,7 @@
             <!-- Projects Tab -->
             <div id="projectsTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">📁 Gestão de Obras</h3>
-                <button class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
+                <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
                 <div class="filter-section">
                     <label>Filtrar Obras</label>
                     <select id="projectStatusFilter" onchange="loadProjectsList()">
@@ -506,7 +506,7 @@
                     <label>Filtrar por Departamento</label>
                     <select id="reportFilter" onchange="updateReports()">
                         <option value="all">Todos os Departamentos</option>
-                        <option value="projeto">Projeto</option>
+                        <option value="mecanico">Mecânico</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -591,7 +591,7 @@
                     <label for="profileDepartment">Departamento Padrão</label>
                     <select id="profileDepartment">
                         <option value="">Selecione o departamento</option>
-                        <option value="projeto">Projeto</option>
+                        <option value="mecanico">Mecânico</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -663,7 +663,7 @@
                     <label>Filtrar por Departamento</label>
                     <select id="globalDepartmentFilter" onchange="updateGlobalHistory()">
                         <option value="all">Todos os Departamentos</option>
-                        <option value="projeto">Projeto</option>
+                        <option value="mecanico">Mecânico</option>
                         <option value="eletrico">Elétrico</option>
                         <option value="desenvolvimento">Desenvolvimento</option>
                         <option value="orcamentacao">Orçamentação</option>
@@ -713,8 +713,8 @@
                 <h4 style="margin: 30px 0 10px 0;">🏢 Por Departamento</h4>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-value" id="deptProjetoHours">0h</div>
-                        <div class="stat-label">Projeto</div>
+                        <div class="stat-value" id="deptMecanicoHours">0h</div>
+                        <div class="stat-label">Mecânico</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="deptEletricoHours">0h</div>

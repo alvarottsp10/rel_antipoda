@@ -1,3 +1,7 @@
+// ============================================
+// APP.JS - JavaScript Principal Completo
+// ============================================
+
 let confirmCallback = null;
 let currentEditId = null;
 let currentReopenProjectId = null;
@@ -11,7 +15,7 @@ let pausedSeconds = 0;
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
 
 const subcategories = {
-    'projeto': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
+    'mecanico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
     'eletrico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
     'desenvolvimento': [],
     'orcamentacao': ['Orçamento', 'Ordem de produção']
@@ -53,15 +57,12 @@ async function sha256(message) {
 }
 
 function getProjects() {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    const key = `projects_${user.username}`;
-    const projects = localStorage.getItem(key);
+    const projects = localStorage.getItem('projects_global');
     return projects ? JSON.parse(projects) : [];
 }
 
 function saveProjects(projects) {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    localStorage.setItem(`projects_${user.username}`, JSON.stringify(projects));
+    localStorage.setItem('projects_global', JSON.stringify(projects));
 }
 
 function getOpenProjects() { return getProjects().filter(p => p.status === 'open'); }
@@ -271,6 +272,21 @@ function showLogin() {
     document.getElementById('registerScreen').classList.add('hidden');
     document.getElementById('appScreen').classList.add('hidden');
     document.getElementById('loginError').classList.add('hidden');
+    
+    // Limpar UI de admin ao fazer logout
+    const header = document.getElementById('mainHeader');
+    if (header) {
+        header.classList.remove('admin');
+    }
+    
+    const adminBadge = document.getElementById('adminBadge');
+    if (adminBadge) {
+        adminBadge.classList.add('hidden');
+    }
+    
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    adminTabs.forEach(tab => tab.classList.add('hidden'));
+    
     setTimeout(() => document.getElementById('loginUsername').focus(), 100);
 }
 
@@ -280,6 +296,21 @@ function showRegister() {
     document.getElementById('appScreen').classList.add('hidden');
     document.getElementById('registerError').classList.add('hidden');
     document.getElementById('registerSuccess').classList.add('hidden');
+    
+    // Limpar UI de admin ao ir para registo
+    const header = document.getElementById('mainHeader');
+    if (header) {
+        header.classList.remove('admin');
+    }
+    
+    const adminBadge = document.getElementById('adminBadge');
+    if (adminBadge) {
+        adminBadge.classList.add('hidden');
+    }
+    
+    const adminTabs = document.querySelectorAll('.admin-tab');
+    adminTabs.forEach(tab => tab.classList.add('hidden'));
+    
     setTimeout(() => document.getElementById('regFirstName').focus(), 100);
 }
 
@@ -418,7 +449,7 @@ function formatHours(seconds) {
 }
 
 function getDepartmentName(departmentCode) {
-    const departments = { 'projeto': 'Mecânico', 'eletrico': 'Elétrico', 'desenvolvimento': 'Desenvolvimento', 'orcamentacao': 'Orçamentação' };
+    const departments = { 'mecanico': 'Mecânico', 'eletrico': 'Elétrico', 'desenvolvimento': 'Desenvolvimento', 'orcamentacao': 'Orçamentação' };
     return departments[departmentCode] || departmentCode;
 }
 
@@ -1219,6 +1250,9 @@ function loadProjectsList() {
     const statusFilter = document.getElementById('projectStatusFilter').value;
     const projects = getProjects();
     const container = document.getElementById('projectsList');
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const isAdmin = user && user.isAdmin === true;
+    
     let filteredProjects = projects;
     if (statusFilter === 'open') { filteredProjects = projects.filter(p => p.status === 'open'); }
     else if (statusFilter === 'closed') { filteredProjects = projects.filter(p => p.status === 'closed'); }
@@ -1245,7 +1279,15 @@ function loadProjectsList() {
             const reasonText = lastReopen.reason === 'client_change' ? 'Alteração do Cliente' : 'Erro Nosso';
             reopenInfoHtml = `<div class="reopen-info"><strong>🔄 Reaberta:</strong> ${reopenDateStr} - ${reasonText}${lastReopen.comment ? `<br><em>${lastReopen.comment}</em>` : ''}</div>`;
         }
-        const actionsHtml = project.status === 'open' ? `<button class="btn btn-danger btn-small" onclick="closeProject(${project.id})">🔒 Terminar Obra</button>` : `<button class="btn btn-warning btn-small" onclick="openReopenProjectModal(${project.id})">🔄 Reabrir Obra</button>`;
+        
+        // Apenas admins podem fechar/reabrir obras
+        let actionsHtml = '';
+        if (isAdmin) {
+            actionsHtml = project.status === 'open' 
+                ? `<button class="btn btn-danger btn-small" onclick="closeProject(${project.id})">🔒 Terminar Obra</button>` 
+                : `<button class="btn btn-warning btn-small" onclick="openReopenProjectModal(${project.id})">🔄 Reabrir Obra</button>`;
+        }
+        
         return `
             <div class="${cardClass}">
                 <div class="project-header">
@@ -1256,7 +1298,7 @@ function loadProjectsList() {
                 <div class="project-dates">📅 Aberta: ${createdStr}${closedStr ? ` | Fechada: ${closedStr}` : ''}</div>
                 ${project.notes ? `<div class="project-notes" style="font-size: 12px; color: #6c757d; margin-top: 8px;">📝 ${project.notes}</div>` : ''}
                 ${reopenInfoHtml}
-                <div class="project-actions">${actionsHtml}</div>
+                ${actionsHtml ? `<div class="project-actions">${actionsHtml}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -1627,10 +1669,7 @@ function restoreData(input) {
                     const commentsKey = `comments_${user.username}`;
                     localStorage.setItem(commentsKey, JSON.stringify(backup.comments));
                 }
-                if (backup.projects) {
-                    const projectsKey = `projects_${user.username}`;
-                    localStorage.setItem(projectsKey, JSON.stringify(backup.projects));
-                }
+                // Obras não são mais restauradas por utilizador (são globais)
                 showAlert('Sucesso', 'Dados restaurados com sucesso!');
                 loadWorkHistory();
                 updateStats();

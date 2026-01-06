@@ -1,3 +1,8 @@
+// ============================================
+// ADMIN.JS - Sistema Administrativo
+// ============================================
+
+// Funções Helper Admin
 function isUserAdmin() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     return user && user.isAdmin === true;
@@ -20,6 +25,43 @@ function initializeDefaultAdmin() {
             saveUsers(users);
         });
     }
+    
+    // Migração de obras: converter de individuais para globais
+    migrateProjectsToGlobal();
+}
+
+function migrateProjectsToGlobal() {
+    // Verificar se já existe sistema global
+    const globalProjects = localStorage.getItem('projects_global');
+    if (globalProjects) {
+        return; // Já migrado
+    }
+    
+    // Recolher todas as obras de todos os utilizadores
+    const users = getUsers();
+    let allProjects = [];
+    const seenCodes = new Set();
+    
+    users.forEach(user => {
+        const key = `projects_${user.username}`;
+        const userProjects = localStorage.getItem(key);
+        if (userProjects) {
+            const projects = JSON.parse(userProjects);
+            projects.forEach(project => {
+                // Adicionar apenas se o código não foi visto ainda (evitar duplicados)
+                if (!seenCodes.has(project.workCode)) {
+                    seenCodes.add(project.workCode);
+                    allProjects.push(project);
+                }
+            });
+        }
+    });
+    
+    // Salvar no sistema global
+    if (allProjects.length > 0) {
+        localStorage.setItem('projects_global', JSON.stringify(allProjects));
+        console.log(`✅ Migração completa: ${allProjects.length} obras movidas para sistema global`);
+    }
 }
 
 function getAllUsersHistory() {
@@ -39,19 +81,9 @@ function getAllUsersHistory() {
 }
 
 function getAllUsersProjects() {
-    const users = getUsers();
-    let allProjects = [];
-    
-    users.forEach(user => {
-        const key = `projects_${user.username}`;
-        const projects = localStorage.getItem(key);
-        if (projects) {
-            const userProjects = JSON.parse(projects);
-            allProjects = allProjects.concat(userProjects.map(p => ({...p, owner: user.username})));
-        }
-    });
-    
-    return allProjects;
+    // Obras agora são globais, não por utilizador
+    const projects = localStorage.getItem('projects_global');
+    return projects ? JSON.parse(projects) : [];
 }
 
 // Gestão de Utilizadores
@@ -267,6 +299,7 @@ function updateGlobalHistory() {
     }).join('');
 }
 
+// Estatísticas da Empresa
 function updateCompanyStats() {
     if (!isUserAdmin()) return;
     
@@ -281,12 +314,12 @@ function updateCompanyStats() {
     document.getElementById('companyTotalSessions').textContent = allHistory.length;
     document.getElementById('companyTotalHours').textContent = formatHours(totalHours);
     
-    const deptProjeto = allHistory.filter(s => s.projectType === 'projeto').reduce((sum, s) => sum + s.duration, 0);
+    const deptMecanico = allHistory.filter(s => s.projectType === 'mecanico').reduce((sum, s) => sum + s.duration, 0);
     const deptEletrico = allHistory.filter(s => s.projectType === 'eletrico').reduce((sum, s) => sum + s.duration, 0);
     const deptDesenvolvimento = allHistory.filter(s => s.projectType === 'desenvolvimento').reduce((sum, s) => sum + s.duration, 0);
     const deptOrcamentacao = allHistory.filter(s => s.projectType === 'orcamentacao').reduce((sum, s) => sum + s.duration, 0);
     
-    document.getElementById('deptProjetoHours').textContent = formatHours(deptProjeto);
+    document.getElementById('deptMecanicoHours').textContent = formatHours(deptMecanico);
     document.getElementById('deptEletricoHours').textContent = formatHours(deptEletrico);
     document.getElementById('deptDesenvolvimentoHours').textContent = formatHours(deptDesenvolvimento);
     document.getElementById('deptOrcamentacaoHours').textContent = formatHours(deptOrcamentacao);
@@ -342,6 +375,7 @@ function updateCompanyStats() {
     }).join('');
 }
 
+// Inicializar Admin UI
 function setupAdminUI() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     
@@ -359,7 +393,18 @@ function setupAdminUI() {
         const adminTabs = document.querySelectorAll('.admin-tab');
         adminTabs.forEach(tab => tab.classList.remove('hidden'));
         
+        // Mostrar botão de criar obra para admins
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        if (newProjectBtn) {
+            newProjectBtn.classList.remove('hidden');
+        }
+        
         populateGlobalUserFilter();
+    } else {
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        if (newProjectBtn) {
+            newProjectBtn.classList.add('hidden');
+        }
     }
 }
 
