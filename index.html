@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Modals -->
     <div id="inactivityModal" class="modal">
         <div class="modal-content">
             <h2>⚠️ Inatividade Detectada</h2>
@@ -286,7 +285,6 @@
     </div>
 
 
-    <!-- Calendar Modals -->
     <div id="dayModal" class="modal">
         <div class="modal-content">
             <h2 id="modalDayDate">Data</h2>
@@ -360,13 +358,11 @@
             </div>
         </div>
     </div>
-    <!-- Floating Timer -->
     <div id="floatingTimer" class="floating-timer hidden">
         <div class="float-time">00:00:00</div>
         <div class="float-status">Parado</div>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
         <div class="header" id="mainHeader">
             <h1>⏱️ Controlo de Obra</h1>
@@ -374,7 +370,6 @@
             <div id="adminBadge" class="admin-badge hidden">🛡️ ADMINISTRADOR</div>
         </div>
 
-        <!-- Login Screen -->
         <div id="loginScreen" class="content">
             <div id="loginError" class="error-message hidden"></div>
             <div class="form-group">
@@ -389,7 +384,6 @@
             <button class="link-btn" onclick="showRegister()">Criar nova conta</button>
         </div>
 
-        <!-- Register Screen -->
         <div id="registerScreen" class="content hidden">
             <div id="registerError" class="error-message hidden"></div>
             <div id="registerSuccess" class="success-message hidden"></div>
@@ -423,7 +417,7 @@
             <button class="link-btn" onclick="showLogin()">Já tenho conta</button>
         </div>
 
-        <!-- App Screen -->
+
         <div id="appScreen" class="content hidden">
             <div class="tabs" id="mainTabs">
                 <button class="tab active" onclick="showTab(event, 'timer')">⏱️ Timer</button>
@@ -438,7 +432,6 @@
                 <button class="tab admin-tab hidden" onclick="showTab(event, 'companyStats')">📈 Estatísticas</button>
             </div>
 
-            <!-- Timer Tab -->
             <div id="timerTab" class="tab-content active">
                 <div class="timer-display">
                     <div class="time" id="currentTime">00:00:00</div>
@@ -528,7 +521,6 @@
                 </div>
             </div>
 
-            <!-- Projects Tab -->
             <div id="projectsTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">📁 Gestão de Obras</h3>
                 <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
@@ -567,7 +559,6 @@
             </div>
 
 
-            <!-- Calendar Tab -->
             <div id="calendarTab" class="tab-content">
                 <div class="annual-calendar-container">
                     <div class="calendar-year-header">
@@ -645,7 +636,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Comments Tab -->
             <div id="commentsTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">💬 Comentários por Obra</h3>
                 <div class="info-panel" style="margin-bottom: 20px;">
@@ -714,7 +704,6 @@
                 </div>
             </div>
 
-            <!-- Export Tab -->
             <div id="exportTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">Exportar Dados</h3>
                 <div class="info-panel" style="margin-bottom: 20px;">
@@ -811,7 +800,6 @@
                 </div>
             </div>
 
-            <!-- ADMIN: Users Tab -->
             <div id="usersTab-content" class="tab-content">
                 <h3 style="margin-bottom: 20px;">👥 Gestão de Utilizadores</h3>
                 <div class="info-panel" style="margin-bottom: 20px;">
@@ -820,7 +808,6 @@
                 <div id="usersList" class="users-list"></div>
             </div>
 
-            <!-- ADMIN: Global History Tab -->
             <div id="globalHistoryTab-content" class="tab-content">
                 <h3 style="margin-bottom: 20px;">🌐 Histórico Global de Trabalho</h3>
                 <div class="filter-section">
@@ -863,7 +850,6 @@
                 </div>
             </div>
 
-            <!-- ADMIN: Company Stats Tab -->
             <div id="companyStatsTab-content" class="tab-content">
                 <h3 style="margin-bottom: 20px;">📈 Estatísticas da Empresa</h3>
                 <div class="info-panel" style="margin-bottom: 20px;">

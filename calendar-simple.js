@@ -1,8 +1,4 @@
-// ============================================
-// CALENDAR-SIMPLE.JS - Calendário Anual Simples
-// ============================================
 
-// Feriados fixos portugueses 2026
 const HOLIDAYS_2026 = {
     '2026-01-01': 'Ano Novo',
     '2026-04-03': 'Sexta-feira Santa',
@@ -21,7 +17,6 @@ const HOLIDAYS_2026 = {
 
 let currentYear = 2026;
 
-// Obter dados do calendário do utilizador
 function getCalendarData() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const key = `calendar_${currentYear}_${user.username}`;
@@ -29,14 +24,12 @@ function getCalendarData() {
     return data ? JSON.parse(data) : {};
 }
 
-// Guardar dados do calendário
 function saveCalendarData(data) {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const key = `calendar_${currentYear}_${user.username}`;
     localStorage.setItem(key, JSON.stringify(data));
 }
 
-// Formatar data para chave (YYYY-MM-DD)
 function formatDateKey(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -44,18 +37,15 @@ function formatDateKey(date) {
     return `${year}-${month}-${day}`;
 }
 
-// Verificar se é fim de semana (apenas Domingo - Sábado é dia útil)
 function isWeekend(date) {
     const dayOfWeek = date.getDay();
-    return dayOfWeek === 0; // Apenas domingo
+    return dayOfWeek === 0; 
 }
 
-// Verificar se é feriado
 function isHoliday(dateStr) {
     return HOLIDAYS_2026[dateStr] || null;
 }
 
-// Verificar se trabalhou neste dia
 function hasWorkedOnDay(dateStr) {
     const history = getWorkHistory();
     return history.some(session => {
@@ -64,12 +54,10 @@ function hasWorkedOnDay(dateStr) {
     });
 }
 
-// Obter tipo e cor do dia
 function getDayInfo(dateStr) {
     const calendarData = getCalendarData();
     const date = new Date(dateStr + 'T00:00:00');
     
-    // 1. Verificar marcação manual
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
         if (entry.type === 'vacation') {
@@ -80,27 +68,22 @@ function getDayInfo(dateStr) {
         }
     }
     
-    // 2. Verificar feriado
     const holiday = isHoliday(dateStr);
     if (holiday) {
         return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
     }
     
-    // 3. Verificar fim de semana
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
     }
     
-    // 4. Verificar se trabalhou
     if (hasWorkedOnDay(dateStr)) {
         return { type: 'worked', color: 'worked', icon: '💼', note: '' };
     }
     
-    // 5. Dia normal sem informação
     return { type: 'empty', color: 'empty', icon: '', note: '' };
 }
 
-// Renderizar calendário anual
 function renderAnnualCalendar(year) {
     currentYear = year;
     const container = document.getElementById('annualCalendarGrid');
@@ -131,7 +114,6 @@ function renderAnnualCalendar(year) {
         });
         monthCard.appendChild(daysHeader);
         
-        // Grid de dias do mês
         const daysGrid = document.createElement('div');
         daysGrid.className = 'month-days-grid';
         
@@ -140,14 +122,12 @@ function renderAnnualCalendar(year) {
         const daysInMonth = lastDay.getDate();
         const startingDayOfWeek = firstDay.getDay();
         
-        // Dias vazios antes do início do mês
         for (let i = 0; i < startingDayOfWeek; i++) {
             const emptyDay = document.createElement('div');
             emptyDay.className = 'month-day empty';
             daysGrid.appendChild(emptyDay);
         }
         
-        // Dias do mês
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, monthIndex, day);
             const dateStr = formatDateKey(date);
@@ -157,13 +137,11 @@ function renderAnnualCalendar(year) {
             dayEl.className = `month-day day-${dayInfo.color}`;
             dayEl.textContent = day;
             
-            // Marcar dia atual
             const today = new Date();
             if (date.toDateString() === today.toDateString()) {
                 dayEl.classList.add('today');
             }
             
-            // Adicionar ícone se tiver
             if (dayInfo.icon) {
                 const icon = document.createElement('div');
                 icon.className = 'day-icon-mini';
@@ -171,7 +149,6 @@ function renderAnnualCalendar(year) {
                 dayEl.appendChild(icon);
             }
             
-            // Adicionar evento de clique
             dayEl.onclick = () => openDayModal(dateStr, dayInfo);
             
             daysGrid.appendChild(dayEl);
@@ -181,11 +158,9 @@ function renderAnnualCalendar(year) {
         container.appendChild(monthCard);
     });
     
-    // Atualizar estatísticas
     updateAnnualStats();
 }
 
-// Abrir modal de detalhes do dia
 function openDayModal(dateStr, dayInfo) {
     const date = new Date(dateStr + 'T00:00:00');
     const dayName = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][date.getDay()];
@@ -261,12 +236,10 @@ function openDayModal(dateStr, dayInfo) {
     document.getElementById('dayModal').classList.add('show');
 }
 
-// Fechar modal do dia
 function closeDayModal() {
     document.getElementById('dayModal').classList.remove('show');
 }
 
-// Limpar marcação do dia
 function clearDayMarking(dateStr) {
     showConfirm('Limpar Marcação', 'Tem certeza que deseja remover esta marcação?', function() {
         const calendarData = getCalendarData();
@@ -278,14 +251,12 @@ function clearDayMarking(dateStr) {
     });
 }
 
-// Marcar como férias (dia único)
 function markAsVacation(dateStr) {
     document.getElementById('singleVacationDate').value = dateStr;
     document.getElementById('singleVacationNote').value = '';
     document.getElementById('singleVacationModal').classList.add('show');
 }
 
-// Confirmar férias dia único
 function confirmSingleVacation() {
     const dateStr = document.getElementById('singleVacationDate').value;
     const note = document.getElementById('singleVacationNote').value.trim();
@@ -303,12 +274,10 @@ function confirmSingleVacation() {
     showAlert('Sucesso', 'Férias marcadas com sucesso!');
 }
 
-// Fechar modal de férias únicas
 function closeSingleVacationModal() {
     document.getElementById('singleVacationModal').classList.remove('show');
 }
 
-// Marcar como falta (dia único)
 function markAsAbsence(dateStr) {
     document.getElementById('singleAbsenceDate').value = dateStr;
     document.getElementById('singleAbsenceNote').value = '';
@@ -316,7 +285,6 @@ function markAsAbsence(dateStr) {
     document.getElementById('singleAbsenceModal').classList.add('show');
 }
 
-// Confirmar falta dia único
 function confirmSingleAbsence() {
     const dateStr = document.getElementById('singleAbsenceDate').value;
     const note = document.getElementById('singleAbsenceNote').value.trim();
@@ -341,12 +309,10 @@ function confirmSingleAbsence() {
     showAlert('Sucesso', 'Falta marcada com sucesso!');
 }
 
-// Fechar modal de falta única
 function closeSingleAbsenceModal() {
     document.getElementById('singleAbsenceModal').classList.remove('show');
 }
 
-// Abrir modal de marcar período de férias
 function openVacationPeriodModal() {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -359,12 +325,11 @@ function openVacationPeriodModal() {
     document.getElementById('vacationPeriodModal').classList.add('show');
 }
 
-// Fechar modal de período de férias
 function closeVacationPeriodModal() {
     document.getElementById('vacationPeriodModal').classList.remove('show');
 }
 
-// Atualizar contagem de dias de férias
+
 function updateVacationDaysCount() {
     const startDateStr = document.getElementById('vacationStartDate').value;
     const endDateStr = document.getElementById('vacationEndDate').value;
@@ -387,7 +352,6 @@ function updateVacationDaysCount() {
     
     while (currentDate <= endDate) {
         const dateStr = formatDateKey(currentDate);
-        // Contar apenas dias úteis (não domingos nem feriados)
         if (!isWeekend(currentDate) && !isHoliday(dateStr)) {
             count++;
         }
@@ -397,7 +361,6 @@ function updateVacationDaysCount() {
     document.getElementById('vacationDaysCount').textContent = `${count} dia${count !== 1 ? 's' : ''} útei${count !== 1 ? 's' : ''}`;
 }
 
-// Confirmar período de férias
 function confirmVacationPeriod() {
     const startDateStr = document.getElementById('vacationStartDate').value;
     const endDateStr = document.getElementById('vacationEndDate').value;
@@ -440,7 +403,6 @@ function confirmVacationPeriod() {
     showAlert('Sucesso', `${markedCount} dia${markedCount !== 1 ? 's' : ''} de férias marcado${markedCount !== 1 ? 's' : ''}!`);
 }
 
-// Atualizar estatísticas anuais
 function updateAnnualStats() {
     let workedDays = 0;
     let vacationDays = 0;
@@ -465,7 +427,7 @@ function updateAnnualStats() {
         }
     }
     
-    const totalDays = 365 + (currentYear % 4 === 0 ? 1 : 0); // Ano bissexto
+    const totalDays = 365 + (currentYear % 4 === 0 ? 1 : 0);
     const remainingDays = totalDays - workedDays - vacationDays - absenceDays - holidayDays - weekendDays;
     
     document.getElementById('statWorkedDays').textContent = workedDays;
@@ -476,12 +438,10 @@ function updateAnnualStats() {
     document.getElementById('statRemainingDays').textContent = remainingDays;
 }
 
-// Mudar ano
 function changeYear(delta) {
     const todayYear = new Date().getFullYear();
     const newYear = currentYear + delta;
     
-    // Não permitir voltar para anos anteriores ao ano atual
     if (newYear < todayYear) {
         return;
     }
@@ -491,14 +451,12 @@ function changeYear(delta) {
     renderAnnualCalendar(currentYear);
 }
 
-// Ir para ano atual
 function goToCurrentYear() {
     currentYear = new Date().getFullYear();
     document.getElementById('currentYearDisplay').textContent = currentYear;
     renderAnnualCalendar(currentYear);
 }
 
-// Inicializar calendário
 function initializeAnnualCalendar() {
     currentYear = new Date().getFullYear();
     document.getElementById('currentYearDisplay').textContent = currentYear;

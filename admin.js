@@ -1,8 +1,4 @@
-// ============================================
-// ADMIN.JS - Sistema Administrativo
-// ============================================
 
-// Funções Helper Admin
 function isUserAdmin() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     return user && user.isAdmin === true;
@@ -26,18 +22,15 @@ function initializeDefaultAdmin() {
         });
     }
     
-    // Migração de obras: converter de individuais para globais
     migrateProjectsToGlobal();
 }
 
 function migrateProjectsToGlobal() {
-    // Verificar se já existe sistema global
     const globalProjects = localStorage.getItem('projects_global');
     if (globalProjects) {
-        return; // Já migrado
+        return; 
     }
     
-    // Recolher todas as obras de todos os utilizadores
     const users = getUsers();
     let allProjects = [];
     const seenCodes = new Set();
@@ -48,7 +41,6 @@ function migrateProjectsToGlobal() {
         if (userProjects) {
             const projects = JSON.parse(userProjects);
             projects.forEach(project => {
-                // Adicionar apenas se o código não foi visto ainda (evitar duplicados)
                 if (!seenCodes.has(project.workCode)) {
                     seenCodes.add(project.workCode);
                     allProjects.push(project);
@@ -57,7 +49,6 @@ function migrateProjectsToGlobal() {
         }
     });
     
-    // Salvar no sistema global
     if (allProjects.length > 0) {
         localStorage.setItem('projects_global', JSON.stringify(allProjects));
         console.log(`✅ Migração completa: ${allProjects.length} obras movidas para sistema global`);
@@ -81,12 +72,10 @@ function getAllUsersHistory() {
 }
 
 function getAllUsersProjects() {
-    // Obras agora são globais, não por utilizador
     const projects = localStorage.getItem('projects_global');
     return projects ? JSON.parse(projects) : [];
 }
 
-// Gestão de Utilizadores
 function loadUsersList() {
     if (!isUserAdmin()) return;
     
@@ -174,7 +163,6 @@ function demoteFromAdmin(username) {
     });
 }
 
-// Histórico Global
 function populateGlobalUserFilter() {
     if (!isUserAdmin()) return;
     
@@ -299,7 +287,7 @@ function updateGlobalHistory() {
     }).join('');
 }
 
-// Estatísticas da Empresa
+
 function updateCompanyStats() {
     if (!isUserAdmin()) return;
     
@@ -330,7 +318,6 @@ function updateCompanyStats() {
     document.getElementById('internalReuniaoHours').textContent = formatHours(internalReuniao);
     document.getElementById('internalFormacaoHours').textContent = formatHours(internalFormacao);
     
-    // Estatísticas de Reabertura
     let totalReopens = 0;
     let clientChangeReopens = 0;
     let ourErrorReopens = 0;
@@ -364,8 +351,7 @@ function updateCompanyStats() {
     document.getElementById('clientChangeReopens').textContent = clientChangeReopens;
     document.getElementById('ourErrorReopens').textContent = ourErrorReopens;
     document.getElementById('reopenPercentage').textContent = `${reopenPercentage}%`;
-    
-    // Detalhes de Reaberturas
+
     const reopenContainer = document.getElementById('reopenDetailsBreakdown');
     if (projectsWithReopens.length === 0) {
         reopenContainer.innerHTML = '<p style="text-align: center; color: #95a5a6; padding: 20px;">Nenhuma obra foi reaberta</p>';
@@ -436,7 +422,6 @@ function updateCompanyStats() {
     }).join('');
 }
 
-// Inicializar Admin UI
 function setupAdminUI() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     
@@ -454,7 +439,6 @@ function setupAdminUI() {
         const adminTabs = document.querySelectorAll('.admin-tab');
         adminTabs.forEach(tab => tab.classList.remove('hidden'));
         
-        // Mostrar botão de criar obra para admins
         const newProjectBtn = document.getElementById('newProjectBtn');
         if (newProjectBtn) {
             newProjectBtn.classList.remove('hidden');
@@ -462,7 +446,6 @@ function setupAdminUI() {
         
         populateGlobalUserFilter();
     } else {
-        // Esconder botão de criar obra para utilizadores normais
         const newProjectBtn = document.getElementById('newProjectBtn');
         if (newProjectBtn) {
             newProjectBtn.classList.add('hidden');
@@ -470,7 +453,6 @@ function setupAdminUI() {
     }
 }
 
-// Inicializar admin quando a aplicação carrega
 window.addEventListener('load', () => {
     initializeDefaultAdmin();
 });

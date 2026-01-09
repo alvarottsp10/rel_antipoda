@@ -17,7 +17,6 @@ const subcategories = {
     'orcamentacao': ['Orçamento', 'Ordem de produção']
 };
 
-// Modal Functions
 function showConfirm(title, message, onConfirm) {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmMessage').textContent = message;
@@ -269,7 +268,6 @@ function showLogin() {
     document.getElementById('appScreen').classList.add('hidden');
     document.getElementById('loginError').classList.add('hidden');
     
-    // Limpar UI de admin ao fazer logout
     const header = document.getElementById('mainHeader');
     if (header) {
         header.classList.remove('admin');
@@ -293,7 +291,6 @@ function showRegister() {
     document.getElementById('registerError').classList.add('hidden');
     document.getElementById('registerSuccess').classList.add('hidden');
     
-    // Limpar UI de admin ao ir para registo
     const header = document.getElementById('mainHeader');
     if (header) {
         header.classList.remove('admin');
@@ -553,8 +550,6 @@ function updateManualSubcategories() {
         subcategorySelect.value = '';
     }
 }
-
-// Continua na próxima parte devido ao limite de tamanho...
 
 function startWork() {
     const workType = document.querySelector('input[name="workType"]:checked').value;
@@ -872,8 +867,6 @@ function stopWorkFromInactivity() {
     document.getElementById('inactivityModal').classList.remove('show');
     stopWork();
 }
-
-// Continua...
 
 function loadWorkHistory() {
     const history = getWorkHistory();
@@ -1193,9 +1186,6 @@ function deleteSession(sessionId) {
     loadWorkSelectForComments();
 }
 
-// Devido ao limite, vou continuar com o resto das funções num próximo comando...
-// Continuação do app.js - Projects, Comments, Stats, Export
-
 function openNewProjectModal() {
     document.getElementById('newProjectError').classList.add('hidden');
     document.getElementById('newProjectSuccess').classList.add('hidden');
@@ -1254,7 +1244,6 @@ function loadProjectsList() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const isAdmin = user && user.isAdmin === true;
     
-    // Calcular estatísticas de reabertura
     updateProjectsStats(projects);
     
     let filteredProjects = projects;
@@ -1287,7 +1276,6 @@ function loadProjectsList() {
             reopenInfoHtml = `<div class="reopen-info" style="border-color: ${reasonColor};"><strong>🔄 Reaberta ${reopenLabel}:</strong> ${reopenDateStr} - <span style="color: ${reasonColor}; font-weight: 600;">${reasonText}</span>${lastReopen.comment ? `<br><em>${lastReopen.comment}</em>` : ''}</div>`;
         }
         
-        // Apenas admins podem fechar/reabrir obras
         let actionsHtml = '';
         if (isAdmin) {
             actionsHtml = project.status === 'open' 
@@ -1701,7 +1689,6 @@ function restoreData(input) {
                     const commentsKey = `comments_${user.username}`;
                     localStorage.setItem(commentsKey, JSON.stringify(backup.comments));
                 }
-                // Obras não são mais restauradas por utilizador (são globais)
                 showAlert('Sucesso', 'Dados restaurados com sucesso!');
                 loadWorkHistory();
                 updateStats();
@@ -1718,7 +1705,6 @@ function restoreData(input) {
     input.value = '';
 }
 
-// Profile Management Functions
 function loadProfileData() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const users = getUsers();

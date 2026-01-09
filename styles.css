@@ -841,7 +841,6 @@ input:focus, select:focus, textarea:focus {
     font-style: italic;
 }
 
-/* ADMIN STYLES */
 .user-card {
     background: white;
     border: 2px solid var(--border-color);
@@ -900,20 +899,11 @@ input:focus, select:focus, textarea:focus {
     max-height: 600px;
     overflow-y: auto;
 }
-/* ============================================
-   CALENDAR STYLES - Estilos do Calendário Anual
-   ============================================ */
 
-/* ============================================
-   CALENDAR-SIMPLE.CSS - Estilos Calendário Anual
-   ============================================ */
-
-/* Container Principal */
 .annual-calendar-container {
     padding: 20px;
 }
 
-/* Header do Calendário */
 .calendar-year-header {
     display: flex;
     justify-content: space-between;
@@ -951,7 +941,6 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(-2px);
 }
 
-/* Estatísticas Anuais */
 .annual-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1005,7 +994,6 @@ input:focus, select:focus, textarea:focus {
 .stat-remaining { border-color: #bdc3c7; }
 .stat-remaining .stat-value { color: #6c757d; }
 
-/* Botão de Ação Rápida */
 .quick-mark-vacation {
     width: 100%;
     padding: 16px;
@@ -1030,14 +1018,12 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
 }
 
-/* Grid de Meses */
 .annual-calendar-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
 }
 
-/* Card de Mês Individual */
 .month-card {
     background: white;
     border-radius: 12px;
@@ -1061,7 +1047,6 @@ input:focus, select:focus, textarea:focus {
     border-bottom: 2px solid #ecf0f1;
 }
 
-/* Headers dos dias da semana */
 .month-days-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -1077,14 +1062,12 @@ input:focus, select:focus, textarea:focus {
     padding: 4px 0;
 }
 
-/* Grid de dias do mês */
 .month-days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 3px;
 }
 
-/* Dia individual */
 .month-day {
     aspect-ratio: 1;
     display: flex;
@@ -1110,7 +1093,6 @@ input:focus, select:focus, textarea:focus {
     cursor: default;
 }
 
-/* Cores dos dias */
 .month-day.day-worked {
     background: #d4edda;
     border-color: #28a745;
@@ -1146,15 +1128,12 @@ input:focus, select:focus, textarea:focus {
     border-color: #dee2e6;
     color: #6c757d;
 }
-
-/* Dia atual */
 .month-day.today {
     border: 3px solid #007bff;
     font-weight: 900;
     box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
 }
 
-/* Ícone mini no dia */
 .day-icon-mini {
     position: absolute;
     bottom: 1px;
@@ -1163,7 +1142,6 @@ input:focus, select:focus, textarea:focus {
     line-height: 1;
 }
 
-/* Modal de Dia */
 .day-status {
     display: flex;
     align-items: center;
@@ -1209,7 +1187,6 @@ input:focus, select:focus, textarea:focus {
     margin-top: 15px;
 }
 
-/* Contador de dias de férias */
 .vacation-days-count {
     background: #e8f5e9;
     padding: 12px;
@@ -1224,7 +1201,6 @@ input:focus, select:focus, textarea:focus {
     color: #2e7d32;
 }
 
-/* Legenda */
 .calendar-legend {
     display: flex;
     flex-wrap: wrap;
@@ -1280,7 +1256,6 @@ input:focus, select:focus, textarea:focus {
     border-color: #adb5bd; 
 }
 
-/* Info Panel */
 .calendar-info-panel {
     background: #e3f2fd;
     border: 2px solid #2196f3;
@@ -1296,7 +1271,6 @@ input:focus, select:focus, textarea:focus {
     margin: 0;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .annual-calendar-grid {
         grid-template-columns: 1fr;
