@@ -474,3 +474,4 @@ function setupAdminUI() {
 window.addEventListener('load', () => {
     initializeDefaultAdmin();
 });
+

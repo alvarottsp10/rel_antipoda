@@ -900,3 +900,434 @@ input:focus, select:focus, textarea:focus {
     max-height: 600px;
     overflow-y: auto;
 }
+/* ============================================
+   CALENDAR STYLES - Estilos do Calendário Anual
+   ============================================ */
+
+/* ============================================
+   CALENDAR-SIMPLE.CSS - Estilos Calendário Anual
+   ============================================ */
+
+/* Container Principal */
+.annual-calendar-container {
+    padding: 20px;
+}
+
+/* Header do Calendário */
+.calendar-year-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.year-display {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.year-navigation {
+    display: flex;
+    gap: 10px;
+}
+
+.year-nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.year-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Estatísticas Anuais */
+.annual-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.annual-stat-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s;
+}
+
+.annual-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.annual-stat-card .stat-value {
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 5px;
+}
+
+.annual-stat-card .stat-label {
+    font-size: 11px;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.stat-worked { border-color: #27ae60; }
+.stat-worked .stat-value { color: #27ae60; }
+
+.stat-vacation { border-color: #f39c12; }
+.stat-vacation .stat-value { color: #f39c12; }
+
+.stat-absence { border-color: #e74c3c; }
+.stat-absence .stat-value { color: #e74c3c; }
+
+.stat-holiday { border-color: #3498db; }
+.stat-holiday .stat-value { color: #3498db; }
+
+.stat-weekend { border-color: #95a5a6; }
+.stat-weekend .stat-value { color: #95a5a6; }
+
+.stat-remaining { border-color: #bdc3c7; }
+.stat-remaining .stat-value { color: #6c757d; }
+
+/* Botão de Ação Rápida */
+.quick-mark-vacation {
+    width: 100%;
+    padding: 16px;
+    background: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.quick-mark-vacation:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
+/* Grid de Meses */
+.annual-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Card de Mês Individual */
+.month-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+}
+
+.month-card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    transform: translateY(-3px);
+}
+
+.month-header {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+/* Headers dos dias da semana */
+.month-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 5px;
+}
+
+.month-days-header > div {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #6c757d;
+    padding: 4px 0;
+}
+
+/* Grid de dias do mês */
+.month-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+/* Dia individual */
+.month-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.month-day:not(.empty):hover {
+    transform: scale(1.1);
+    z-index: 10;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.month-day.empty {
+    background: transparent;
+    cursor: default;
+}
+
+/* Cores dos dias */
+.month-day.day-worked {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.month-day.day-vacation {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.month-day.day-absence {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.month-day.day-holiday {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+.month-day.day-weekend {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+}
+
+.month-day.day-empty {
+    background: white;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+/* Dia atual */
+.month-day.today {
+    border: 3px solid #007bff;
+    font-weight: 900;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+}
+
+/* Ícone mini no dia */
+.day-icon-mini {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    font-size: 10px;
+    line-height: 1;
+}
+
+/* Modal de Dia */
+.day-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #dee2e6;
+}
+
+.day-status.worked-status { border-left-color: #28a745; }
+.day-status.vacation-status { border-left-color: #ffc107; }
+.day-status.absence-status { border-left-color: #dc3545; }
+.day-status.holiday-status { border-left-color: #17a2b8; }
+.day-status.weekend-status { border-left-color: #6c757d; }
+.day-status.empty-status { border-left-color: #dee2e6; }
+
+.day-status .status-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.day-status .status-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.day-note {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.day-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Contador de dias de férias */
+.vacation-days-count {
+    background: #e8f5e9;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    margin-top: 15px;
+    border: 2px solid #4caf50;
+}
+
+.vacation-days-count strong {
+    font-size: 18px;
+    color: #2e7d32;
+}
+
+/* Legenda */
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.legend-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    border: 2px solid;
+}
+
+.legend-icon.worked { 
+    background: #d4edda; 
+    border-color: #28a745; 
+}
+
+.legend-icon.vacation { 
+    background: #fff3cd; 
+    border-color: #ffc107; 
+}
+
+.legend-icon.absence { 
+    background: #f8d7da; 
+    border-color: #dc3545; 
+}
+
+.legend-icon.holiday { 
+    background: #d1ecf1; 
+    border-color: #17a2b8; 
+}
+
+.legend-icon.weekend { 
+    background: #e9ecef; 
+    border-color: #adb5bd; 
+}
+
+/* Info Panel */
+.calendar-info-panel {
+    background: #e3f2fd;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.calendar-info-panel p {
+    color: #1565c0;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .annual-calendar-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-year-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    
+    .annual-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .month-day {
+        font-size: 11px;
+    }
+    
+    .day-icon-mini {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .annual-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .year-navigation {
+        flex-direction: column;
+    }
+}

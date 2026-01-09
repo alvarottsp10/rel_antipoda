@@ -285,6 +285,81 @@
         </div>
     </div>
 
+
+    <!-- Calendar Modals -->
+    <div id="dayModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalDayDate">Data</h2>
+            <div id="modalDayContent"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeDayModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="singleVacationModal" class="modal">
+        <div class="modal-content">
+            <h2>🏖️ Marcar Férias</h2>
+            <input type="hidden" id="singleVacationDate">
+            <div class="form-group">
+                <label>Observação (opcional)</label>
+                <textarea id="singleVacationNote" placeholder="Ex: Férias de Verão, Ponte, etc..."></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="confirmSingleVacation()">✓ Marcar</button>
+                <button class="btn btn-secondary" onclick="closeSingleVacationModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="singleAbsenceModal" class="modal">
+        <div class="modal-content">
+            <h2>❌ Marcar Falta</h2>
+            <div id="absenceError" class="error-message hidden"></div>
+            <input type="hidden" id="singleAbsenceDate">
+            <div class="form-group">
+                <label>Motivo da Falta *</label>
+                <textarea id="singleAbsenceNote" placeholder="Ex: Consulta médica, Assunto pessoal, etc..."></textarea>
+            </div>
+            <div class="info-panel" style="margin-top: 15px;">
+                <p style="font-size: 12px; color: #6c757d;">ℹ️ O motivo da falta é obrigatório para registo.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="confirmSingleAbsence()">✓ Marcar</button>
+                <button class="btn btn-secondary" onclick="closeSingleAbsenceModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="vacationPeriodModal" class="modal">
+        <div class="modal-content">
+            <h2>🏖️ Marcar Período de Férias</h2>
+            <div class="form-group">
+                <label>Data de Início</label>
+                <input type="date" id="vacationStartDate" onchange="updateVacationDaysCount()">
+            </div>
+            <div class="form-group">
+                <label>Data de Fim</label>
+                <input type="date" id="vacationEndDate" onchange="updateVacationDaysCount()">
+            </div>
+            <div class="form-group">
+                <label>Observação (opcional)</label>
+                <textarea id="vacationPeriodNote" placeholder="Ex: Férias de Verão"></textarea>
+            </div>
+            <div class="vacation-days-count">
+                <span style="color: #2e7d32;">📅</span>
+                <strong id="vacationDaysCount">0 dias</strong>
+                <div style="font-size: 11px; color: #6c757d; margin-top: 5px;">(apenas dias úteis, excluindo domingos e feriados)</div>
+            </div>
+            <div class="info-panel" style="margin-top: 15px;">
+                <p style="font-size: 12px; color: #6c757d;">ℹ️ Apenas dias úteis serão marcados. Domingos e feriados são automaticamente excluídos.</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="confirmVacationPeriod()">✓ Confirmar</button>
+                <button class="btn btn-secondary" onclick="closeVacationPeriodModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
     <!-- Floating Timer -->
     <div id="floatingTimer" class="floating-timer hidden">
         <div class="float-time">00:00:00</div>
@@ -354,6 +429,7 @@
                 <button class="tab active" onclick="showTab(event, 'timer')">⏱️ Timer</button>
                 <button class="tab" onclick="showTab(event, 'projects')">📁 Obras</button>
                 <button class="tab" onclick="showTab(event, 'comments')">💬 Comentários</button>
+                <button class="tab" onclick="showTab(event, 'calendar')">📅 Calendário</button>
                 <button class="tab" onclick="showTab(event, 'reports')">📊 Relatórios</button>
                 <button class="tab" onclick="showTab(event, 'export')">💾 Exportar</button>
                 <button class="tab" onclick="showTab(event, 'profile')">⚙️ Perfil</button>
@@ -490,6 +566,85 @@
                 <div id="projectsList" class="projects-list"></div>
             </div>
 
+
+            <!-- Calendar Tab -->
+            <div id="calendarTab" class="tab-content">
+                <div class="annual-calendar-container">
+                    <div class="calendar-year-header">
+                        <div class="year-display" id="currentYearDisplay">2026</div>
+                        <div class="year-navigation">
+                            <button class="year-nav-btn" onclick="goToCurrentYear()">Hoje</button>
+                            <button class="year-nav-btn" onclick="changeYear(1)">Seguinte ▶</button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-info-panel">
+                        <p>
+                            <strong>📅 Como funciona:</strong> 
+                            Os dias trabalhados aparecem automaticamente a <strong style="color: #28a745;">verde</strong> baseados no seu histórico. 
+                            <strong style="color: #2196F3;">Feriados nacionais</strong> 🎉 estão marcados automaticamente. 
+                            Clique em qualquer dia para marcar férias <strong style="color: #ffc107;">🏖️</strong> ou faltas <strong style="color: #dc3545;">❌</strong>. 
+                        </p>
+                    </div>
+                    
+                    <button class="quick-mark-vacation" onclick="openVacationPeriodModal()">
+                        <span style="font-size: 24px;">🏖️</span>
+                        <span>Marcar Período de Férias</span>
+                    </button>
+                    
+                    <div class="annual-stats">
+                        <div class="annual-stat-card stat-worked">
+                            <div class="stat-value" id="statWorkedDays">0</div>
+                            <div class="stat-label">Dias Trabalhados</div>
+                        </div>
+                        <div class="annual-stat-card stat-vacation">
+                            <div class="stat-value" id="statVacationDays">0</div>
+                            <div class="stat-label">Dias de Férias</div>
+                        </div>
+                        <div class="annual-stat-card stat-absence">
+                            <div class="stat-value" id="statAbsenceDays">0</div>
+                            <div class="stat-label">Faltas</div>
+                        </div>
+                        <div class="annual-stat-card stat-holiday">
+                            <div class="stat-value" id="statHolidayDays">0</div>
+                            <div class="stat-label">Feriados</div>
+                        </div>
+                        <div class="annual-stat-card stat-weekend">
+                            <div class="stat-value" id="statWeekendDays">0</div>
+                            <div class="stat-label">Domingos</div>
+                        </div>
+                        <div class="annual-stat-card stat-remaining">
+                            <div class="stat-value" id="statRemainingDays">0</div>
+                            <div class="stat-label">Dias Restantes</div>
+                        </div>
+                    </div>
+                    
+                    <div class="annual-calendar-grid" id="annualCalendarGrid"></div>
+                    
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <div class="legend-icon worked">💼</div>
+                            <span>Dia Trabalhado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon vacation">🏖️</div>
+                            <span>Férias</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon absence">❌</div>
+                            <span>Falta</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon holiday">🎉</div>
+                            <span>Feriado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-icon weekend">🏠</div>
+                            <span>Domingo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Comments Tab -->
             <div id="commentsTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">💬 Comentários por Obra</h3>
@@ -795,6 +950,7 @@
         </div>
     </div>
 
+    <script src="calendar-simple.js"></script>
     <script src="admin.js"></script>
     <script src="app.js"></script>
 </body>

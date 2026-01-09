@@ -1,7 +1,3 @@
-// ============================================
-// APP.JS - JavaScript Principal Completo
-// ============================================
-
 let confirmCallback = null;
 let currentEditId = null;
 let currentReopenProjectId = null;
@@ -354,6 +350,11 @@ function showTab(event, tabName) {
         updateReports();
     } else if (tabName === 'export') {
         document.getElementById('exportTab').classList.add('active');
+    } else if (tabName === 'calendar') {
+        document.getElementById('calendarTab').classList.add('active');
+        if (typeof initializeAnnualCalendar === 'function') {
+            initializeAnnualCalendar();
+        }
         updateExportStats();
     } else if (tabName === 'profile') {
         document.getElementById('profileTab').classList.add('active');
