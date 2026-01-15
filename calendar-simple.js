@@ -1,4 +1,3 @@
-
 const HOLIDAYS_2026 = {
     '2026-01-01': 'Ano Novo',
     '2026-04-03': 'Sexta-feira Santa',

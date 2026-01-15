@@ -337,6 +337,7 @@ function showTab(event, tabName) {
     if (tabName === 'timer') {
         document.getElementById('timerTab').classList.add('active');
     } else if (tabName === 'projects') {
+        updateHoursCounter(); // Atualizar contador ao mostrar timer
         document.getElementById('projectsTab').classList.add('active');
         loadProjectsList();
     } else if (tabName === 'comments') {
@@ -639,6 +640,7 @@ function startWork() {
     }, 1000);
 
     startInactivityMonitor();
+    updateHoursCounter(); // Atualizar contador de horas
 }
 
 function stopWork() {
@@ -650,6 +652,7 @@ function stopWork() {
     const duration = timerSeconds;
     saveWorkSession(startTime, endTime, duration);
     localStorage.removeItem('activeTimer');
+    updateHoursCounter(); // Atualizar contador de horas
 
     document.getElementById('startBtn').classList.remove('hidden');
     document.getElementById('stopBtn').classList.add('hidden');
@@ -1724,6 +1727,7 @@ function loadProfileData() {
     document.getElementById('profileNewPassword').value = '';
     document.getElementById('profileConfirmPassword').value = '';
     
+    loadProfilePhoto(); // Carregar foto de perfil
     document.getElementById('profileError').classList.add('hidden');
     document.getElementById('profileSuccess').classList.add('hidden');
 }
@@ -1925,3 +1929,140 @@ window.addEventListener('beforeunload', (e) => {
         e.returnValue = '';
     }
 });
+// ============================================
+// PROFILE PHOTO MANAGEMENT
+// ============================================
+
+function loadProfilePhoto() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+    
+    const photoData = localStorage.getItem(`profilePhoto_${user.username}`);
+    const preview = document.getElementById('profilePhotoPreview');
+    const placeholder = document.querySelector('.profile-photo-placeholder');
+    const removeBtn = document.getElementById('removePhotoBtn');
+    const initials = document.getElementById('profileInitials');
+    
+    if (photoData) {
+        preview.src = photoData;
+        preview.classList.add('active');
+        placeholder.classList.add('hidden');
+        removeBtn.style.display = 'inline-block';
+    } else {
+        preview.classList.remove('active');
+        placeholder.classList.remove('hidden');
+        removeBtn.style.display = 'none';
+        
+        // Set initials
+        const firstName = user.firstName || '';
+        const lastName = user.lastName || '';
+        const initial1 = firstName.charAt(0) || '';
+        const initial2 = lastName.charAt(0) || '';
+        initials.textContent = (initial1 + initial2).toUpperCase() || '?';
+    }
+}
+
+function handleProfilePhotoChange(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showAlert('Erro', 'Por favor selecione um ficheiro de imagem válido.');
+        return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        showAlert('Erro', 'A imagem é muito grande. Por favor selecione uma imagem menor que 2MB.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        localStorage.setItem(`profilePhoto_${user.username}`, e.target.result);
+        loadProfilePhoto();
+        showAlert('Sucesso', 'Foto de perfil atualizada com sucesso!');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeProfilePhoto() {
+    showConfirm('Remover Foto', 'Tem certeza que deseja remover a foto de perfil?', function() {
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+        localStorage.removeItem(`profilePhoto_${user.username}`);
+        document.getElementById('profilePhotoInput').value = '';
+        loadProfilePhoto();
+        showAlert('Sucesso', 'Foto de perfil removida com sucesso!');
+    });
+}
+
+// ============================================
+// HOURS WORKED COUNTER
+// ============================================
+
+function updateHoursCounter() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+    
+    // Check if elements exist
+    const todayElement = document.getElementById('hoursTodayValue');
+    const weekElement = document.getElementById('hoursWeekValue');
+    if (!todayElement || !weekElement) return;
+    
+    const workHistory = getWorkHistory();
+    const now = new Date();
+    
+    // Calculate today's hours
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    let todaySeconds = 0;
+    workHistory.forEach(entry => {
+        const entryDate = new Date(entry.startTime);
+        if (entryDate >= todayStart && entryDate < todayEnd) {
+            todaySeconds += entry.duration || 0;
+        }
+    });
+    
+    // Calculate this week's hours (Monday to Sunday)
+    const dayOfWeek = now.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    let weekSeconds = 0;
+    workHistory.forEach(entry => {
+        const entryDate = new Date(entry.startTime);
+        if (entryDate >= weekStart && entryDate < weekEnd) {
+            weekSeconds += entry.duration || 0;
+        }
+    });
+    
+    // Add current running timer if active
+    if (timerInterval && timerSeconds) {
+        todaySeconds += timerSeconds;
+        weekSeconds += timerSeconds;
+    }
+    
+    // Format and display
+    todayElement.textContent = formatHoursMinutes(todaySeconds);
+    weekElement.textContent = formatHoursMinutes(weekSeconds);
+}
+
+function formatHoursMinutes(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+}
+
+// Update hours counter every 30 seconds
+setInterval(function() {
+    updateHoursCounter();
+}, 30000);
+
+// Call once on load
+setTimeout(function() {
+    updateHoursCounter();
+}, 1000);

@@ -1,2 +1,5 @@
 localStorage.clear()
 location.reload()
+
+Cada um conseguir ver as suas horas de trabalho da semana, foto de perfil
+Conseguir ver as horas das semanas anteriores

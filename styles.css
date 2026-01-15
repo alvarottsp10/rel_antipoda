@@ -1305,3 +1305,152 @@ input:focus, select:focus, textarea:focus {
         flex-direction: column;
     }
 }
+/* ============================================
+   PROFILE PHOTO STYLES
+   ============================================ */
+.profile-photo-section {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.profile-photo-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.profile-photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #007bff;
+    display: none;
+}
+
+.profile-photo.active {
+    display: block;
+}
+
+.profile-photo-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+    color: white;
+    border: 4px solid #007bff;
+}
+
+.profile-photo-placeholder.hidden {
+    display: none;
+}
+
+#profileInitials {
+    text-transform: uppercase;
+}
+
+.profile-photo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-photo-actions .btn {
+    min-width: 180px;
+}
+
+/* ============================================
+   HOURS SUMMARY PANEL
+   ============================================ */
+.hours-summary-panel {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.hours-summary-panel h4 {
+    color: white;
+    font-weight: 600;
+}
+
+.hours-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.hours-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hours-card:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hours-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.hours-info {
+    flex: 1;
+}
+
+.hours-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.hours-value {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-photo-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-photo-actions {
+        width: 100%;
+    }
+    
+    .profile-photo-actions .btn {
+        width: 100%;
+    }
+    
+    .hours-cards {
+        grid-template-columns: 1fr;
+    }
+}

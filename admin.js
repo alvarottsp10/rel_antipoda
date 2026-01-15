@@ -1,4 +1,3 @@
-
 function isUserAdmin() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     return user && user.isAdmin === true;
@@ -456,4 +455,3 @@ function setupAdminUI() {
 window.addEventListener('load', () => {
     initializeDefaultAdmin();
 });
-

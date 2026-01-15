@@ -443,6 +443,25 @@
                         <span class="value" id="userName">-</span>
                     </div>
                 </div>
+                <div class="hours-summary-panel">
+                    <h4 style="margin: 0 0 15px 0;">⏱️ Horas Trabalhadas</h4>
+                    <div class="hours-cards">
+                        <div class="hours-card">
+                            <div class="hours-icon">📅</div>
+                            <div class="hours-info">
+                                <div class="hours-label">Hoje</div>
+                                <div class="hours-value" id="hoursTodayValue">0h 0m</div>
+                            </div>
+                        </div>
+                        <div class="hours-card">
+                            <div class="hours-icon">📊</div>
+                            <div class="hours-info">
+                                <div class="hours-label">Esta Semana</div>
+                                <div class="hours-value" id="hoursWeekValue">0h 0m</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="radio-group">
                     <div class="radio-option">
                         <input type="radio" id="workTypeProject" name="workType" value="project" checked onchange="updateWorkTypeFields()">
@@ -745,6 +764,21 @@
                 <div id="profileError" class="error-message hidden"></div>
                 <div id="profileSuccess" class="success-message hidden"></div>
                 
+                
+                <h4 style="margin: 20px 0 15px 0;">📷 Foto de Perfil</h4>
+                <div class="profile-photo-section">
+                    <div class="profile-photo-container">
+                        <img id="profilePhotoPreview" src="" alt="Foto de Perfil" class="profile-photo">
+                        <div class="profile-photo-placeholder">
+                            <span id="profileInitials">?</span>
+                        </div>
+                    </div>
+                    <div class="profile-photo-actions">
+                        <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoChange(event)">
+                        <button class="btn btn-primary" onclick="document.getElementById('profilePhotoInput').click()">📷 Escolher Foto</button>
+                        <button class="btn btn-secondary" onclick="removeProfilePhoto()" id="removePhotoBtn" style="display: none;">🗑️ Remover Foto</button>
+                    </div>
+                </div>
                 <h4 style="margin: 20px 0 15px 0;">📋 Informações Pessoais</h4>
                 <div class="form-group">
                     <label for="profileFirstName">Primeiro Nome</label>
