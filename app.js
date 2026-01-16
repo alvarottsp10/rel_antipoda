@@ -329,45 +329,6 @@ function showApp() {
     resumeActiveTimer();
 }
 
-function showTab(event, tabName) {
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (tabName === 'timer') {
-        document.getElementById('timerTab').classList.add('active');
-    } else if (tabName === 'projects') {
-        updateHoursCounter(); // Atualizar contador ao mostrar timer
-        document.getElementById('projectsTab').classList.add('active');
-        loadProjectsList();
-    } else if (tabName === 'comments') {
-        document.getElementById('commentsTab').classList.add('active');
-        loadWorkSelectForComments();
-    } else if (tabName === 'reports') {
-        document.getElementById('reportsTab').classList.add('active');
-        updateReports();
-    } else if (tabName === 'export') {
-        document.getElementById('exportTab').classList.add('active');
-    } else if (tabName === 'calendar') {
-        document.getElementById('calendarTab').classList.add('active');
-        if (typeof initializeAnnualCalendar === 'function') {
-            initializeAnnualCalendar();
-        }
-        updateExportStats();
-    } else if (tabName === 'profile') {
-        document.getElementById('profileTab').classList.add('active');
-        loadProfileData();
-    } else if (tabName === 'users') {
-        document.getElementById('usersTab-content').classList.add('active');
-        if (typeof loadUsersList === 'function') { loadUsersList(); }
-    } else if (tabName === 'globalHistory') {
-        document.getElementById('globalHistoryTab-content').classList.add('active');
-        if (typeof updateGlobalHistory === 'function') { updateGlobalHistory(); }
-    } else if (tabName === 'companyStats') {
-        document.getElementById('companyStatsTab-content').classList.add('active');
-        if (typeof updateCompanyStats === 'function') { updateCompanyStats(); }
-    }
-}
 
 let clockInterval;
 function startClock() {
@@ -1512,13 +1473,194 @@ function addQuickComment() {
 }
 
 function updateStats() {
+    updateDashboardStats();
+}
+
+function updateDashboardStats() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) return;
+    
+    updateUserStats();
+    
+    if (user.isAdmin) {
+        updateAdminStats();
+    }
+}
+
+function updateUserStats() {
     const history = getWorkHistory();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayProjectSeconds = history.filter(s => new Date(s.startTime) >= today && s.workType === 'project').reduce((sum, s) => sum + s.duration, 0);
-    const todayInternalSeconds = history.filter(s => new Date(s.startTime) >= today && s.workType === 'internal').reduce((sum, s) => sum + s.duration, 0);
-    document.getElementById('todayProjectHours').textContent = formatHours(todayProjectSeconds);
-    document.getElementById('todayInternalHours').textContent = formatHours(todayInternalSeconds);
+    const now = new Date();
+    
+    // HOJE
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    let todayTotal = 0;
+    let todayProject = 0;
+    let todayInternal = 0;
+    
+    history.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        if (sessionDate >= todayStart && sessionDate < todayEnd) {
+            const duration = session.duration || 0;
+            todayTotal += duration;
+            if (session.workType === 'project') {
+                todayProject += duration;
+            } else if (session.workType === 'internal') {
+                todayInternal += duration;
+            }
+        }
+    });
+    
+    if (timerInterval && timerSeconds) {
+        todayTotal += timerSeconds;
+        const workType = document.querySelector('input[name="workType"]:checked')?.value;
+        if (workType === 'project') {
+            todayProject += timerSeconds;
+        } else if (workType === 'internal') {
+            todayInternal += timerSeconds;
+        }
+    }
+    
+    // SEMANA
+    const dayOfWeek = now.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    let weekTotal = 0;
+    let weekProject = 0;
+    let weekInternal = 0;
+    
+    history.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        if (sessionDate >= weekStart && sessionDate < weekEnd) {
+            const duration = session.duration || 0;
+            weekTotal += duration;
+            if (session.workType === 'project') {
+                weekProject += duration;
+            } else if (session.workType === 'internal') {
+                weekInternal += duration;
+            }
+        }
+    });
+    
+    if (timerInterval && timerSeconds) {
+        weekTotal += timerSeconds;
+        const workType = document.querySelector('input[name="workType"]:checked')?.value;
+        if (workType === 'project') {
+            weekProject += timerSeconds;
+        } else if (workType === 'internal') {
+            weekInternal += timerSeconds;
+        }
+    }
+    
+    // Atualizar interface
+    const todayTotalEl = document.getElementById('todayTotalHours');
+    const todayProjectEl = document.getElementById('todayProjectHours');
+    const todayInternalEl = document.getElementById('todayInternalHours');
+    
+    const weekTotalEl = document.getElementById('weekTotalHours');
+    const weekProjectEl = document.getElementById('weekProjectHours');
+    const weekInternalEl = document.getElementById('weekInternalHours');
+    
+    if (todayTotalEl) todayTotalEl.textContent = formatHoursMinutes(todayTotal);
+    if (todayProjectEl) todayProjectEl.textContent = formatHoursMinutes(todayProject);
+    if (todayInternalEl) todayInternalEl.textContent = formatHoursMinutes(todayInternal);
+    
+    if (weekTotalEl) weekTotalEl.textContent = formatHoursMinutes(weekTotal);
+    if (weekProjectEl) weekProjectEl.textContent = formatHoursMinutes(weekProject);
+    if (weekInternalEl) weekInternalEl.textContent = formatHoursMinutes(weekInternal);
+}
+
+function updateAdminStats() {
+    const adminStatsPanel = document.getElementById('adminQuickStats');
+    if (!adminStatsPanel) return;
+    
+    adminStatsPanel.classList.remove('hidden');
+    
+    if (typeof getAllUsersHistory !== 'function') return;
+    
+    const allHistory = getAllUsersHistory();
+    const now = new Date();
+    
+    // HOJE - Global
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    let adminTodayTotal = 0;
+    let adminTodayProject = 0;
+    let adminTodayInternal = 0;
+    
+    allHistory.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        if (sessionDate >= todayStart && sessionDate < todayEnd) {
+            const duration = session.duration || 0;
+            adminTodayTotal += duration;
+            if (session.workType === 'project') {
+                adminTodayProject += duration;
+            } else if (session.workType === 'internal') {
+                adminTodayInternal += duration;
+            }
+        }
+    });
+    
+    // SEMANA - Global
+    const dayOfWeek = now.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+    const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    let adminWeekTotal = 0;
+    let adminWeekProject = 0;
+    let adminWeekInternal = 0;
+    
+    allHistory.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        if (sessionDate >= weekStart && sessionDate < weekEnd) {
+            const duration = session.duration || 0;
+            adminWeekTotal += duration;
+            if (session.workType === 'project') {
+                adminWeekProject += duration;
+            } else if (session.workType === 'internal') {
+                adminWeekInternal += duration;
+            }
+        }
+    });
+    
+    // Atualizar interface Admin
+    const adminTodayTotalEl = document.getElementById('adminTodayTotal');
+    const adminTodayProjectEl = document.getElementById('adminTodayProject');
+    const adminTodayInternalEl = document.getElementById('adminTodayInternal');
+    
+    const adminWeekTotalEl = document.getElementById('adminWeekTotal');
+    const adminWeekProjectEl = document.getElementById('adminWeekProject');
+    const adminWeekInternalEl = document.getElementById('adminWeekInternal');
+    
+    if (adminTodayTotalEl) adminTodayTotalEl.textContent = formatHoursMinutes(adminTodayTotal);
+    if (adminTodayProjectEl) adminTodayProjectEl.textContent = formatHoursMinutes(adminTodayProject);
+    if (adminTodayInternalEl) adminTodayInternalEl.textContent = formatHoursMinutes(adminTodayInternal);
+    
+    if (adminWeekTotalEl) adminWeekTotalEl.textContent = formatHoursMinutes(adminWeekTotal);
+    if (adminWeekProjectEl) adminWeekProjectEl.textContent = formatHoursMinutes(adminWeekProject);
+    if (adminWeekInternalEl) adminWeekInternalEl.textContent = formatHoursMinutes(adminWeekInternal);
+    
+    // Estatísticas gerais
+    if (typeof getAllUsersProjects === 'function') {
+        const users = getUsers();
+        const allProjects = getAllUsersProjects();
+        const totalHours = allHistory.reduce((sum, s) => sum + s.duration, 0);
+        
+        const dashCompanyUsersEl = document.getElementById('dashCompanyTotalUsers');
+        const dashCompanyProjectsEl = document.getElementById('dashCompanyTotalProjects');
+        const dashCompanySessionsEl = document.getElementById('dashCompanyTotalSessions');
+        const dashCompanyHoursEl = document.getElementById('dashCompanyTotalHours');
+        
+        if (dashCompanyUsersEl) dashCompanyUsersEl.textContent = users.length;
+        if (dashCompanyProjectsEl) dashCompanyProjectsEl.textContent = allProjects.filter(p => p.status === 'open').length;
+        if (dashCompanySessionsEl) dashCompanySessionsEl.textContent = allHistory.length;
+        if (dashCompanyHoursEl) dashCompanyHoursEl.textContent = formatHours(totalHours);
+    }
 }
 
 function updateReports() {
@@ -1918,6 +2060,151 @@ async function updatePassword() {
     );
 }
 
+function showMainTab(event, tabName) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    
+    if (tabName === 'timer') {
+        document.getElementById('timerTab').classList.add('active');
+        updateHoursCounter();
+    } else if (tabName === 'dashboard') {
+        document.getElementById('dashboardTab').classList.add('active');
+        loadWorkHistory();
+        updateStats();
+        updateDashboardAdminStats();
+        updateHoursCounter();
+    } else if (tabName === 'management') {
+        document.getElementById('managementTab').classList.add('active');
+        showSubTab(null, 'management', 'projects', true);
+    } else if (tabName === 'data') {
+        document.getElementById('dataTab').classList.add('active');
+        showSubTab(null, 'data', 'reports', true);
+    } else if (tabName === 'system') {
+        document.getElementById('systemTab').classList.add('active');
+        showSubTab(null, 'system', 'profile', true);
+    }
+}
+
+function showSubTab(event, parentTab, subTabName, programmatic = false) {
+    if (!programmatic && event) {
+        const parentElement = document.getElementById(`${parentTab}Tab`);
+        parentElement.querySelectorAll('.sub-tab').forEach(tab => tab.classList.remove('active'));
+        parentElement.querySelectorAll('.sub-content').forEach(content => content.classList.remove('active'));
+        
+        event.target.classList.add('active');
+    } else if (programmatic) {
+        const parentElement = document.getElementById(`${parentTab}Tab`);
+        const subTabs = parentElement.querySelectorAll('.sub-tab');
+        subTabs.forEach(tab => tab.classList.remove('active'));
+        if (subTabs[0]) subTabs[0].classList.add('active');
+        
+        parentElement.querySelectorAll('.sub-content').forEach(content => content.classList.remove('active'));
+    }
+    
+    const subContentId = `${parentTab}-${subTabName}`;
+    const subContent = document.getElementById(subContentId);
+    if (subContent) {
+        subContent.classList.add('active');
+    }
+    
+    if (parentTab === 'management') {
+        if (subTabName === 'projects') {
+            loadProjectsList();
+        } else if (subTabName === 'comments') {
+            loadWorkSelectForComments();
+        } else if (subTabName === 'calendar') {
+            if (typeof initializeAnnualCalendar === 'function') {
+                initializeAnnualCalendar();
+            }
+        }
+    } else if (parentTab === 'data') {
+        if (subTabName === 'reports') {
+            updateReports();
+        } else if (subTabName === 'export') {
+            updateExportStats();
+        }
+    } else if (parentTab === 'system') {
+        if (subTabName === 'profile') {
+            loadProfileData();
+        } else if (subTabName === 'users') {
+            if (typeof loadUsersList === 'function') {
+                loadUsersList();
+            }
+        } else if (subTabName === 'globalHistory') {
+            if (typeof updateGlobalHistory === 'function') {
+                updateGlobalHistory();
+            }
+        } else if (subTabName === 'stats') {
+            if (typeof updateCompanyStats === 'function') {
+                updateCompanyStats();
+            }
+        }
+    }
+}
+
+function updateDashboardAdminStats() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    const adminStatsPanel = document.getElementById('adminQuickStats');
+    
+    if (!adminStatsPanel) return;
+    
+    if (user && user.isAdmin === true) {
+        adminStatsPanel.classList.remove('hidden');
+        
+        if (typeof getAllUsersHistory === 'function' && typeof getAllUsersProjects === 'function') {
+            const users = getUsers();
+            const allHistory = getAllUsersHistory();
+            const allProjects = getAllUsersProjects();
+            const totalHours = allHistory.reduce((sum, s) => sum + s.duration, 0);
+            
+            document.getElementById('dashCompanyTotalUsers').textContent = users.length;
+            document.getElementById('dashCompanyTotalProjects').textContent = allProjects.filter(p => p.status === 'open').length;
+            document.getElementById('dashCompanyTotalSessions').textContent = allHistory.length;
+            document.getElementById('dashCompanyTotalHours').textContent = formatHours(totalHours);
+        }
+    } else {
+        adminStatsPanel.classList.add('hidden');
+    }
+}
+
+function setupAdminUIEnhanced() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    
+    if (user && user.isAdmin) {
+        const header = document.getElementById('mainHeader');
+        if (header) {
+            header.classList.add('admin');
+        }
+        
+        const adminBadge = document.getElementById('adminBadge');
+        if (adminBadge) {
+            adminBadge.classList.remove('hidden');
+        }
+        
+        const adminSubTabs = document.querySelectorAll('.admin-sub-tab');
+        adminSubTabs.forEach(tab => tab.classList.remove('hidden'));
+        
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        if (newProjectBtn) {
+            newProjectBtn.classList.remove('hidden');
+        }
+        
+        if (typeof populateGlobalUserFilter === 'function') {
+            populateGlobalUserFilter();
+        }
+    } else {
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        if (newProjectBtn) {
+            newProjectBtn.classList.add('hidden');
+        }
+        
+        const adminSubTabs = document.querySelectorAll('.admin-sub-tab');
+        adminSubTabs.forEach(tab => tab.classList.add('hidden'));
+    }
+}
+
 window.addEventListener('load', () => {
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) { showApp(); } else { showLogin(); }
@@ -2057,12 +2344,192 @@ function formatHoursMinutes(seconds) {
     return `${hours}h ${minutes}m`;
 }
 
-// Update hours counter every 30 seconds
+// Atualizar dashboard periodicamente
 setInterval(function() {
-    updateHoursCounter();
+    const dashboardTab = document.getElementById('dashboardTab');
+    if (dashboardTab && dashboardTab.classList.contains('active')) {
+        updateDashboardStats();
+    }
 }, 30000);
+
 
 // Call once on load
 setTimeout(function() {
     updateHoursCounter();
 }, 1000);
+// ============================================
+// WEEKS VIEW FUNCTIONALITY
+// ============================================
+
+function updateWeeksView() {
+    const year = parseInt(document.getElementById('weeksYearFilter').value);
+    const history = getWorkHistory();
+    const container = document.getElementById('weeksContainer');
+    
+    if (!container) return;
+    
+    // Calcular semanas do ano
+    const weeks = calculateWeeksInYear(year, history);
+    
+    if (weeks.length === 0 || weeks.every(w => w.totalSeconds === 0)) {
+        container.innerHTML = `
+            <div class="empty-weeks">
+                <div class="empty-weeks-icon">📊</div>
+                <p>Sem horas registadas em ${year}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Renderizar semanas (da mais recente para a mais antiga)
+    container.innerHTML = weeks.reverse().map(week => {
+        if (week.totalSeconds === 0) return '';
+        
+        return `
+            <div class="week-card">
+                <div class="week-header">
+                    <div>
+                        <div class="week-number">📅 Semana ${week.weekNumber}</div>
+                        <div class="week-dates">${week.startDate} - ${week.endDate}</div>
+                    </div>
+                </div>
+                <div class="week-stats">
+                    <div class="week-stat-item">
+                        <div class="week-stat-value">${formatHoursMinutes(week.totalSeconds)}</div>
+                        <div class="week-stat-label">⏱️ Total</div>
+                    </div>
+                    <div class="week-stat-item project">
+                        <div class="week-stat-value">${formatHoursMinutes(week.projectSeconds)}</div>
+                        <div class="week-stat-label">🏢 Projeto</div>
+                    </div>
+                    <div class="week-stat-item internal">
+                        <div class="week-stat-value">${formatHoursMinutes(week.internalSeconds)}</div>
+                        <div class="week-stat-label">🏠 Interno</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function calculateWeeksInYear(year, history) {
+    const weeks = [];
+    
+    // Primeira segunda-feira do ano (ou o próprio dia 1 se for segunda)
+    let currentDate = new Date(year, 0, 1);
+    const dayOfWeek = currentDate.getDay();
+    const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek) % 7;
+    currentDate.setDate(currentDate.getDate() + daysUntilMonday);
+    
+    let weekNumber = 1;
+    
+    // Se a primeira semana começar em janeiro, é semana 1, senão começa com a última do ano anterior
+    if (currentDate.getMonth() !== 0) {
+        currentDate = new Date(year, 0, 1);
+        const lastDayOfPrevYear = new Date(year - 1, 11, 31);
+        const tempDate = new Date(lastDayOfPrevYear);
+        tempDate.setDate(tempDate.getDate() - tempDate.getDay() + 1);
+        weekNumber = getWeekNumber(lastDayOfPrevYear) + 1;
+    }
+    
+    // Iterar por todas as semanas do ano
+    while (currentDate.getFullYear() === year) {
+        const weekStart = new Date(currentDate);
+        const weekEnd = new Date(currentDate);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        // Se a semana terminar no próximo ano, ajustar
+        if (weekEnd.getFullYear() > year) {
+            weekEnd.setFullYear(year);
+            weekEnd.setMonth(11);
+            weekEnd.setDate(31);
+        }
+        
+        // Calcular horas desta semana
+        let totalSeconds = 0;
+        let projectSeconds = 0;
+        let internalSeconds = 0;
+        
+        history.forEach(session => {
+            const sessionDate = new Date(session.startTime);
+            if (sessionDate >= weekStart && sessionDate <= weekEnd) {
+                totalSeconds += session.duration || 0;
+                if (session.workType === 'project') {
+                    projectSeconds += session.duration || 0;
+                } else if (session.workType === 'internal') {
+                    internalSeconds += session.duration || 0;
+                }
+            }
+        });
+        
+        weeks.push({
+            weekNumber: weekNumber,
+            startDate: formatDateShort(weekStart),
+            endDate: formatDateShort(weekEnd),
+            totalSeconds,
+            projectSeconds,
+            internalSeconds
+        });
+        
+        // Próxima semana
+        currentDate.setDate(currentDate.getDate() + 7);
+        weekNumber++;
+    }
+    
+    return weeks;
+}
+
+function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function formatDateShort(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}`;
+}
+
+function populateWeeksYearFilter() {
+    const select = document.getElementById('weeksYearFilter');
+    if (!select) return;
+    
+    const history = getWorkHistory();
+    const years = new Set();
+    
+    // Adicionar ano atual
+    const currentYear = new Date().getFullYear();
+    years.add(currentYear);
+    
+    // Adicionar anos com sessões registadas
+    history.forEach(session => {
+        const year = new Date(session.startTime).getFullYear();
+        years.add(year);
+    });
+    
+    // Ordenar anos (mais recente primeiro)
+    const sortedYears = Array.from(years).sort((a, b) => b - a);
+    
+    select.innerHTML = sortedYears.map(year => 
+        `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`
+    ).join('');
+    
+    // Atualizar visualização
+    updateWeeksView();
+}
+
+// Atualizar a função showSubTab para carregar as semanas
+const originalShowSubTab = window.showSubTab;
+window.showSubTab = function(event, parentTab, subTabName, programmatic = false) {
+    if (originalShowSubTab) {
+        originalShowSubTab(event, parentTab, subTabName, programmatic);
+    }
+    
+    // Carregar semanas quando o tab é aberto
+    if (parentTab === 'management' && subTabName === 'weeks') {
+        populateWeeksYearFilter();
+    }
+};

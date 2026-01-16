@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- MODALS (mantidos todos iguais) -->
     <div id="inactivityModal" class="modal">
         <div class="modal-content">
             <h2>⚠️ Inatividade Detectada</h2>
@@ -284,7 +285,6 @@
         </div>
     </div>
 
-
     <div id="dayModal" class="modal">
         <div class="modal-content">
             <h2 id="modalDayDate">Data</h2>
@@ -358,6 +358,7 @@
             </div>
         </div>
     </div>
+
     <div id="floatingTimer" class="floating-timer hidden">
         <div class="float-time">00:00:00</div>
         <div class="float-status">Parado</div>
@@ -370,6 +371,7 @@
             <div id="adminBadge" class="admin-badge hidden">🛡️ ADMINISTRADOR</div>
         </div>
 
+        <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="content">
             <div id="loginError" class="error-message hidden"></div>
             <div class="form-group">
@@ -384,6 +386,7 @@
             <button class="link-btn" onclick="showRegister()">Criar nova conta</button>
         </div>
 
+        <!-- REGISTER SCREEN -->
         <div id="registerScreen" class="content hidden">
             <div id="registerError" class="error-message hidden"></div>
             <div id="registerSuccess" class="success-message hidden"></div>
@@ -417,51 +420,33 @@
             <button class="link-btn" onclick="showLogin()">Já tenho conta</button>
         </div>
 
-
+        <!-- APP SCREEN -->
         <div id="appScreen" class="content hidden">
+            <!-- MAIN TABS (5 principais) -->
             <div class="tabs" id="mainTabs">
-                <button class="tab active" onclick="showTab(event, 'timer')">⏱️ Timer</button>
-                <button class="tab" onclick="showTab(event, 'projects')">📁 Obras</button>
-                <button class="tab" onclick="showTab(event, 'comments')">💬 Comentários</button>
-                <button class="tab" onclick="showTab(event, 'calendar')">📅 Calendário</button>
-                <button class="tab" onclick="showTab(event, 'reports')">📊 Relatórios</button>
-                <button class="tab" onclick="showTab(event, 'export')">💾 Exportar</button>
-                <button class="tab" onclick="showTab(event, 'profile')">⚙️ Perfil</button>
-                <button class="tab admin-tab hidden" onclick="showTab(event, 'users')">👥 Utilizadores</button>
-                <button class="tab admin-tab hidden" onclick="showTab(event, 'globalHistory')">🌐 Histórico Global</button>
-                <button class="tab admin-tab hidden" onclick="showTab(event, 'companyStats')">📈 Estatísticas</button>
+                <button class="tab active" onclick="showMainTab(event, 'timer')">⏱️ Timer</button>
+                <button class="tab" onclick="showMainTab(event, 'dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="showMainTab(event, 'management')">📁 Gestão</button>
+                <button class="tab" onclick="showMainTab(event, 'data')">💾 Dados</button>
+                <button class="tab" onclick="showMainTab(event, 'system')">⚙️ Sistema</button>
             </div>
 
+            <!-- ============================================ -->
+            <!-- TAB 1: TIMER -->
+            <!-- ============================================ -->
             <div id="timerTab" class="tab-content active">
                 <div class="timer-display">
                     <div class="time" id="currentTime">00:00:00</div>
                     <div class="date" id="currentDate">Data</div>
                 </div>
+                
                 <div class="info-panel">
                     <div class="info-item">
                         <span class="label">Utilizador:</span>
                         <span class="value" id="userName">-</span>
                     </div>
                 </div>
-                <div class="hours-summary-panel">
-                    <h4 style="margin: 0 0 15px 0;">⏱️ Horas Trabalhadas</h4>
-                    <div class="hours-cards">
-                        <div class="hours-card">
-                            <div class="hours-icon">📅</div>
-                            <div class="hours-info">
-                                <div class="hours-label">Hoje</div>
-                                <div class="hours-value" id="hoursTodayValue">0h 0m</div>
-                            </div>
-                        </div>
-                        <div class="hours-card">
-                            <div class="hours-icon">📊</div>
-                            <div class="hours-info">
-                                <div class="hours-label">Esta Semana</div>
-                                <div class="hours-value" id="hoursWeekValue">0h 0m</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
                 <div class="radio-group">
                     <div class="radio-option">
                         <input type="radio" id="workTypeProject" name="workType" value="project" checked onchange="updateWorkTypeFields()">
@@ -472,6 +457,7 @@
                         <label for="workTypeInternal" class="radio-label">🏠 Trabalho Interno</label>
                     </div>
                 </div>
+
                 <div id="projectFields">
                     <div class="form-group">
                         <label for="projectSelect">Selecionar Obra</label>
@@ -496,6 +482,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div id="internalFields" class="hidden">
                     <div class="form-group">
                         <label for="internalCategory">Categoria de Trabalho Interno</label>
@@ -514,7 +501,9 @@
                         <input type="text" id="internalDescription" placeholder="Ex: Reunião semanal de equipa">
                     </div>
                 </div>
+
                 <div id="timerError" class="error-message hidden"></div>
+
                 <div class="work-timer" id="workTimerDisplay">
                     <div class="status" id="timerStatus">Parado</div>
                     <div class="timer" id="workTimer">00:00:00</div>
@@ -523,447 +512,610 @@
                         <button class="btn btn-danger hidden" id="stopBtn" onclick="stopWork()">Parar</button>
                     </div>
                 </div>
+
                 <button class="btn btn-warning btn-manual-add" onclick="openManualEntry()">➕ Adicionar Sessão Manual</button>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="todayProjectHours">0h</div>
-                        <div class="stat-label">Horas Projeto Hoje</div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 2: DASHBOARD -->
+            <!-- ============================================ -->
+            <div id="dashboardTab" class="tab-content">
+                <h3 style="margin-bottom: 20px;">📊 Dashboard</h3>
+
+                <!-- Minhas Horas - HOJE -->
+                <div class="dashboard-section">
+                    <h4 style="margin-bottom: 15px; color: var(--primary-color);">📅 Hoje</h4>
+                    
+                    <!-- Total em cima centralizado -->
+                    <div class="stat-card-large">
+                        <div class="stat-value-large" id="todayTotalHours">0h 0m</div>
+                        <div class="stat-label-large">⏱️ Total Trabalhado</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="todayInternalHours">0h</div>
-                        <div class="stat-label">Horas Interno Hoje</div>
+                    
+                    <!-- Projeto e Interno em baixo lado a lado -->
+                    <div class="stats-grid-two">
+                        <div class="stat-card" style="border-color: var(--secondary-color);">
+                            <div class="stat-value" style="color: var(--secondary-color);" id="todayProjectHours">0h 0m</div>
+                            <div class="stat-label">🏢 Projeto</div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--internal-color);">
+                            <div class="stat-value" style="color: var(--internal-color);" id="todayInternalHours">0h 0m</div>
+                            <div class="stat-label">🏠 Interno</div>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Histórico Recente</label>
+
+                <!-- Minhas Horas - ESTA SEMANA -->
+                <div class="dashboard-section">
+                    <h4 style="margin-bottom: 15px; color: var(--primary-color);">📊 Esta Semana</h4>
+                    
+                    <!-- Total em cima centralizado -->
+                    <div class="stat-card-large">
+                        <div class="stat-value-large" id="weekTotalHours">0h 0m</div>
+                        <div class="stat-label-large">⏱️ Total Trabalhado</div>
+                    </div>
+                    
+                    <!-- Projeto e Interno em baixo lado a lado -->
+                    <div class="stats-grid-two">
+                        <div class="stat-card" style="border-color: var(--secondary-color);">
+                            <div class="stat-value" style="color: var(--secondary-color);" id="weekProjectHours">0h 0m</div>
+                            <div class="stat-label">🏢 Projeto</div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--internal-color);">
+                            <div class="stat-value" style="color: var(--internal-color);" id="weekInternalHours">0h 0m</div>
+                            <div class="stat-label">🏠 Interno</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico Recente -->
+                <div class="dashboard-section">
+                    <h4 style="margin-bottom: 10px; color: var(--primary-color);">📋 Histórico Recente</h4>
                     <div id="workHistory" class="work-history"></div>
                 </div>
-            </div>
 
-            <div id="projectsTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">📁 Gestão de Obras</h3>
-                <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
-                
-                <div id="projectsStatsPanel" class="info-panel" style="margin-bottom: 20px;">
-                    <h4 style="margin-bottom: 10px; color: var(--primary-color);">📊 Estatísticas Rápidas</h4>
-                    <div class="stats-grid" style="margin-top: 10px;">
-                        <div style="text-align: center; padding: 10px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--success-color);" id="statsOpenProjects">0</div>
-                            <div style="font-size: 11px; color: #6c757d;">Obras Abertas</div>
+                <!-- Admin Quick Stats (só visível para admins) -->
+                <div id="adminQuickStats" class="hidden dashboard-section">
+                    <h4 style="margin-bottom: 15px; color: var(--admin-color);">🛡️ Vista Administrativa - Hoje</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="adminTodayTotal">0h 0m</div>
+                            <div class="stat-label">Total Geral</div>
                         </div>
-                        <div style="text-align: center; padding: 10px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsClosedProjects">0</div>
-                            <div style="font-size: 11px; color: #6c757d;">Obras Fechadas</div>
+                        <div class="stat-card" style="border-color: var(--secondary-color);">
+                            <div class="stat-value" style="color: var(--secondary-color);" id="adminTodayProject">0h 0m</div>
+                            <div class="stat-label">🏢 Projeto</div>
                         </div>
-                        <div style="text-align: center; padding: 10px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--warning-color);" id="statsClientReopens">0</div>
-                            <div style="font-size: 11px; color: #6c757d;">Reaberturas (Cliente)</div>
-                        </div>
-                        <div style="text-align: center; padding: 10px;">
-                            <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsErrorReopens">0</div>
-                            <div style="font-size: 11px; color: #6c757d;">Reaberturas (Erro Nosso)</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-section">
-                    <label>Filtrar Obras</label>
-                    <select id="projectStatusFilter" onchange="loadProjectsList()">
-                        <option value="open">Obras Abertas</option>
-                        <option value="closed">Obras Fechadas</option>
-                        <option value="all">Todas as Obras</option>
-                    </select>
-                </div>
-                <div id="projectsList" class="projects-list"></div>
-            </div>
-
-
-            <div id="calendarTab" class="tab-content">
-                <div class="annual-calendar-container">
-                    <div class="calendar-year-header">
-                        <div class="year-display" id="currentYearDisplay">2026</div>
-                        <div class="year-navigation">
-                            <button class="year-nav-btn" onclick="goToCurrentYear()">Hoje</button>
-                            <button class="year-nav-btn" onclick="changeYear(1)">Seguinte ▶</button>
+                        <div class="stat-card" style="border-color: var(--internal-color);">
+                            <div class="stat-value" style="color: var(--internal-color);" id="adminTodayInternal">0h 0m</div>
+                            <div class="stat-label">🏠 Interno</div>
                         </div>
                     </div>
                     
-                    <div class="calendar-info-panel">
-                        <p>
-                            <strong>📅 Como funciona:</strong> 
-                            Os dias trabalhados aparecem automaticamente a <strong style="color: #28a745;">verde</strong> baseados no seu histórico. 
-                            <strong style="color: #2196F3;">Feriados nacionais</strong> 🎉 estão marcados automaticamente. 
-                            Clique em qualquer dia para marcar férias <strong style="color: #ffc107;">🏖️</strong> ou faltas <strong style="color: #dc3545;">❌</strong>. 
-                        </p>
+                    <h4 style="margin: 20px 0 15px 0; color: var(--admin-color);">📊 Vista Administrativa - Esta Semana</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="adminWeekTotal">0h 0m</div>
+                            <div class="stat-label">Total Geral</div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--secondary-color);">
+                            <div class="stat-value" style="color: var(--secondary-color);" id="adminWeekProject">0h 0m</div>
+                            <div class="stat-label">🏢 Projeto</div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--internal-color);">
+                            <div class="stat-value" style="color: var(--internal-color);" id="adminWeekInternal">0h 0m</div>
+                            <div class="stat-label">🏠 Interno</div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 20px 0 15px 0; color: var(--admin-color);">📈 Resumo Geral</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="dashCompanyTotalUsers">0</div>
+                            <div class="stat-label">Utilizadores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dashCompanyTotalProjects">0</div>
+                            <div class="stat-label">Obras Ativas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dashCompanyTotalSessions">0</div>
+                            <div class="stat-label">Sessões Totais</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="dashCompanyTotalHours">0h</div>
+                            <div class="stat-label">Horas Totais (Global)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 3: GESTÃO (com sub-tabs) -->
+            <!-- ============================================ -->
+            <div id="managementTab" class="tab-content">
+                <h3 style="margin-bottom: 20px;">📁 Gestão</h3>
+
+                <!-- Sub-tabs para Gestão -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" onclick="showSubTab(event, 'management', 'projects')">📋 Obras</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'management', 'weeks')">📊 Semanas</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'management', 'comments')">💬 Comentários</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'management', 'calendar')">📅 Calendário</button>
+                </div>
+
+                <!-- Sub-content: Obras -->
+                <div id="management-projects" class="sub-content active">
+                    <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
+                    
+                    <div id="projectsStatsPanel" class="info-panel" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px; color: var(--primary-color);">📊 Estatísticas Rápidas</h4>
+                        <div class="stats-grid" style="margin-top: 10px;">
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: var(--success-color);" id="statsOpenProjects">0</div>
+                                <div style="font-size: 11px; color: #6c757d;">Obras Abertas</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsClosedProjects">0</div>
+                                <div style="font-size: 11px; color: #6c757d;">Obras Fechadas</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: var(--warning-color);" id="statsClientReopens">0</div>
+                                <div style="font-size: 11px; color: #6c757d;">Reaberturas (Cliente)</div>
+                            </div>
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: var(--accent-color);" id="statsErrorReopens">0</div>
+                                <div style="font-size: 11px; color: #6c757d;">Reaberturas (Erro Nosso)</div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <button class="quick-mark-vacation" onclick="openVacationPeriodModal()">
-                        <span style="font-size: 24px;">🏖️</span>
-                        <span>Marcar Período de Férias</span>
-                    </button>
+                    <div class="filter-section">
+                        <label>Filtrar Obras</label>
+                        <select id="projectStatusFilter" onchange="loadProjectsList()">
+                            <option value="open">Obras Abertas</option>
+                            <option value="closed">Obras Fechadas</option>
+                            <option value="all">Todas as Obras</option>
+                        </select>
+                    </div>
+                    <div id="projectsList" class="projects-list"></div>
+                </div>
+
+                <!-- Sub-content: Semanas -->
+                <div id="management-weeks" class="sub-content">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px; color: var(--primary-color);">📊 Horas Trabalhadas por Semana</h4>
+                        <p style="font-size: 12px; color: #6c757d;">Visualize as horas trabalhadas em cada semana do ano</p>
+                    </div>
+
+                    <div class="filter-section">
+                        <label>Selecionar Ano</label>
+                        <select id="weeksYearFilter" onchange="updateWeeksView()">
+                            <!-- Anos serão preenchidos dinamicamente -->
+                        </select>
+                    </div>
+
+                    <div id="weeksContainer" class="weeks-container"></div>
+                </div>
+
+                <!-- Sub-content: Comentários -->
+                <div id="management-comments" class="sub-content">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Consulte e adicione comentários às obras. Os comentários ficam associados ao código da obra.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Selecione uma Obra</label>
+                        <select id="selectWorkForComments" onchange="loadCommentsForWork()">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                    <div id="commentsDisplay" class="hidden">
+                        <div class="comment-section">
+                            <h4 style="margin-bottom: 10px;">Comentários:</h4>
+                            <div class="comment-list" id="workCommentsList"></div>
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label>Adicionar Comentário</label>
+                                <textarea id="quickComment" placeholder="Escreva seu comentário..."></textarea>
+                            </div>
+                            <button class="btn btn-primary" onclick="addQuickComment()">➕ Adicionar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-content: Calendário -->
+                <div id="management-calendar" class="sub-content">
+                    <div class="annual-calendar-container">
+                        <div class="calendar-year-header">
+                            <div class="year-display" id="currentYearDisplay">2026</div>
+                            <div class="year-navigation">
+                                <button class="year-nav-btn" onclick="goToCurrentYear()">Hoje</button>
+                                <button class="year-nav-btn" onclick="changeYear(1)">Seguinte ▶</button>
+                            </div>
+                        </div>
+                        
+                        <div class="calendar-info-panel">
+                            <p>
+                                <strong>📅 Como funciona:</strong> 
+                                Os dias trabalhados aparecem automaticamente a <strong style="color: #28a745;">verde</strong> baseados no seu histórico. 
+                                <strong style="color: #2196F3;">Feriados nacionais</strong> 🎉 estão marcados automaticamente. 
+                                Clique em qualquer dia para marcar férias <strong style="color: #ffc107;">🏖️</strong> ou faltas <strong style="color: #dc3545;">❌</strong>. 
+                            </p>
+                        </div>
+                        
+                        <button class="quick-mark-vacation" onclick="openVacationPeriodModal()">
+                            <span style="font-size: 24px;">🏖️</span>
+                            <span>Marcar Período de Férias</span>
+                        </button>
+                        
+                        <div class="annual-stats">
+                            <div class="annual-stat-card stat-worked">
+                                <div class="stat-value" id="statWorkedDays">0</div>
+                                <div class="stat-label">Dias Trabalhados</div>
+                            </div>
+                            <div class="annual-stat-card stat-vacation">
+                                <div class="stat-value" id="statVacationDays">0</div>
+                                <div class="stat-label">Dias de Férias</div>
+                            </div>
+                            <div class="annual-stat-card stat-absence">
+                                <div class="stat-value" id="statAbsenceDays">0</div>
+                                <div class="stat-label">Faltas</div>
+                            </div>
+                            <div class="annual-stat-card stat-holiday">
+                                <div class="stat-value" id="statHolidayDays">0</div>
+                                <div class="stat-label">Feriados</div>
+                            </div>
+                            <div class="annual-stat-card stat-weekend">
+                                <div class="stat-value" id="statWeekendDays">0</div>
+                                <div class="stat-label">Domingos</div>
+                            </div>
+                            <div class="annual-stat-card stat-remaining">
+                                <div class="stat-value" id="statRemainingDays">0</div>
+                                <div class="stat-label">Dias Restantes</div>
+                            </div>
+                        </div>
+                        
+                        <div class="annual-calendar-grid" id="annualCalendarGrid"></div>
+                        
+                        <div class="calendar-legend">
+                            <div class="legend-item">
+                                <div class="legend-icon worked">💼</div>
+                                <span>Dia Trabalhado</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon vacation">🏖️</div>
+                                <span>Férias</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon absence">❌</div>
+                                <span>Falta</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon holiday">🎉</div>
+                                <span>Feriado</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-icon weekend">🏠</div>
+                                <span>Domingo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 4: DADOS (com sub-tabs) -->
+            <!-- ============================================ -->
+            <div id="dataTab" class="tab-content">
+                <h3 style="margin-bottom: 20px;">💾 Dados</h3>
+
+                <!-- Sub-tabs para Dados -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" onclick="showSubTab(event, 'data', 'reports')">📊 Relatórios</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'data', 'export')">💾 Exportar</button>
+                </div>
+
+                <!-- Sub-content: Relatórios -->
+                <div id="data-reports" class="sub-content active">
+                    <div class="filter-section">
+                        <label>Filtrar por Tipo</label>
+                        <select id="reportTypeFilter" onchange="updateReports()">
+                            <option value="all">Todos os Trabalhos</option>
+                            <option value="project">Trabalho de Projeto</option>
+                            <option value="internal">Trabalho Interno</option>
+                        </select>
+                    </div>
+                    <div class="filter-section" id="departmentFilterSection">
+                        <label>Filtrar por Departamento</label>
+                        <select id="reportFilter" onchange="updateReports()">
+                            <option value="all">Todos os Departamentos</option>
+                            <option value="projeto">Projeto</option>
+                            <option value="eletrico">Elétrico</option>
+                            <option value="desenvolvimento">Desenvolvimento</option>
+                            <option value="orcamentacao">Orçamentação</option>
+                        </select>
+                    </div>
+                    <div class="filter-section hidden" id="internalCategoryFilterSection">
+                        <label>Filtrar por Categoria Interna</label>
+                        <select id="internalCategoryFilter" onchange="updateReports()">
+                            <option value="all">Todas as Categorias</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="formacao">Formação</option>
+                        </select>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalProjectHours">0h</div>
+                            <div class="stat-label">Total Horas Projeto</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalInternalHours">0h</div>
+                            <div class="stat-label">Total Horas Interno</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Todas as Sessões</label>
+                        <div id="fullHistory" class="work-history"></div>
+                    </div>
+                </div>
+
+                <!-- Sub-content: Exportar -->
+                <div id="data-export" class="sub-content">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Exporte os seus dados de controlo de horas para integração com sistemas PHC ou backup pessoal.</p>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="exportCSV()">📄 Exportar CSV</button>
+                        <button class="btn btn-primary" onclick="exportJSON()">📋 Exportar JSON</button>
+                    </div>
+                    <h3 style="margin: 30px 0 20px 0;">Backup e Restauro</h3>
+                    <div class="button-group">
+                        <button class="btn btn-warning" onclick="backupData()">💾 Backup Completo</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('restoreFile').click()">📥 Restaurar</button>
+                    </div>
+                    <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreData(this)">
+                    <div class="info-panel" style="margin-top: 20px;">
+                        <div class="info-item">
+                            <span class="label">Total de Sessões:</span>
+                            <span class="value" id="exportSessionCount">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Obras Registadas:</span>
+                            <span class="value" id="exportProjectCount">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Utilizadores Registados:</span>
+                            <span class="value" id="exportUserCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- TAB 5: SISTEMA (com sub-tabs) -->
+            <!-- ============================================ -->
+            <div id="systemTab" class="tab-content">
+                <h3 style="margin-bottom: 20px;">⚙️ Sistema</h3>
+
+                <!-- Sub-tabs para Sistema -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" onclick="showSubTab(event, 'system', 'profile')">👤 Perfil</button>
+                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'users')">👥 Utilizadores</button>
+                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'globalHistory')">🌐 Histórico</button>
+                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'stats')">📈 Estatísticas</button>
+                </div>
+
+                <!-- Sub-content: Perfil -->
+                <div id="system-profile" class="sub-content active">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e edite as suas informações pessoais e credenciais de acesso.</p>
+                    </div>
                     
-                    <div class="annual-stats">
-                        <div class="annual-stat-card stat-worked">
-                            <div class="stat-value" id="statWorkedDays">0</div>
-                            <div class="stat-label">Dias Trabalhados</div>
+                    <div id="profileError" class="error-message hidden"></div>
+                    <div id="profileSuccess" class="success-message hidden"></div>
+                    
+                    <h4 style="margin: 20px 0 15px 0;">📷 Foto de Perfil</h4>
+                    <div class="profile-photo-section">
+                        <div class="profile-photo-container">
+                            <img id="profilePhotoPreview" src="" alt="Foto de Perfil" class="profile-photo">
+                            <div class="profile-photo-placeholder">
+                                <span id="profileInitials">?</span>
+                            </div>
                         </div>
-                        <div class="annual-stat-card stat-vacation">
-                            <div class="stat-value" id="statVacationDays">0</div>
-                            <div class="stat-label">Dias de Férias</div>
-                        </div>
-                        <div class="annual-stat-card stat-absence">
-                            <div class="stat-value" id="statAbsenceDays">0</div>
-                            <div class="stat-label">Faltas</div>
-                        </div>
-                        <div class="annual-stat-card stat-holiday">
-                            <div class="stat-value" id="statHolidayDays">0</div>
-                            <div class="stat-label">Feriados</div>
-                        </div>
-                        <div class="annual-stat-card stat-weekend">
-                            <div class="stat-value" id="statWeekendDays">0</div>
-                            <div class="stat-label">Domingos</div>
-                        </div>
-                        <div class="annual-stat-card stat-remaining">
-                            <div class="stat-value" id="statRemainingDays">0</div>
-                            <div class="stat-label">Dias Restantes</div>
+                        <div class="profile-photo-actions">
+                            <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoChange(event)">
+                            <button class="btn btn-primary" onclick="document.getElementById('profilePhotoInput').click()">📷 Escolher Foto</button>
+                            <button class="btn btn-secondary" onclick="removeProfilePhoto()" id="removePhotoBtn" style="display: none;">🗑️ Remover Foto</button>
                         </div>
                     </div>
                     
-                    <div class="annual-calendar-grid" id="annualCalendarGrid"></div>
+                    <h4 style="margin: 20px 0 15px 0;">📋 Informações Pessoais</h4>
+                    <div class="form-group">
+                        <label for="profileFirstName">Primeiro Nome</label>
+                        <input type="text" id="profileFirstName" placeholder="Primeiro nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileLastName">Último Nome</label>
+                        <input type="text" id="profileLastName" placeholder="Último nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileDepartment">Departamento Padrão</label>
+                        <select id="profileDepartment">
+                            <option value="">Selecione o departamento</option>
+                            <option value="projeto">Projeto</option>
+                            <option value="eletrico">Elétrico</option>
+                            <option value="desenvolvimento">Desenvolvimento</option>
+                            <option value="orcamentacao">Orçamentação</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="updatePersonalInfo()">💾 Guardar Informações</button>
                     
-                    <div class="calendar-legend">
-                        <div class="legend-item">
-                            <div class="legend-icon worked">💼</div>
-                            <span>Dia Trabalhado</span>
+                    <h4 style="margin: 30px 0 15px 0;">🔐 Credenciais de Acesso</h4>
+                    <div class="form-group">
+                        <label for="profileUsername">Nome de Utilizador</label>
+                        <input type="text" id="profileUsername" placeholder="Nome de utilizador (mínimo 3 caracteres)">
+                    </div>
+                    <button class="btn btn-warning" onclick="updateUsername()">✏️ Alterar Username</button>
+                    
+                    <h4 style="margin: 30px 0 15px 0;">🔑 Alterar Password</h4>
+                    <div class="form-group">
+                        <label for="profileOldPassword">Password Atual</label>
+                        <input type="password" id="profileOldPassword" placeholder="Password atual">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileNewPassword">Nova Password</label>
+                        <input type="password" id="profileNewPassword" placeholder="Nova password (mínimo 6 caracteres)">
+                    </div>
+                    <div class="form-group">
+                        <label for="profileConfirmPassword">Confirmar Nova Password</label>
+                        <input type="password" id="profileConfirmPassword" placeholder="Confirme a nova password">
+                    </div>
+                    <button class="btn btn-success" onclick="updatePassword()">🔒 Alterar Password</button>
+                    
+                    <div class="info-panel" style="margin-top: 30px;">
+                        <div class="info-item">
+                            <span class="label">Tipo de Conta:</span>
+                            <span class="value" id="profileAccountType">-</span>
                         </div>
-                        <div class="legend-item">
-                            <div class="legend-icon vacation">🏖️</div>
-                            <span>Férias</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-icon absence">❌</div>
-                            <span>Falta</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-icon holiday">🎉</div>
-                            <span>Feriado</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-icon weekend">🏠</div>
-                            <span>Domingo</span>
+                        <div class="info-item">
+                            <span class="label">Membro desde:</span>
+                            <span class="value">Utilizador existente</span>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div id="commentsTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">💬 Comentários por Obra</h3>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Consulte e adicione comentários às obras. Os comentários ficam associados ao código da obra.</p>
-                </div>
-                <div class="form-group">
-                    <label>Selecione uma Obra</label>
-                    <select id="selectWorkForComments" onchange="loadCommentsForWork()">
-                        <option value="">-- Selecione --</option>
-                    </select>
-                </div>
-                <div id="commentsDisplay" class="hidden">
-                    <div class="comment-section">
-                        <h4 style="margin-bottom: 10px;">Comentários:</h4>
-                        <div class="comment-list" id="workCommentsList"></div>
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>Adicionar Comentário</label>
-                            <textarea id="quickComment" placeholder="Escreva seu comentário..."></textarea>
-                        </div>
-                        <button class="btn btn-primary" onclick="addQuickComment()">➕ Adicionar</button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Reports Tab -->
-            <div id="reportsTab" class="tab-content">
-                <div class="filter-section">
-                    <label>Filtrar por Tipo</label>
-                    <select id="reportTypeFilter" onchange="updateReports()">
-                        <option value="all">Todos os Trabalhos</option>
-                        <option value="project">Trabalho de Projeto</option>
-                        <option value="internal">Trabalho Interno</option>
-                    </select>
-                </div>
-                <div class="filter-section" id="departmentFilterSection">
-                    <label>Filtrar por Departamento</label>
-                    <select id="reportFilter" onchange="updateReports()">
-                        <option value="all">Todos os Departamentos</option>
-                        <option value="projeto">Projeto</option>
-                        <option value="eletrico">Elétrico</option>
-                        <option value="desenvolvimento">Desenvolvimento</option>
-                        <option value="orcamentacao">Orçamentação</option>
-                    </select>
-                </div>
-                <div class="filter-section hidden" id="internalCategoryFilterSection">
-                    <label>Filtrar por Categoria Interna</label>
-                    <select id="internalCategoryFilter" onchange="updateReports()">
-                        <option value="all">Todas as Categorias</option>
-                        <option value="reuniao">Reunião</option>
-                        <option value="formacao">Formação</option>
-                    </select>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalProjectHours">0h</div>
-                        <div class="stat-label">Total Horas Projeto</div>
+                <!-- Sub-content: Utilizadores (Admin) -->
+                <div id="system-users" class="sub-content">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e gerencie todos os utilizadores do sistema. Pode promover utilizadores a administrador ou remover privilégios administrativos.</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalInternalHours">0h</div>
-                        <div class="stat-label">Total Horas Interno</div>
-                    </div>
+                    <div id="usersList" class="users-list"></div>
                 </div>
-                <div class="form-group">
-                    <label>Todas as Sessões</label>
-                    <div id="fullHistory" class="work-history"></div>
-                </div>
-            </div>
 
-            <div id="exportTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">Exportar Dados</h3>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Exporte os seus dados de controlo de horas para integração com sistemas PHC ou backup pessoal.</p>
-                </div>
-                <div class="button-group">
-                    <button class="btn btn-primary" onclick="exportCSV()">📄 Exportar CSV</button>
-                    <button class="btn btn-primary" onclick="exportJSON()">📋 Exportar JSON</button>
-                </div>
-                <h3 style="margin: 30px 0 20px 0;">Backup e Restauro</h3>
-                <div class="button-group">
-                    <button class="btn btn-warning" onclick="backupData()">💾 Backup Completo</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('restoreFile').click()">📥 Restaurar</button>
-                </div>
-                <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreData(this)">
-                <div class="info-panel" style="margin-top: 20px;">
-                    <div class="info-item">
-                        <span class="label">Total de Sessões:</span>
-                        <span class="value" id="exportSessionCount">0</span>
+                <!-- Sub-content: Histórico Global (Admin) -->
+                <div id="system-globalHistory" class="sub-content">
+                    <h4 style="margin-bottom: 15px;">🌐 Histórico Global de Trabalho</h4>
+                    <div class="filter-section">
+                        <label>Filtrar por Utilizador</label>
+                        <select id="globalUserFilter" onchange="updateGlobalHistory()">
+                            <option value="all">Todos os Utilizadores</option>
+                        </select>
                     </div>
-                    <div class="info-item">
-                        <span class="label">Obras Registadas:</span>
-                        <span class="value" id="exportProjectCount">0</span>
+                    <div class="filter-section">
+                        <label>Filtrar por Tipo</label>
+                        <select id="globalTypeFilter" onchange="updateGlobalHistory()">
+                            <option value="all">Todos os Trabalhos</option>
+                            <option value="project">Trabalho de Projeto</option>
+                            <option value="internal">Trabalho Interno</option>
+                        </select>
                     </div>
-                    <div class="info-item">
-                        <span class="label">Utilizadores Registados:</span>
-                        <span class="value" id="exportUserCount">0</span>
+                    <div class="filter-section" id="globalDepartmentFilterSection">
+                        <label>Filtrar por Departamento</label>
+                        <select id="globalDepartmentFilter" onchange="updateGlobalHistory()">
+                            <option value="all">Todos os Departamentos</option>
+                            <option value="projeto">Projeto</option>
+                            <option value="eletrico">Elétrico</option>
+                            <option value="desenvolvimento">Desenvolvimento</option>
+                            <option value="orcamentacao">Orçamentação</option>
+                        </select>
                     </div>
-                </div>
-            </div>
-
-            <!-- Profile Tab -->
-            <div id="profileTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">⚙️ Perfil de Utilizador</h3>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e edite as suas informações pessoais e credenciais de acesso.</p>
-                </div>
-                
-                <div id="profileError" class="error-message hidden"></div>
-                <div id="profileSuccess" class="success-message hidden"></div>
-                
-                
-                <h4 style="margin: 20px 0 15px 0;">📷 Foto de Perfil</h4>
-                <div class="profile-photo-section">
-                    <div class="profile-photo-container">
-                        <img id="profilePhotoPreview" src="" alt="Foto de Perfil" class="profile-photo">
-                        <div class="profile-photo-placeholder">
-                            <span id="profileInitials">?</span>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="globalTotalProjectHours">0h</div>
+                            <div class="stat-label">Total Horas Projeto (Global)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="globalTotalInternalHours">0h</div>
+                            <div class="stat-label">Total Horas Interno (Global)</div>
                         </div>
                     </div>
-                    <div class="profile-photo-actions">
-                        <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoChange(event)">
-                        <button class="btn btn-primary" onclick="document.getElementById('profilePhotoInput').click()">📷 Escolher Foto</button>
-                        <button class="btn btn-secondary" onclick="removeProfilePhoto()" id="removePhotoBtn" style="display: none;">🗑️ Remover Foto</button>
+                    <div class="form-group">
+                        <label>Histórico Global</label>
+                        <div id="globalHistoryList" class="work-history"></div>
                     </div>
                 </div>
-                <h4 style="margin: 20px 0 15px 0;">📋 Informações Pessoais</h4>
-                <div class="form-group">
-                    <label for="profileFirstName">Primeiro Nome</label>
-                    <input type="text" id="profileFirstName" placeholder="Primeiro nome">
-                </div>
-                <div class="form-group">
-                    <label for="profileLastName">Último Nome</label>
-                    <input type="text" id="profileLastName" placeholder="Último nome">
-                </div>
-                <div class="form-group">
-                    <label for="profileDepartment">Departamento Padrão</label>
-                    <select id="profileDepartment">
-                        <option value="">Selecione o departamento</option>
-                        <option value="projeto">Projeto</option>
-                        <option value="eletrico">Elétrico</option>
-                        <option value="desenvolvimento">Desenvolvimento</option>
-                        <option value="orcamentacao">Orçamentação</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="updatePersonalInfo()">💾 Guardar Informações</button>
-                
-                <h4 style="margin: 30px 0 15px 0;">🔐 Credenciais de Acesso</h4>
-                <div class="form-group">
-                    <label for="profileUsername">Nome de Utilizador</label>
-                    <input type="text" id="profileUsername" placeholder="Nome de utilizador (mínimo 3 caracteres)">
-                </div>
-                <button class="btn btn-warning" onclick="updateUsername()">✏️ Alterar Username</button>
-                
-                <h4 style="margin: 30px 0 15px 0;">🔑 Alterar Password</h4>
-                <div class="form-group">
-                    <label for="profileOldPassword">Password Atual</label>
-                    <input type="password" id="profileOldPassword" placeholder="Password atual">
-                </div>
-                <div class="form-group">
-                    <label for="profileNewPassword">Nova Password</label>
-                    <input type="password" id="profileNewPassword" placeholder="Nova password (mínimo 6 caracteres)">
-                </div>
-                <div class="form-group">
-                    <label for="profileConfirmPassword">Confirmar Nova Password</label>
-                    <input type="password" id="profileConfirmPassword" placeholder="Confirme a nova password">
-                </div>
-                <button class="btn btn-success" onclick="updatePassword()">🔒 Alterar Password</button>
-                
-                <div class="info-panel" style="margin-top: 30px;">
-                    <div class="info-item">
-                        <span class="label">Tipo de Conta:</span>
-                        <span class="value" id="profileAccountType">-</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Membro desde:</span>
-                        <span class="value">Utilizador existente</span>
-                    </div>
-                </div>
-            </div>
 
-            <div id="usersTab-content" class="tab-content">
-                <h3 style="margin-bottom: 20px;">👥 Gestão de Utilizadores</h3>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e gerencie todos os utilizadores do sistema. Pode promover utilizadores a administrador ou remover privilégios administrativos.</p>
+                <!-- Sub-content: Estatísticas (Admin) -->
+                <div id="system-stats" class="sub-content">
+                    <h4 style="margin-bottom: 15px;">📈 Estatísticas da Empresa</h4>
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize estatísticas agregadas de todos os utilizadores e departamentos.</p>
+                    </div>
+                    <h4 style="margin: 20px 0 10px 0;">📊 Resumo Geral</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="companyTotalUsers">0</div>
+                            <div class="stat-label">Total Utilizadores</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="companyTotalProjects">0</div>
+                            <div class="stat-label">Total Obras</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="companyTotalSessions">0</div>
+                            <div class="stat-label">Total Sessões</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="companyTotalHours">0h</div>
+                            <div class="stat-label">Total Horas Trabalhadas</div>
+                        </div>
+                    </div>
+                    <h4 style="margin: 30px 0 10px 0;">🏢 Por Departamento</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="deptProjetoHours">0h</div>
+                            <div class="stat-label">Projeto</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="deptEletricoHours">0h</div>
+                            <div class="stat-label">Elétrico</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="deptDesenvolvimentoHours">0h</div>
+                            <div class="stat-label">Desenvolvimento</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="deptOrcamentacaoHours">0h</div>
+                            <div class="stat-label">Orçamentação</div>
+                        </div>
+                    </div>
+                    <h4 style="margin: 30px 0 10px 0;">🏠 Trabalho Interno</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="internalReuniaoHours">0h</div>
+                            <div class="stat-label">Reuniões</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="internalFormacaoHours">0h</div>
+                            <div class="stat-label">Formações</div>
+                        </div>
+                    </div>
+                    <h4 style="margin: 30px 0 10px 0;">🔄 Reaberturas de Obras</h4>
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Análise dos motivos de reabertura de obras concluídas.</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalReopens">0</div>
+                            <div class="stat-label">Total de Reaberturas</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="clientChangeReopens">0</div>
+                            <div class="stat-label">Alteração do Cliente</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="ourErrorReopens">0</div>
+                            <div class="stat-label">Erro Nosso</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="reopenPercentage">0%</div>
+                            <div class="stat-label">% de Obras Reabertas</div>
+                        </div>
+                    </div>
+                    <h4 style="margin: 30px 0 10px 0;">📋 Detalhes de Reaberturas</h4>
+                    <div id="reopenDetailsBreakdown" class="work-history"></div>
+                    <h4 style="margin: 30px 0 10px 0;">👥 Por Utilizador</h4>
+                    <div id="userStatsBreakdown" class="work-history"></div>
                 </div>
-                <div id="usersList" class="users-list"></div>
-            </div>
-
-            <div id="globalHistoryTab-content" class="tab-content">
-                <h3 style="margin-bottom: 20px;">🌐 Histórico Global de Trabalho</h3>
-                <div class="filter-section">
-                    <label>Filtrar por Utilizador</label>
-                    <select id="globalUserFilter" onchange="updateGlobalHistory()">
-                        <option value="all">Todos os Utilizadores</option>
-                    </select>
-                </div>
-                <div class="filter-section">
-                    <label>Filtrar por Tipo</label>
-                    <select id="globalTypeFilter" onchange="updateGlobalHistory()">
-                        <option value="all">Todos os Trabalhos</option>
-                        <option value="project">Trabalho de Projeto</option>
-                        <option value="internal">Trabalho Interno</option>
-                    </select>
-                </div>
-                <div class="filter-section" id="globalDepartmentFilterSection">
-                    <label>Filtrar por Departamento</label>
-                    <select id="globalDepartmentFilter" onchange="updateGlobalHistory()">
-                        <option value="all">Todos os Departamentos</option>
-                        <option value="projeto">Projeto</option>
-                        <option value="eletrico">Elétrico</option>
-                        <option value="desenvolvimento">Desenvolvimento</option>
-                        <option value="orcamentacao">Orçamentação</option>
-                    </select>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="globalTotalProjectHours">0h</div>
-                        <div class="stat-label">Total Horas Projeto (Global)</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="globalTotalInternalHours">0h</div>
-                        <div class="stat-label">Total Horas Interno (Global)</div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Histórico Global</label>
-                    <div id="globalHistoryList" class="work-history"></div>
-                </div>
-            </div>
-
-            <div id="companyStatsTab-content" class="tab-content">
-                <h3 style="margin-bottom: 20px;">📈 Estatísticas da Empresa</h3>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize estatísticas agregadas de todos os utilizadores e departamentos.</p>
-                </div>
-                <h4 style="margin: 20px 0 10px 0;">📊 Resumo Geral</h4>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="companyTotalUsers">0</div>
-                        <div class="stat-label">Total Utilizadores</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="companyTotalProjects">0</div>
-                        <div class="stat-label">Total Obras</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="companyTotalSessions">0</div>
-                        <div class="stat-label">Total Sessões</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="companyTotalHours">0h</div>
-                        <div class="stat-label">Total Horas Trabalhadas</div>
-                    </div>
-                </div>
-                <h4 style="margin: 30px 0 10px 0;">🏢 Por Departamento</h4>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="deptProjetoHours">0h</div>
-                        <div class="stat-label">Projeto</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="deptEletricoHours">0h</div>
-                        <div class="stat-label">Elétrico</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="deptDesenvolvimentoHours">0h</div>
-                        <div class="stat-label">Desenvolvimento</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="deptOrcamentacaoHours">0h</div>
-                        <div class="stat-label">Orçamentação</div>
-                    </div>
-                </div>
-                <h4 style="margin: 30px 0 10px 0;">🏠 Trabalho Interno</h4>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="internalReuniaoHours">0h</div>
-                        <div class="stat-label">Reuniões</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="internalFormacaoHours">0h</div>
-                        <div class="stat-label">Formações</div>
-                    </div>
-                </div>
-                <h4 style="margin: 30px 0 10px 0;">🔄 Reaberturas de Obras</h4>
-                <div class="info-panel" style="margin-bottom: 20px;">
-                    <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Análise dos motivos de reabertura de obras concluídas.</p>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalReopens">0</div>
-                        <div class="stat-label">Total de Reaberturas</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="clientChangeReopens">0</div>
-                        <div class="stat-label">Alteração do Cliente</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="ourErrorReopens">0</div>
-                        <div class="stat-label">Erro Nosso</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="reopenPercentage">0%</div>
-                        <div class="stat-label">% de Obras Reabertas</div>
-                    </div>
-                </div>
-                <h4 style="margin: 30px 0 10px 0;">📋 Detalhes de Reaberturas</h4>
-                <div id="reopenDetailsBreakdown" class="work-history"></div>
-                <h4 style="margin: 30px 0 10px 0;">👥 Por Utilizador</h4>
-                <div id="userStatsBreakdown" class="work-history"></div>
             </div>
 
             <button class="btn btn-secondary" onclick="logout()" style="margin-top: 20px;">Sair</button>
