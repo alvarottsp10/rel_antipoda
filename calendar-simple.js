@@ -57,6 +57,22 @@ function getDayInfo(dateStr) {
     const calendarData = getCalendarData();
     const date = new Date(dateStr + 'T00:00:00');
     
+    // Obter hoje e ontem
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    // Verificar se é dia futuro ou hoje (não marcar falta)
+    if (checkDate >= today) {
+        return { type: 'future', color: 'empty', icon: '', note: '' };
+    }
+    
+    // Verificar entradas manuais do utilizador
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
         if (entry.type === 'vacation') {
@@ -65,21 +81,34 @@ function getDayInfo(dateStr) {
         if (entry.type === 'absence') {
             return { type: 'absence', color: 'absence', icon: '❌', note: entry.note };
         }
+        // Se utilizador marcou explicitamente como "worked"
+        if (entry.type === 'worked') {
+            return { type: 'worked', color: 'worked', icon: '💼', note: entry.note || '' };
+        }
     }
     
+    // Verificar feriados
     const holiday = isHoliday(dateStr);
     if (holiday) {
         return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
     }
     
+    // Verificar fins de semana (domingo)
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
     }
     
+    // Verificar se trabalhou
     if (hasWorkedOnDay(dateStr)) {
         return { type: 'worked', color: 'worked', icon: '💼', note: '' };
     }
     
+    // Dia útil sem registo = FALTA AUTOMÁTICA (apenas para dias até ontem)
+    if (checkDate <= yesterday) {
+        return { type: 'auto-absence', color: 'auto-absence', icon: '⚠️', note: 'Falta (sem registo)' };
+    }
+    
+    // Caso contrário, dia vazio (não deve acontecer, mas por segurança)
     return { type: 'empty', color: 'empty', icon: '', note: '' };
 }
 
@@ -217,6 +246,20 @@ function openDayModal(dateStr, dayInfo) {
                 <button class="btn btn-danger btn-small" onclick="closeDayModal(); markAsAbsence('${dateStr}')">❌ Marcar Falta</button>
             </div>
         `;
+    } else if (dayInfo.type === 'auto-absence') {
+        statusHtml = `
+            <div class="day-status auto-absence-status">
+                <span class="status-icon">⚠️</span>
+                <span class="status-text">Falta Automática</span>
+            </div>
+            <p style="font-size: 12px; color: #e67e22; margin: 15px 0; font-weight: 500;">⚠️ Este dia foi marcado automaticamente como falta porque não há registo de trabalho.</p>
+            <p style="font-size: 11px; color: #6c757d; margin: 10px 0;">Se trabalhou neste dia mas esqueceu de registar, ou se esteve de férias/ausente, pode corrigir abaixo:</p>
+            <div class="day-actions">
+                <button class="btn btn-success btn-small" onclick="closeDayModal(); markAsWorked('${dateStr}')">💼 Marcar como Trabalhado</button>
+                <button class="btn btn-warning btn-small" onclick="closeDayModal(); markAsVacation('${dateStr}')">🏖️ Marcar Férias</button>
+                <button class="btn btn-secondary btn-small" onclick="closeDayModal(); markAsAbsence('${dateStr}')">❌ Confirmar Falta</button>
+            </div>
+        `;
     } else {
         statusHtml = `
             <div class="day-status empty-status">
@@ -310,6 +353,24 @@ function confirmSingleAbsence() {
 
 function closeSingleAbsenceModal() {
     document.getElementById('singleAbsenceModal').classList.remove('show');
+}
+
+function markAsWorked(dateStr) {
+    showConfirm(
+        'Marcar como Trabalhado',
+        'Confirma que trabalhou neste dia? Esta marcação irá substituir a falta automática.',
+        function() {
+            const calendarData = getCalendarData();
+            calendarData[dateStr] = {
+                type: 'worked',
+                note: 'Marcado manualmente',
+                markedAt: new Date().toISOString()
+            };
+            saveCalendarData(calendarData);
+            renderAnnualCalendar(currentYear);
+            showAlert('Sucesso', 'Dia marcado como trabalhado!');
+        }
+    );
 }
 
 function openVacationPeriodModal() {

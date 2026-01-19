@@ -1189,6 +1189,24 @@ input:focus, select:focus, textarea:focus {
     color: #721c24;
 }
 
+.month-day.day-auto-absence {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+    position: relative;
+}
+
+.month-day.day-auto-absence::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background: #ffc107;
+    border-radius: 50%;
+}
+
 .month-day.day-holiday {
     background: #d1ecf1;
     border-color: #17a2b8;
@@ -1234,6 +1252,10 @@ input:focus, select:focus, textarea:focus {
 .day-status.worked-status { border-left-color: #28a745; }
 .day-status.vacation-status { border-left-color: #ffc107; }
 .day-status.absence-status { border-left-color: #dc3545; }
+.day-status.auto-absence-status { 
+    border-left-color: #ffc107; 
+    background: #fff8e1;
+}
 .day-status.holiday-status { border-left-color: #17a2b8; }
 .day-status.weekend-status { border-left-color: #6c757d; }
 .day-status.empty-status { border-left-color: #dee2e6; }

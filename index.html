@@ -428,7 +428,7 @@
                 <button class="tab" onclick="showMainTab(event, 'dashboard')">📊 Dashboard</button>
                 <button class="tab" onclick="showMainTab(event, 'management')">📁 Gestão</button>
                 <button class="tab" onclick="showMainTab(event, 'data')">💾 Dados</button>
-                <button class="tab" onclick="showMainTab(event, 'system')">⚙️ Sistema</button>
+                <button class="tab" onclick="showMainTab(event, 'profile')">👤 Perfil</button>
             </div>
 
             <!-- ============================================ -->
@@ -645,7 +645,7 @@
                 </div>
 
                 <!-- Sub-content: Obras -->
-                <div id="management-projects" class="sub-content active">
+                <div id="management-projects" class="profile-main-content">
                     <button id="newProjectBtn" class="btn btn-success" onclick="openNewProjectModal()" style="margin-bottom: 20px;">🆕 Abrir Nova Obra</button>
                     
                     <div id="projectsStatsPanel" class="info-panel" style="margin-bottom: 20px;">
@@ -815,7 +815,7 @@
                 </div>
 
                 <!-- Sub-content: Relatórios -->
-                <div id="data-reports" class="sub-content active">
+                <div id="data-reports" class="profile-main-content">
                     <div class="filter-section">
                         <label>Filtrar por Tipo</label>
                         <select id="reportTypeFilter" onchange="updateReports()">
@@ -891,21 +891,13 @@
             </div>
 
             <!-- ============================================ -->
-            <!-- TAB 5: SISTEMA (com sub-tabs) -->
+            <!-- TAB 5: PERFIL -->
             <!-- ============================================ -->
-            <div id="systemTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">⚙️ Sistema</h3>
+            <div id="profileTab" class="tab-content">
+                <h3 style="margin-bottom: 20px;">👤 Perfil</h3>
 
-                <!-- Sub-tabs para Sistema -->
-                <div class="sub-tabs">
-                    <button class="sub-tab active" onclick="showSubTab(event, 'system', 'profile')">👤 Perfil</button>
-                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'users')">👥 Utilizadores</button>
-                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'globalHistory')">🌐 Histórico</button>
-                    <button class="sub-tab admin-sub-tab hidden" onclick="showSubTab(event, 'system', 'stats')">📈 Estatísticas</button>
-                </div>
-
-                <!-- Sub-content: Perfil -->
-                <div id="system-profile" class="sub-content active">
+                <!-- Conteúdo do Perfil -->
+                <div class="profile-main-content">
                     <div class="info-panel" style="margin-bottom: 20px;">
                         <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e edite as suas informações pessoais e credenciais de acesso.</p>
                     </div>
@@ -983,139 +975,6 @@
                     </div>
                 </div>
 
-                <!-- Sub-content: Utilizadores (Admin) -->
-                <div id="system-users" class="sub-content">
-                    <div class="info-panel" style="margin-bottom: 20px;">
-                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize e gerencie todos os utilizadores do sistema. Pode promover utilizadores a administrador ou remover privilégios administrativos.</p>
-                    </div>
-                    <div id="usersList" class="users-list"></div>
-                </div>
-
-                <!-- Sub-content: Histórico Global (Admin) -->
-                <div id="system-globalHistory" class="sub-content">
-                    <h4 style="margin-bottom: 15px;">🌐 Histórico Global de Trabalho</h4>
-                    <div class="filter-section">
-                        <label>Filtrar por Utilizador</label>
-                        <select id="globalUserFilter" onchange="updateGlobalHistory()">
-                            <option value="all">Todos os Utilizadores</option>
-                        </select>
-                    </div>
-                    <div class="filter-section">
-                        <label>Filtrar por Tipo</label>
-                        <select id="globalTypeFilter" onchange="updateGlobalHistory()">
-                            <option value="all">Todos os Trabalhos</option>
-                            <option value="project">Trabalho de Projeto</option>
-                            <option value="internal">Trabalho Interno</option>
-                        </select>
-                    </div>
-                    <div class="filter-section" id="globalDepartmentFilterSection">
-                        <label>Filtrar por Departamento</label>
-                        <select id="globalDepartmentFilter" onchange="updateGlobalHistory()">
-                            <option value="all">Todos os Departamentos</option>
-                            <option value="projeto">Projeto</option>
-                            <option value="eletrico">Elétrico</option>
-                            <option value="desenvolvimento">Desenvolvimento</option>
-                            <option value="orcamentacao">Orçamentação</option>
-                        </select>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="globalTotalProjectHours">0h</div>
-                            <div class="stat-label">Total Horas Projeto (Global)</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="globalTotalInternalHours">0h</div>
-                            <div class="stat-label">Total Horas Interno (Global)</div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Histórico Global</label>
-                        <div id="globalHistoryList" class="work-history"></div>
-                    </div>
-                </div>
-
-                <!-- Sub-content: Estatísticas (Admin) -->
-                <div id="system-stats" class="sub-content">
-                    <h4 style="margin-bottom: 15px;">📈 Estatísticas da Empresa</h4>
-                    <div class="info-panel" style="margin-bottom: 20px;">
-                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Visualize estatísticas agregadas de todos os utilizadores e departamentos.</p>
-                    </div>
-                    <h4 style="margin: 20px 0 10px 0;">📊 Resumo Geral</h4>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="companyTotalUsers">0</div>
-                            <div class="stat-label">Total Utilizadores</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="companyTotalProjects">0</div>
-                            <div class="stat-label">Total Obras</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="companyTotalSessions">0</div>
-                            <div class="stat-label">Total Sessões</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="companyTotalHours">0h</div>
-                            <div class="stat-label">Total Horas Trabalhadas</div>
-                        </div>
-                    </div>
-                    <h4 style="margin: 30px 0 10px 0;">🏢 Por Departamento</h4>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="deptProjetoHours">0h</div>
-                            <div class="stat-label">Projeto</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="deptEletricoHours">0h</div>
-                            <div class="stat-label">Elétrico</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="deptDesenvolvimentoHours">0h</div>
-                            <div class="stat-label">Desenvolvimento</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="deptOrcamentacaoHours">0h</div>
-                            <div class="stat-label">Orçamentação</div>
-                        </div>
-                    </div>
-                    <h4 style="margin: 30px 0 10px 0;">🏠 Trabalho Interno</h4>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="internalReuniaoHours">0h</div>
-                            <div class="stat-label">Reuniões</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="internalFormacaoHours">0h</div>
-                            <div class="stat-label">Formações</div>
-                        </div>
-                    </div>
-                    <h4 style="margin: 30px 0 10px 0;">🔄 Reaberturas de Obras</h4>
-                    <div class="info-panel" style="margin-bottom: 20px;">
-                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">Análise dos motivos de reabertura de obras concluídas.</p>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalReopens">0</div>
-                            <div class="stat-label">Total de Reaberturas</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="clientChangeReopens">0</div>
-                            <div class="stat-label">Alteração do Cliente</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="ourErrorReopens">0</div>
-                            <div class="stat-label">Erro Nosso</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="reopenPercentage">0%</div>
-                            <div class="stat-label">% de Obras Reabertas</div>
-                        </div>
-                    </div>
-                    <h4 style="margin: 30px 0 10px 0;">📋 Detalhes de Reaberturas</h4>
-                    <div id="reopenDetailsBreakdown" class="work-history"></div>
-                    <h4 style="margin: 30px 0 10px 0;">👥 Por Utilizador</h4>
-                    <div id="userStatsBreakdown" class="work-history"></div>
-                </div>
             </div>
 
             <button class="btn btn-secondary" onclick="logout()" style="margin-top: 20px;">Sair</button>

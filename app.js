@@ -2081,9 +2081,9 @@ function showMainTab(event, tabName) {
     } else if (tabName === 'data') {
         document.getElementById('dataTab').classList.add('active');
         showSubTab(null, 'data', 'reports', true);
-    } else if (tabName === 'system') {
-        document.getElementById('systemTab').classList.add('active');
-        showSubTab(null, 'system', 'profile', true);
+    } else if (tabName === 'profile') {
+        document.getElementById('profileTab').classList.add('active');
+        loadProfileData();
     }
 }
 
@@ -2124,22 +2124,6 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
             updateReports();
         } else if (subTabName === 'export') {
             updateExportStats();
-        }
-    } else if (parentTab === 'system') {
-        if (subTabName === 'profile') {
-            loadProfileData();
-        } else if (subTabName === 'users') {
-            if (typeof loadUsersList === 'function') {
-                loadUsersList();
-            }
-        } else if (subTabName === 'globalHistory') {
-            if (typeof updateGlobalHistory === 'function') {
-                updateGlobalHistory();
-            }
-        } else if (subTabName === 'stats') {
-            if (typeof updateCompanyStats === 'function') {
-                updateCompanyStats();
-            }
         }
     }
 }
@@ -2301,6 +2285,7 @@ function updateHoursCounter() {
     const workHistory = getWorkHistory();
     const now = new Date();
     
+
     // Calculate today's hours
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
