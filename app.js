@@ -1473,10 +1473,10 @@ function addQuickComment() {
 }
 
 function updateStats() {
-    updateDashboardStats();
+    updateDadosStats();
 }
 
-function updateDashboardStats() {
+function updateDadosStats() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) return;
     
@@ -2069,18 +2069,16 @@ function showMainTab(event, tabName) {
     if (tabName === 'timer') {
         document.getElementById('timerTab').classList.add('active');
         updateHoursCounter();
-    } else if (tabName === 'dashboard') {
-        document.getElementById('dashboardTab').classList.add('active');
+    } else if (tabName === 'dados') {
+        document.getElementById('dadosTab').classList.add('active');
+        showSubTab(null, 'dados', 'overview', true);
         loadWorkHistory();
         updateStats();
-        updateDashboardAdminStats();
+        updateDadosAdminStats();
         updateHoursCounter();
     } else if (tabName === 'management') {
         document.getElementById('managementTab').classList.add('active');
         showSubTab(null, 'management', 'projects', true);
-    } else if (tabName === 'data') {
-        document.getElementById('dataTab').classList.add('active');
-        showSubTab(null, 'data', 'reports', true);
     } else if (tabName === 'profile') {
         document.getElementById('profileTab').classList.add('active');
         loadProfileData();
@@ -2119,7 +2117,7 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
                 initializeAnnualCalendar();
             }
         }
-    } else if (parentTab === 'data') {
+    } else if (parentTab === 'dados') {
         if (subTabName === 'reports') {
             updateReports();
         } else if (subTabName === 'export') {
@@ -2128,7 +2126,7 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
     }
 }
 
-function updateDashboardAdminStats() {
+function updateDadosAdminStats() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const adminStatsPanel = document.getElementById('adminQuickStats');
     
@@ -2329,11 +2327,10 @@ function formatHoursMinutes(seconds) {
     return `${hours}h ${minutes}m`;
 }
 
-// Atualizar dashboard periodicamente
 setInterval(function() {
-    const dashboardTab = document.getElementById('dashboardTab');
-    if (dashboardTab && dashboardTab.classList.contains('active')) {
-        updateDashboardStats();
+    const dadosTab = document.getElementById('dadosTab');
+    if (dadosTab && dadosTab.classList.contains('active')) {
+        updateDadosStats();
     }
 }, 30000);
 
@@ -2348,26 +2345,58 @@ setTimeout(function() {
 
 function updateWeeksView() {
     const year = parseInt(document.getElementById('weeksYearFilter').value);
+    const selectedMonth = document.getElementById('weeksMonthFilter').value;
+    const selectedWeek = document.getElementById('weeksWeekFilter').value;
     const history = getWorkHistory();
     const container = document.getElementById('weeksContainer');
     
     if (!container) return;
     
     // Calcular semanas do ano
-    const weeks = calculateWeeksInYear(year, history);
+    const allWeeks = calculateWeeksInYear(year, history);
     
-    if (weeks.length === 0 || weeks.every(w => w.totalSeconds === 0)) {
+    // Filtrar por mês se selecionado
+    let filteredWeeks = allWeeks;
+    if (selectedMonth !== 'all') {
+        const monthNum = parseInt(selectedMonth);
+        filteredWeeks = allWeeks.filter(week => {
+            // Verificar se a semana tem algum dia no mês selecionado
+            const startParts = week.startDate.split('/');
+            const endParts = week.endDate.split('/');
+            const startMonth = parseInt(startParts[1]);
+            const endMonth = parseInt(endParts[1]);
+            return startMonth === monthNum || endMonth === monthNum;
+        });
+    }
+    
+    // Filtrar por semana específica se selecionado
+    if (selectedWeek !== 'all') {
+        const weekNum = parseInt(selectedWeek);
+        filteredWeeks = filteredWeeks.filter(week => week.weekNumber === weekNum);
+    }
+    
+    if (filteredWeeks.length === 0 || filteredWeeks.every(w => w.totalSeconds === 0)) {
+        let message = `Sem horas registadas em ${year}`;
+        if (selectedMonth !== 'all') {
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            message = `Sem horas registadas em ${monthNames[parseInt(selectedMonth) - 1]} ${year}`;
+        }
+        if (selectedWeek !== 'all') {
+            message = `Sem horas registadas na semana ${selectedWeek} de ${year}`;
+        }
+        
         container.innerHTML = `
             <div class="empty-weeks">
                 <div class="empty-weeks-icon">📊</div>
-                <p>Sem horas registadas em ${year}</p>
+                <p>${message}</p>
             </div>
         `;
         return;
     }
     
     // Renderizar semanas (da mais recente para a mais antiga)
-    container.innerHTML = weeks.reverse().map(week => {
+    container.innerHTML = filteredWeeks.reverse().map(week => {
         if (week.totalSeconds === 0) return '';
         
         return `
@@ -2502,7 +2531,106 @@ function populateWeeksYearFilter() {
         `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`
     ).join('');
     
-    // Atualizar visualização
+    // Inicializar os outros filtros
+    updateWeeksMonthFilter();
+}
+
+function updateWeeksMonthFilter() {
+    const year = parseInt(document.getElementById('weeksYearFilter').value);
+    const history = getWorkHistory();
+    const monthSelect = document.getElementById('weeksMonthFilter');
+    
+    if (!monthSelect) return;
+    
+    // Calcular todas as semanas do ano
+    const weeks = calculateWeeksInYear(year, history);
+    
+    // Encontrar quais meses têm semanas com horas
+    const monthsWithHours = new Set();
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = currentDate.getFullYear();
+    
+    weeks.forEach(week => {
+        if (week.totalSeconds > 0) {
+            const startParts = week.startDate.split('/');
+            const endParts = week.endDate.split('/');
+            monthsWithHours.add(parseInt(startParts[1]));
+            monthsWithHours.add(parseInt(endParts[1]));
+        }
+    });
+    
+    // Se for o ano atual, adicionar o mês atual mesmo sem horas
+    if (year === currentYear) {
+        monthsWithHours.add(currentMonth);
+    }
+    
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    // Popular o select de meses
+    let options = '<option value="all">Todos os meses</option>';
+    
+    // Criar array de meses ordenado (do mais recente para o mais antigo)
+    const sortedMonths = Array.from(monthsWithHours).sort((a, b) => {
+        if (year === currentYear) {
+            // Para o ano atual, ordenar do atual para trás
+            return b - a;
+        } else {
+            // Para anos anteriores, do mais recente (dezembro) para o mais antigo (janeiro)
+            return b - a;
+        }
+    });
+    
+    sortedMonths.forEach(month => {
+        const selected = (year === currentYear && month === currentMonth) ? 'selected' : '';
+        options += `<option value="${month}" ${selected}>${monthNames[month - 1]}</option>`;
+    });
+    
+    monthSelect.innerHTML = options;
+    
+    // Atualizar filtro de semanas
+    updateWeeksWeekFilter();
+}
+
+function updateWeeksWeekFilter() {
+    const year = parseInt(document.getElementById('weeksYearFilter').value);
+    const selectedMonth = document.getElementById('weeksMonthFilter').value;
+    const history = getWorkHistory();
+    const weekSelect = document.getElementById('weeksWeekFilter');
+    
+    if (!weekSelect) return;
+    
+    // Calcular todas as semanas do ano
+    const allWeeks = calculateWeeksInYear(year, history);
+    
+    // Filtrar semanas baseado no mês selecionado
+    let availableWeeks = allWeeks;
+    if (selectedMonth !== 'all') {
+        const monthNum = parseInt(selectedMonth);
+        availableWeeks = allWeeks.filter(week => {
+            const startParts = week.startDate.split('/');
+            const endParts = week.endDate.split('/');
+            const startMonth = parseInt(startParts[1]);
+            const endMonth = parseInt(endParts[1]);
+            return (startMonth === monthNum || endMonth === monthNum) && week.totalSeconds > 0;
+        });
+    } else {
+        // Se "Todos os meses", mostrar apenas semanas com horas
+        availableWeeks = allWeeks.filter(week => week.totalSeconds > 0);
+    }
+    
+    // Popular o select de semanas
+    let options = '<option value="all">Todas as semanas</option>';
+    
+    // Ordenar semanas da mais recente para a mais antiga
+    availableWeeks.reverse().forEach(week => {
+        options += `<option value="${week.weekNumber}">Semana ${week.weekNumber} (${week.startDate} - ${week.endDate})</option>`;
+    });
+    
+    weekSelect.innerHTML = options;
+    
+    // Atualizar a visualização
     updateWeeksView();
 }
 

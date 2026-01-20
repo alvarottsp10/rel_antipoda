@@ -1,5 +1,6 @@
 localStorage.clear()
 location.reload()
 
-Corrijir as horas de trabalho totais
-Conseguir ver as horas das semanas anteriores
+                    
+
+

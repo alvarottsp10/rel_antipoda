@@ -418,7 +418,11 @@ function updateVacationDaysCount() {
         currentDate.setDate(currentDate.getDate() + 1);
     }
     
-    document.getElementById('vacationDaysCount').textContent = `${count} dia${count !== 1 ? 's' : ''} útei${count !== 1 ? 's' : ''}`;
+    if (count === 1) {
+        document.getElementById('vacationDaysCount').textContent = '1 dia útil';
+    } else {
+        document.getElementById('vacationDaysCount').textContent = `${count} dias úteis`;
+    }
 }
 
 function confirmVacationPeriod() {
