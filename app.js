@@ -2116,6 +2116,19 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
             if (typeof initializeAnnualCalendar === 'function') {
                 initializeAnnualCalendar();
             }
+        } else if (subTabName === 'team-hours') {
+            // Tab de Horas da Equipa (admin)
+            if (typeof populateTeamUserFilter === 'function') {
+                populateTeamUserFilter();
+            }
+            if (typeof updateTeamHoursView === 'function') {
+                updateTeamHoursView();
+            }
+        } else if (subTabName === 'users') {
+            // Tab de Gestão de Utilizadores (admin)
+            if (typeof loadAdminUsersList === 'function') {
+                loadAdminUsersList();
+            }
         }
     } else if (parentTab === 'dados') {
         if (subTabName === 'reports') {

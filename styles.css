@@ -3342,3 +3342,377 @@ input:focus, select:focus, textarea:focus {
     }
 
 }
+
+/* ============================================
+   ESTILOS PARA SECÇÃO DE ADMINISTRAÇÃO
+   ============================================ */
+
+/* Tabs de admin */
+.admin-only-tab {
+    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    color: white;
+    border: none;
+}
+
+.admin-only-tab:hover {
+    background: linear-gradient(135deg, #d35400 0%, var(--admin-color) 100%);
+}
+
+.admin-only-tab.hidden {
+    display: none !important;
+}
+
+/* Painel de admin */
+.admin-panel {
+    border-left: 4px solid var(--admin-color);
+    background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+}
+
+/* Filtros da equipa */
+.filter-section.team-hours-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-section.team-hours-filters .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-section.team-hours-filters label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.filter-section.team-hours-filters select,
+.filter-section.team-hours-filters input {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+}
+
+.filter-section.team-hours-filters select:focus,
+.filter-section.team-hours-filters input:focus {
+    outline: none;
+    border-color: var(--admin-color);
+    box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2);
+}
+
+/* Resumo de horas da equipa */
+.team-hours-summary {
+    margin-bottom: 20px;
+}
+
+/* Tabela de horas por utilizador */
+.team-hours-table-container {
+    margin-bottom: 20px;
+}
+
+.team-hours-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.team-hours-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.team-hours-row:hover {
+    background-color: #f8f9fa;
+}
+
+.team-hours-row.header {
+    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.team-hours-row.header:hover {
+    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+}
+
+.team-hours-row .user-name-col {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.team-hours-row .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.team-hours-row .user-avatar.admin {
+    background: var(--admin-color);
+}
+
+.team-hours-row .hours-col {
+    text-align: center;
+    font-weight: 600;
+}
+
+.team-hours-row .hours-col.project {
+    color: var(--secondary-color);
+}
+
+.team-hours-row .hours-col.internal {
+    color: var(--internal-color);
+}
+
+.team-hours-row .hours-col.total {
+    color: var(--primary-color);
+}
+
+.team-hours-row .sessions-col {
+    text-align: center;
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+/* Expandir detalhes do utilizador */
+.team-hours-row.expandable {
+    cursor: pointer;
+}
+
+.team-hours-row .expand-icon {
+    margin-left: auto;
+    transition: transform 0.3s;
+}
+
+.team-hours-row.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+.team-hours-details {
+    background: #f8f9fa;
+    padding: 15px;
+    display: none;
+    border-bottom: 1px solid #ddd;
+}
+
+.team-hours-details.show {
+    display: block;
+}
+
+.team-hours-details .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.team-hours-details .detail-item {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.team-hours-details .detail-label {
+    font-size: 11px;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.team-hours-details .detail-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Lista de sessões da equipa */
+.team-sessions-container {
+    margin-bottom: 20px;
+}
+
+.team-sessions-container .work-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Estilo de sessão com nome do utilizador destacado */
+.history-item .hist-user {
+    font-weight: 600;
+    color: var(--admin-color);
+    font-size: 13px;
+    margin-bottom: 5px;
+    padding: 3px 8px;
+    background: rgba(230, 126, 34, 0.1);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Lista de utilizadores admin */
+.users-list {
+    display: grid;
+    gap: 15px;
+}
+
+.user-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--secondary-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.user-card.admin-user {
+    border-left-color: var(--admin-color);
+    background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+}
+
+.user-card .user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-card .user-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.user-card .user-badge {
+    background: var(--admin-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.user-card .user-info {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.user-card .user-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.user-card .user-stat {
+    text-align: center;
+}
+
+.user-card .user-stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.user-card .user-stat-label {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.user-card .user-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.user-card .btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-admin {
+    background: var(--admin-color);
+    color: white;
+    border: none;
+}
+
+.btn-admin:hover {
+    background: #d35400;
+}
+
+/* Mensagem vazia */
+.empty-team-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #95a5a6;
+}
+
+.empty-team-data .empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-team-data p {
+    font-size: 14px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .filter-section.team-hours-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .team-hours-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .team-hours-row.header {
+        display: none;
+    }
+
+    .team-hours-row:not(.header) {
+        padding: 15px;
+        position: relative;
+    }
+
+    .team-hours-row:not(.header)::before {
+        content: attr(data-label);
+        font-size: 11px;
+        color: #6c757d;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .user-card .user-stats {
+        grid-template-columns: 1fr;
+    }
+}
