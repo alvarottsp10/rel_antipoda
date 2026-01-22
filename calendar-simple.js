@@ -57,7 +57,6 @@ function getDayInfo(dateStr) {
     const calendarData = getCalendarData();
     const date = new Date(dateStr + 'T00:00:00');
     
-    // Obter hoje e ontem
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -67,12 +66,10 @@ function getDayInfo(dateStr) {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
     
-    // Verificar se é dia futuro ou hoje (não marcar falta)
     if (checkDate >= today) {
         return { type: 'future', color: 'empty', icon: '', note: '' };
     }
     
-    // Verificar entradas manuais do utilizador
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
         if (entry.type === 'vacation') {
@@ -81,34 +78,28 @@ function getDayInfo(dateStr) {
         if (entry.type === 'absence') {
             return { type: 'absence', color: 'absence', icon: '❌', note: entry.note };
         }
-        // Se utilizador marcou explicitamente como "worked"
         if (entry.type === 'worked') {
             return { type: 'worked', color: 'worked', icon: '💼', note: entry.note || '' };
         }
     }
     
-    // Verificar feriados
     const holiday = isHoliday(dateStr);
     if (holiday) {
         return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
     }
     
-    // Verificar fins de semana (domingo)
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
     }
     
-    // Verificar se trabalhou
     if (hasWorkedOnDay(dateStr)) {
         return { type: 'worked', color: 'worked', icon: '💼', note: '' };
     }
     
-    // Dia útil sem registo = FALTA AUTOMÁTICA (apenas para dias até ontem)
     if (checkDate <= yesterday) {
         return { type: 'auto-absence', color: 'auto-absence', icon: '⚠️', note: 'Falta (sem registo)' };
     }
     
-    // Caso contrário, dia vazio (não deve acontecer, mas por segurança)
     return { type: 'empty', color: 'empty', icon: '', note: '' };
 }
 
@@ -126,13 +117,11 @@ function renderAnnualCalendar(year) {
         const monthCard = document.createElement('div');
         monthCard.className = 'month-card';
         
-        // Header do mês
         const monthHeader = document.createElement('div');
         monthHeader.className = 'month-header';
         monthHeader.textContent = monthName;
         monthCard.appendChild(monthHeader);
         
-        // Grid de dias da semana
         const daysHeader = document.createElement('div');
         daysHeader.className = 'month-days-header';
         ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(day => {
@@ -449,7 +438,6 @@ function confirmVacationPeriod() {
     
     while (currentDate <= endDate) {
         const dateStr = formatDateKey(currentDate);
-        // Marcar apenas dias úteis
         if (!isWeekend(currentDate) && !isHoliday(dateStr)) {
             calendarData[dateStr] = {
                 type: 'vacation',

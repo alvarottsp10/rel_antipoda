@@ -16,8 +16,6 @@
 
 <body>
 
-    <!-- MODALS (mantidos todos iguais) -->
-
     <div id="inactivityModal" class="modal">
 
         <div class="modal-content">
@@ -744,7 +742,6 @@
 
 
 
-        <!-- LOGIN SCREEN -->
 
         <div id="loginScreen" class="content">
 
@@ -773,8 +770,6 @@
         </div>
 
 
-
-        <!-- REGISTER SCREEN -->
 
         <div id="registerScreen" class="content hidden">
 
@@ -842,11 +837,9 @@
 
 
 
-        <!-- APP SCREEN -->
 
         <div id="appScreen" class="content hidden">
 
-            <!-- MAIN TABS (5 principais) -->
 
             <div class="tabs" id="mainTabs">
 
@@ -859,13 +852,6 @@
 
             </div>
 
-
-
-            <!-- ============================================ -->
-
-            <!-- TAB 1: TIMER -->
-
-            <!-- ============================================ -->
 
             <div id="timerTab" class="tab-content active">
 
@@ -1032,15 +1018,13 @@
 
 
             <div id="dadosTab" class="tab-content">
-                <h3 style="margin-bottom: 20px;">📊 Dados</h3><!-- Minhas Horas - HOJE -->
-
+                <h3 style="margin-bottom: 20px;">📊 Dados</h3>
                 <div class="dados-section">
 
                     <h4 style="margin-bottom: 15px; color: var(--primary-color);">📅 Hoje</h4>
 
                     
 
-                    <!-- Total em cima centralizado -->
 
                     <div class="stat-card-large">
 
@@ -1052,7 +1036,6 @@
 
                     
 
-                    <!-- Projeto e Interno em baixo lado a lado -->
 
                     <div class="stats-grid-two">
 
@@ -1078,7 +1061,6 @@
 
 
 
-                <!-- Minhas Horas - ESTA SEMANA -->
 
                 <div class="dados-section">
 
@@ -1086,7 +1068,6 @@
 
                     
 
-                    <!-- Total em cima centralizado -->
 
                     <div class="stat-card-large">
 
@@ -1098,7 +1079,6 @@
 
                     
 
-                    <!-- Projeto e Interno em baixo lado a lado -->
 
                     <div class="stats-grid-two">
 
@@ -1123,9 +1103,6 @@
                 </div>
 
 
-
-                <!-- Histórico Recente -->
-
                 <div class="dados-section">
 
                     <h4 style="margin-bottom: 10px; color: var(--primary-color);">📋 Histórico Recente</h4>
@@ -1136,7 +1113,6 @@
 
 
 
-                <!-- Admin Quick Stats (só visível para admins) -->
 
                 <div id="adminQuickStats" class="hidden dados-section">
 
@@ -1246,21 +1222,12 @@
 
             </div>
 
-
-
-            <!-- ============================================ -->
-
-            <!-- TAB 3: GESTÃO (com sub-tabs) -->
-
-            <!-- ============================================ -->
-
             <div id="managementTab" class="tab-content">
 
                 <h3 style="margin-bottom: 20px;">📁 Gestão</h3>
 
 
 
-                <!-- Sub-tabs para Gestão -->
 
                 <div class="sub-tabs">
 
@@ -1354,7 +1321,6 @@
 
 
 
-                <!-- Sub-content: Semanas -->
 
                 <div id="management-weeks" class="sub-content">
 
@@ -1372,7 +1338,6 @@
                         <div class="filter-group">
                             <label>📅 Ano</label>
                             <select id="weeksYearFilter" onchange="updateWeeksMonthFilter()">
-                                <!-- Anos serão preenchidos dinamicamente -->
                             </select>
                         </div>
                         <div class="filter-group">
@@ -1394,7 +1359,6 @@
 
 
 
-                <!-- Sub-content: Comentários -->
 
                 <div id="management-comments" class="sub-content">
 
@@ -1442,7 +1406,6 @@
 
 
 
-                <!-- Sub-content: Calendário -->
 
                 <div id="management-calendar" class="sub-content">
 
@@ -1598,8 +1561,6 @@
 
                 </div>
 
-                <!-- Sub-content: Horas da Equipa (apenas admin) -->
-
                 <div id="management-team-hours" class="sub-content">
 
                     <div class="info-panel admin-panel" style="margin-bottom: 20px;">
@@ -1610,7 +1571,6 @@
 
                     </div>
 
-                    <!-- Filtros -->
 
                     <div class="filter-section team-hours-filters">
 
@@ -1700,7 +1660,6 @@
 
                     </div>
 
-                    <!-- Resumo Totais -->
 
                     <div class="team-hours-summary">
 
@@ -1742,7 +1701,6 @@
 
                     </div>
 
-                    <!-- Tabela de Horas por Utilizador -->
 
                     <div class="team-hours-table-container">
 
@@ -1750,13 +1708,10 @@
 
                         <div class="team-hours-table" id="teamHoursTable">
 
-                            <!-- Preenchido dinamicamente -->
 
                         </div>
 
                     </div>
-
-                    <!-- Detalhe das Sessões -->
 
                     <div class="team-sessions-container">
 
@@ -1764,13 +1719,11 @@
 
                         <div id="teamSessionsList" class="work-history">
 
-                            <!-- Preenchido dinamicamente -->
 
                         </div>
 
                     </div>
 
-                    <!-- Exportar -->
 
                     <div style="margin-top: 20px;">
 
@@ -1782,7 +1735,6 @@
 
                 </div>
 
-                <!-- Sub-content: Gestão de Utilizadores (apenas admin) -->
 
                 <div id="management-users" class="sub-content">
 
@@ -1794,7 +1746,6 @@
 
                     </div>
 
-                    <!-- Estatísticas de utilizadores -->
 
                     <div class="stats-grid" style="margin-bottom: 20px;">
 
@@ -1824,11 +1775,8 @@
 
                     </div>
 
-                    <!-- Lista de Utilizadores -->
-
                     <div id="adminUsersList" class="users-list">
 
-                        <!-- Preenchido dinamicamente -->
 
                     </div>
 
@@ -1837,20 +1785,12 @@
             </div>
 
 
-
-            <!-- ============================================ -->
-
-            <!-- TAB 4: DADOS (com sub-tabs) -->
-
-            <!-- ============================================ -->
-
             <div id="dataTab" class="tab-content">
 
                 <h3 style="margin-bottom: 20px;">💾 Dados</h3>
 
 
 
-                <!-- Sub-tabs para Dados -->
 
                 <div class="sub-tabs">
 
@@ -1862,7 +1802,6 @@
 
 
 
-                <!-- Sub-content: Relatórios -->
 
                 <div id="data-reports" class="sub-content active">
 
@@ -1950,7 +1889,6 @@
 
 
 
-                <!-- Sub-content: Exportar -->
 
                 <div id="data-export" class="sub-content">
 
@@ -2012,21 +1950,12 @@
 
             </div>
 
-
-
-            <!-- ============================================ -->
-
-            <!-- TAB 5: PERFIL -->
-
-            <!-- ============================================ -->
-
             <div id="profileTab" class="tab-content">
 
                 <h3 style="margin-bottom: 20px;">👤 Perfil</h3>
 
 
 
-                <!-- Conteúdo do Perfil -->
 
                 <div class="profile-main-content">
 

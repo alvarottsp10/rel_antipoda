@@ -1148,9 +1148,6 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-
-/* Sub-tabs styling */
-
 .sub-tabs {
 
     display: flex;
@@ -2742,9 +2739,6 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-
-/* Profile Photo Styles */
-
 .profile-photo-section {
 
     display: flex;
@@ -2867,7 +2861,6 @@ input:focus, select:focus, textarea:focus {
 
 
 
-/* Hours Summary Panel */
 
 .hours-summary-panel {
 
@@ -2995,8 +2988,6 @@ input:focus, select:focus, textarea:focus {
 
 
 
-/* Responsive adjustments */
-
 @media (max-width: 768px) {
 
     .annual-calendar-grid {
@@ -3099,7 +3090,6 @@ input:focus, select:focus, textarea:focus {
 
 
 
-/* Dashboard Sections */
 
 .dados-section {
 
@@ -3115,11 +3105,6 @@ input:focus, select:focus, textarea:focus {
 
 }
 
-/* ============================================ */
-
-/* WEEKS VIEW CONTAINER */
-
-/* ============================================ */
 
 
 
@@ -3343,11 +3328,6 @@ input:focus, select:focus, textarea:focus {
 
 }
 
-/* ============================================
-   ESTILOS PARA SECÇÃO DE ADMINISTRAÇÃO
-   ============================================ */
-
-/* Tabs de admin */
 .admin-only-tab {
     background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
     color: white;
@@ -3362,13 +3342,11 @@ input:focus, select:focus, textarea:focus {
     display: none !important;
 }
 
-/* Painel de admin */
 .admin-panel {
     border-left: 4px solid var(--admin-color);
     background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
 }
 
-/* Filtros da equipa */
 .filter-section.team-hours-filters {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -3407,12 +3385,10 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2);
 }
 
-/* Resumo de horas da equipa */
 .team-hours-summary {
     margin-bottom: 20px;
 }
 
-/* Tabela de horas por utilizador */
 .team-hours-table-container {
     margin-bottom: 20px;
 }
@@ -3495,7 +3471,6 @@ input:focus, select:focus, textarea:focus {
     font-weight: 600;
 }
 
-/* Expandir detalhes do utilizador */
 .team-hours-row.expandable {
     cursor: pointer;
 }
@@ -3546,7 +3521,6 @@ input:focus, select:focus, textarea:focus {
     color: var(--primary-color);
 }
 
-/* Lista de sessões da equipa */
 .team-sessions-container {
     margin-bottom: 20px;
 }
@@ -3556,7 +3530,6 @@ input:focus, select:focus, textarea:focus {
     overflow-y: auto;
 }
 
-/* Estilo de sessão com nome do utilizador destacado */
 .history-item .hist-user {
     font-weight: 600;
     color: var(--admin-color);
@@ -3568,7 +3541,6 @@ input:focus, select:focus, textarea:focus {
     display: inline-block;
 }
 
-/* Lista de utilizadores admin */
 .users-list {
     display: grid;
     gap: 15px;
@@ -3667,7 +3639,6 @@ input:focus, select:focus, textarea:focus {
     background: #d35400;
 }
 
-/* Mensagem vazia */
 .empty-team-data {
     text-align: center;
     padding: 40px 20px;
@@ -3684,7 +3655,6 @@ input:focus, select:focus, textarea:focus {
     font-size: 14px;
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
     .filter-section.team-hours-filters {
         grid-template-columns: 1fr;

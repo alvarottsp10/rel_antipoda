@@ -601,7 +601,7 @@ function startWork() {
     }, 1000);
 
     startInactivityMonitor();
-    updateHoursCounter(); // Atualizar contador de horas
+    updateHoursCounter(); 
 }
 
 function stopWork() {
@@ -613,7 +613,7 @@ function stopWork() {
     const duration = timerSeconds;
     saveWorkSession(startTime, endTime, duration);
     localStorage.removeItem('activeTimer');
-    updateHoursCounter(); // Atualizar contador de horas
+    updateHoursCounter();
 
     document.getElementById('startBtn').classList.remove('hidden');
     document.getElementById('stopBtn').classList.add('hidden');
@@ -1491,7 +1491,6 @@ function updateUserStats() {
     const history = getWorkHistory();
     const now = new Date();
     
-    // HOJE
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
@@ -1522,7 +1521,6 @@ function updateUserStats() {
         }
     }
     
-    // SEMANA
     const dayOfWeek = now.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
@@ -1555,7 +1553,6 @@ function updateUserStats() {
         }
     }
     
-    // Atualizar interface
     const todayTotalEl = document.getElementById('todayTotalHours');
     const todayProjectEl = document.getElementById('todayProjectHours');
     const todayInternalEl = document.getElementById('todayInternalHours');
@@ -1584,7 +1581,6 @@ function updateAdminStats() {
     const allHistory = getAllUsersHistory();
     const now = new Date();
     
-    // HOJE - Global
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
@@ -1605,7 +1601,6 @@ function updateAdminStats() {
         }
     });
     
-    // SEMANA - Global
     const dayOfWeek = now.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
@@ -1628,7 +1623,6 @@ function updateAdminStats() {
         }
     });
     
-    // Atualizar interface Admin
     const adminTodayTotalEl = document.getElementById('adminTodayTotal');
     const adminTodayProjectEl = document.getElementById('adminTodayProject');
     const adminTodayInternalEl = document.getElementById('adminTodayInternal');
@@ -1645,7 +1639,6 @@ function updateAdminStats() {
     if (adminWeekProjectEl) adminWeekProjectEl.textContent = formatHoursMinutes(adminWeekProject);
     if (adminWeekInternalEl) adminWeekInternalEl.textContent = formatHoursMinutes(adminWeekInternal);
     
-    // Estatísticas gerais
     if (typeof getAllUsersProjects === 'function') {
         const users = getUsers();
         const allProjects = getAllUsersProjects();
@@ -1869,7 +1862,7 @@ function loadProfileData() {
     document.getElementById('profileNewPassword').value = '';
     document.getElementById('profileConfirmPassword').value = '';
     
-    loadProfilePhoto(); // Carregar foto de perfil
+    loadProfilePhoto(); 
     document.getElementById('profileError').classList.add('hidden');
     document.getElementById('profileSuccess').classList.add('hidden');
 }
@@ -2117,7 +2110,6 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
                 initializeAnnualCalendar();
             }
         } else if (subTabName === 'team-hours') {
-            // Tab de Horas da Equipa (admin)
             if (typeof populateTeamUserFilter === 'function') {
                 populateTeamUserFilter();
             }
@@ -2125,7 +2117,6 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
                 updateTeamHoursView();
             }
         } else if (subTabName === 'users') {
-            // Tab de Gestão de Utilizadores (admin)
             if (typeof loadAdminUsersList === 'function') {
                 loadAdminUsersList();
             }
@@ -2211,9 +2202,6 @@ window.addEventListener('beforeunload', (e) => {
         e.returnValue = '';
     }
 });
-// ============================================
-// PROFILE PHOTO MANAGEMENT
-// ============================================
 
 function loadProfilePhoto() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -2235,7 +2223,6 @@ function loadProfilePhoto() {
         placeholder.classList.remove('hidden');
         removeBtn.style.display = 'none';
         
-        // Set initials
         const firstName = user.firstName || '';
         const lastName = user.lastName || '';
         const initial1 = firstName.charAt(0) || '';
@@ -2248,13 +2235,11 @@ function handleProfilePhotoChange(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    // Validate file type
     if (!file.type.startsWith('image/')) {
         showAlert('Erro', 'Por favor selecione um ficheiro de imagem válido.');
         return;
     }
     
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
         showAlert('Erro', 'A imagem é muito grande. Por favor selecione uma imagem menor que 2MB.');
         return;
@@ -2280,15 +2265,10 @@ function removeProfilePhoto() {
     });
 }
 
-// ============================================
-// HOURS WORKED COUNTER
-// ============================================
-
 function updateHoursCounter() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (!user) return;
     
-    // Check if elements exist
     const todayElement = document.getElementById('hoursTodayValue');
     const weekElement = document.getElementById('hoursWeekValue');
     if (!todayElement || !weekElement) return;
@@ -2297,7 +2277,6 @@ function updateHoursCounter() {
     const now = new Date();
     
 
-    // Calculate today's hours
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
@@ -2309,7 +2288,6 @@ function updateHoursCounter() {
         }
     });
     
-    // Calculate this week's hours (Monday to Sunday)
     const dayOfWeek = now.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
@@ -2323,13 +2301,11 @@ function updateHoursCounter() {
         }
     });
     
-    // Add current running timer if active
     if (timerInterval && timerSeconds) {
         todaySeconds += timerSeconds;
         weekSeconds += timerSeconds;
     }
     
-    // Format and display
     todayElement.textContent = formatHoursMinutes(todaySeconds);
     weekElement.textContent = formatHoursMinutes(weekSeconds);
 }
@@ -2348,13 +2324,10 @@ setInterval(function() {
 }, 30000);
 
 
-// Call once on load
 setTimeout(function() {
     updateHoursCounter();
 }, 1000);
-// ============================================
-// WEEKS VIEW FUNCTIONALITY
-// ============================================
+
 
 function updateWeeksView() {
     const year = parseInt(document.getElementById('weeksYearFilter').value);
@@ -2365,15 +2338,12 @@ function updateWeeksView() {
     
     if (!container) return;
     
-    // Calcular semanas do ano
     const allWeeks = calculateWeeksInYear(year, history);
     
-    // Filtrar por mês se selecionado
     let filteredWeeks = allWeeks;
     if (selectedMonth !== 'all') {
         const monthNum = parseInt(selectedMonth);
         filteredWeeks = allWeeks.filter(week => {
-            // Verificar se a semana tem algum dia no mês selecionado
             const startParts = week.startDate.split('/');
             const endParts = week.endDate.split('/');
             const startMonth = parseInt(startParts[1]);
@@ -2382,7 +2352,6 @@ function updateWeeksView() {
         });
     }
     
-    // Filtrar por semana específica se selecionado
     if (selectedWeek !== 'all') {
         const weekNum = parseInt(selectedWeek);
         filteredWeeks = filteredWeeks.filter(week => week.weekNumber === weekNum);
@@ -2408,7 +2377,6 @@ function updateWeeksView() {
         return;
     }
     
-    // Renderizar semanas (da mais recente para a mais antiga)
     container.innerHTML = filteredWeeks.reverse().map(week => {
         if (week.totalSeconds === 0) return '';
         
@@ -2442,7 +2410,6 @@ function updateWeeksView() {
 function calculateWeeksInYear(year, history) {
     const weeks = [];
     
-    // Primeira segunda-feira do ano (ou o próprio dia 1 se for segunda)
     let currentDate = new Date(year, 0, 1);
     const dayOfWeek = currentDate.getDay();
     const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek) % 7;
@@ -2450,7 +2417,6 @@ function calculateWeeksInYear(year, history) {
     
     let weekNumber = 1;
     
-    // Se a primeira semana começar em janeiro, é semana 1, senão começa com a última do ano anterior
     if (currentDate.getMonth() !== 0) {
         currentDate = new Date(year, 0, 1);
         const lastDayOfPrevYear = new Date(year - 1, 11, 31);
@@ -2459,20 +2425,17 @@ function calculateWeeksInYear(year, history) {
         weekNumber = getWeekNumber(lastDayOfPrevYear) + 1;
     }
     
-    // Iterar por todas as semanas do ano
     while (currentDate.getFullYear() === year) {
         const weekStart = new Date(currentDate);
         const weekEnd = new Date(currentDate);
         weekEnd.setDate(weekEnd.getDate() + 6);
         
-        // Se a semana terminar no próximo ano, ajustar
         if (weekEnd.getFullYear() > year) {
             weekEnd.setFullYear(year);
             weekEnd.setMonth(11);
             weekEnd.setDate(31);
         }
         
-        // Calcular horas desta semana
         let totalSeconds = 0;
         let projectSeconds = 0;
         let internalSeconds = 0;
@@ -2498,7 +2461,6 @@ function calculateWeeksInYear(year, history) {
             internalSeconds
         });
         
-        // Próxima semana
         currentDate.setDate(currentDate.getDate() + 7);
         weekNumber++;
     }
@@ -2527,24 +2489,20 @@ function populateWeeksYearFilter() {
     const history = getWorkHistory();
     const years = new Set();
     
-    // Adicionar ano atual
     const currentYear = new Date().getFullYear();
     years.add(currentYear);
     
-    // Adicionar anos com sessões registadas
     history.forEach(session => {
         const year = new Date(session.startTime).getFullYear();
         years.add(year);
     });
     
-    // Ordenar anos (mais recente primeiro)
     const sortedYears = Array.from(years).sort((a, b) => b - a);
     
     select.innerHTML = sortedYears.map(year => 
         `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`
     ).join('');
     
-    // Inicializar os outros filtros
     updateWeeksMonthFilter();
 }
 
@@ -2555,10 +2513,8 @@ function updateWeeksMonthFilter() {
     
     if (!monthSelect) return;
     
-    // Calcular todas as semanas do ano
     const weeks = calculateWeeksInYear(year, history);
     
-    // Encontrar quais meses têm semanas com horas
     const monthsWithHours = new Set();
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
@@ -2573,7 +2529,6 @@ function updateWeeksMonthFilter() {
         }
     });
     
-    // Se for o ano atual, adicionar o mês atual mesmo sem horas
     if (year === currentYear) {
         monthsWithHours.add(currentMonth);
     }
@@ -2581,16 +2536,12 @@ function updateWeeksMonthFilter() {
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
                         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     
-    // Popular o select de meses
     let options = '<option value="all">Todos os meses</option>';
     
-    // Criar array de meses ordenado (do mais recente para o mais antigo)
     const sortedMonths = Array.from(monthsWithHours).sort((a, b) => {
         if (year === currentYear) {
-            // Para o ano atual, ordenar do atual para trás
             return b - a;
         } else {
-            // Para anos anteriores, do mais recente (dezembro) para o mais antigo (janeiro)
             return b - a;
         }
     });
@@ -2602,7 +2553,6 @@ function updateWeeksMonthFilter() {
     
     monthSelect.innerHTML = options;
     
-    // Atualizar filtro de semanas
     updateWeeksWeekFilter();
 }
 
@@ -2614,10 +2564,8 @@ function updateWeeksWeekFilter() {
     
     if (!weekSelect) return;
     
-    // Calcular todas as semanas do ano
     const allWeeks = calculateWeeksInYear(year, history);
     
-    // Filtrar semanas baseado no mês selecionado
     let availableWeeks = allWeeks;
     if (selectedMonth !== 'all') {
         const monthNum = parseInt(selectedMonth);
@@ -2629,32 +2577,26 @@ function updateWeeksWeekFilter() {
             return (startMonth === monthNum || endMonth === monthNum) && week.totalSeconds > 0;
         });
     } else {
-        // Se "Todos os meses", mostrar apenas semanas com horas
         availableWeeks = allWeeks.filter(week => week.totalSeconds > 0);
     }
     
-    // Popular o select de semanas
     let options = '<option value="all">Todas as semanas</option>';
     
-    // Ordenar semanas da mais recente para a mais antiga
     availableWeeks.reverse().forEach(week => {
         options += `<option value="${week.weekNumber}">Semana ${week.weekNumber} (${week.startDate} - ${week.endDate})</option>`;
     });
     
     weekSelect.innerHTML = options;
     
-    // Atualizar a visualização
     updateWeeksView();
 }
 
-// Atualizar a função showSubTab para carregar as semanas
 const originalShowSubTab = window.showSubTab;
 window.showSubTab = function(event, parentTab, subTabName, programmatic = false) {
     if (originalShowSubTab) {
         originalShowSubTab(event, parentTab, subTabName, programmatic);
     }
     
-    // Carregar semanas quando o tab é aberto
     if (parentTab === 'management' && subTabName === 'weeks') {
         populateWeeksYearFilter();
     }

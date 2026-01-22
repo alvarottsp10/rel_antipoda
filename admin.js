@@ -438,7 +438,6 @@ function setupAdminUI() {
         const adminTabs = document.querySelectorAll('.admin-tab');
         adminTabs.forEach(tab => tab.classList.remove('hidden'));
         
-        // Mostrar os sub-tabs de admin na Gestão
         const adminOnlyTabs = document.querySelectorAll('.admin-only-tab');
         adminOnlyTabs.forEach(tab => tab.classList.remove('hidden'));
         
@@ -455,15 +454,10 @@ function setupAdminUI() {
             newProjectBtn.classList.add('hidden');
         }
         
-        // Esconder os sub-tabs de admin na Gestão
         const adminOnlyTabs = document.querySelectorAll('.admin-only-tab');
         adminOnlyTabs.forEach(tab => tab.classList.add('hidden'));
     }
 }
-
-// ============================================
-// FUNÇÕES PARA HORAS DA EQUIPA
-// ============================================
 
 function populateTeamUserFilter() {
     if (!isUserAdmin()) return;
@@ -487,7 +481,6 @@ function getTeamHoursFilters() {
     const dateFrom = document.getElementById('teamDateFrom')?.value || '';
     const dateTo = document.getElementById('teamDateTo')?.value || '';
     
-    // Calcular datas baseado no período
     const now = new Date();
     let startDate, endDate;
     
@@ -549,16 +542,13 @@ function updateTeamHoursView() {
     const allHistory = getAllUsersHistory();
     const users = getUsers();
     
-    // Filtrar histórico
     let filteredHistory = allHistory.filter(session => {
         const sessionDate = new Date(session.startTime);
         
-        // Filtro de data
         if (sessionDate < filters.startDate || sessionDate > filters.endDate) {
             return false;
         }
         
-        // Filtro de utilizador
         if (filters.userFilter !== 'all') {
             const user = users.find(u => `${u.firstName} ${u.lastName}` === session.userName);
             if (!user || user.username !== filters.userFilter) {
@@ -566,14 +556,12 @@ function updateTeamHoursView() {
             }
         }
         
-        // Filtro de tipo de trabalho
         if (filters.workTypeFilter !== 'all') {
             if (session.workType !== filters.workTypeFilter) {
                 return false;
             }
         }
         
-        // Filtro de departamento (só para trabalho de projeto)
         if (filters.departmentFilter !== 'all' && session.workType === 'project') {
             if (session.projectType !== filters.departmentFilter) {
                 return false;
@@ -583,18 +571,15 @@ function updateTeamHoursView() {
         return true;
     });
     
-    // Calcular totais
     const totalSeconds = filteredHistory.reduce((sum, s) => sum + s.duration, 0);
     const projectSeconds = filteredHistory.filter(s => s.workType === 'project').reduce((sum, s) => sum + s.duration, 0);
     const internalSeconds = filteredHistory.filter(s => s.workType === 'internal').reduce((sum, s) => sum + s.duration, 0);
     
-    // Atualizar cards de resumo
     document.getElementById('teamTotalHours').textContent = formatHoursMinutes(totalSeconds);
     document.getElementById('teamProjectHours').textContent = formatHoursMinutes(projectSeconds);
     document.getElementById('teamInternalHours').textContent = formatHoursMinutes(internalSeconds);
     document.getElementById('teamSessionCount').textContent = filteredHistory.length;
     
-    // Agrupar por utilizador
     const userStats = {};
     filteredHistory.forEach(session => {
         const userName = session.userName;
@@ -608,7 +593,6 @@ function updateTeamHoursView() {
                 isAdmin: false
             };
             
-            // Verificar se é admin
             const user = users.find(u => `${u.firstName} ${u.lastName}` === userName);
             if (user) {
                 userStats[userName].isAdmin = user.isAdmin;
@@ -626,13 +610,11 @@ function updateTeamHoursView() {
         }
     });
     
-    // Converter para array e ordenar
     const userStatsArray = Object.values(userStats).sort((a, b) => b.total - a.total);
     
-    // Renderizar tabela de utilizadores
+
     renderTeamHoursTable(userStatsArray);
     
-    // Renderizar lista de sessões
     renderTeamSessionsList(filteredHistory);
 }
 
@@ -683,8 +665,6 @@ function renderTeamHoursTable(userStats) {
 }
 
 function toggleUserDetails(userId) {
-    // Funcionalidade para expandir detalhes do utilizador
-    // Pode ser implementado para mostrar breakdown por departamento/obra
     console.log('Toggle details for:', userId);
 }
 
@@ -702,7 +682,6 @@ function renderTeamSessionsList(sessions) {
         return;
     }
     
-    // Limitar a 100 sessões para performance
     const displaySessions = sessions.slice(0, 100);
     
     container.innerHTML = displaySessions.map(session => {
@@ -771,9 +750,6 @@ function formatHoursMinutes(seconds) {
     return `${hours}h ${minutes}m`;
 }
 
-// ============================================
-// FUNÇÕES DE EXPORTAÇÃO DA EQUIPA
-// ============================================
 
 function exportTeamHoursCSV() {
     if (!isUserAdmin()) return;
@@ -782,7 +758,6 @@ function exportTeamHoursCSV() {
     const allHistory = getAllUsersHistory();
     const users = getUsers();
     
-    // Aplicar os mesmos filtros
     let filteredHistory = allHistory.filter(session => {
         const sessionDate = new Date(session.startTime);
         
@@ -812,7 +787,6 @@ function exportTeamHoursCSV() {
         return true;
     });
     
-    // Criar CSV
     let csv = 'Utilizador,Data,Hora Início,Hora Fim,Duração (h),Tipo,Departamento,Código Obra,Nome Obra,Subcategoria,Descrição,Comentário\n';
     
     filteredHistory.forEach(session => {
@@ -835,7 +809,6 @@ function exportTeamHoursCSV() {
         csv += `"${session.userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${durationHours}","${tipo}","${departamento}","${codigoObra}","${nomeObra}","${subcategoria}","${descricao}","${comentario}"\n`;
     });
     
-    // Download
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -909,10 +882,6 @@ function exportTeamHoursJSON() {
     link.click();
 }
 
-// ============================================
-// FUNÇÕES PARA GESTÃO DE UTILIZADORES
-// ============================================
-
 function loadAdminUsersList() {
     if (!isUserAdmin()) return;
     
@@ -922,7 +891,6 @@ function loadAdminUsersList() {
     
     if (!container) return;
     
-    // Atualizar estatísticas
     const adminCount = users.filter(u => u.isAdmin).length;
     const regularCount = users.length - adminCount;
     
@@ -935,7 +903,6 @@ function loadAdminUsersList() {
         return;
     }
     
-    // Calcular estatísticas por utilizador
     const userStatsMap = {};
     allHistory.forEach(session => {
         const userName = session.userName;
