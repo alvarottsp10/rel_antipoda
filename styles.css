@@ -3444,6 +3444,223 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
+.project-hours-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.project-hours-stat {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.project-hours-stat.total {
+    border-left-color: var(--admin-color);
+}
+
+.project-hours-stat.users {
+    border-left-color: var(--secondary-color);
+}
+
+.project-hours-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.project-hours-stat.total .project-hours-stat-value {
+    color: var(--admin-color);
+}
+
+.project-hours-stat.users .project-hours-stat-value {
+    color: var(--secondary-color);
+}
+
+.project-hours-stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.project-hours-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.project-hours-table-container {
+    margin-bottom: 20px;
+}
+
+.project-hours-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.project-hours-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.project-hours-row:hover {
+    background-color: #f8f9fa;
+}
+
+.project-hours-row.header {
+    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    cursor: default;
+}
+
+.project-hours-row.header:hover {
+    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+}
+
+.project-info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-code {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.project-name {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.project-hours-row .hours-col,
+.project-hours-row .users-col,
+.project-hours-row .sessions-col,
+.project-hours-row .status-col {
+    text-align: center;
+}
+
+.project-hours-row .hours-col.total {
+    font-weight: 600;
+    color: var(--admin-color);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-badge.open {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.closed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.project-details-row {
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.project-details-row.hidden {
+    display: none;
+}
+
+.project-details-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.details-section h5 {
+    font-size: 13px;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--admin-color);
+}
+
+.user-hours-list,
+.dept-hours-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-hours-item,
+.dept-hours-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.user-hours-item .user-hours,
+.dept-hours-item .dept-hours {
+    font-weight: 600;
+    color: var(--admin-color);
+}
+
+.dept-mini-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-right: 4px;
+    background: #e9ecef;
+}
+
+.dept-mini-badge.projeto { background: #d4edda; color: #155724; }
+.dept-mini-badge.eletrico { background: #fff3cd; color: #856404; }
+.dept-mini-badge.desenvolvimento { background: #cce5ff; color: #004085; }
+.dept-mini-badge.orcamentacao { background: #f8d7da; color: #721c24; }
+
+@media (max-width: 768px) {
+    .project-hours-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .project-hours-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .project-hours-row.header {
+        display: none;
+    }
+    
+    .project-details-content {
+        grid-template-columns: 1fr;
+    }
+}
+
 .team-hours-table-container {
     margin-bottom: 20px;
 }

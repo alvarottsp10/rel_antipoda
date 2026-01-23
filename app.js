@@ -2130,6 +2130,10 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
             if (typeof updateTeamHoursView === 'function') {
                 updateTeamHoursView();
             }
+        } else if (subTabName === 'obras') {
+            if (typeof updateProjectHoursView === 'function') {
+                updateProjectHoursView();
+            }
         } else if (subTabName === 'calendarios') {
             if (typeof populateTeamCalendarUserFilter === 'function') {
                 populateTeamCalendarUserFilter();

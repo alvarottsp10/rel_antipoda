@@ -1423,6 +1423,7 @@
 
                 <div class="sub-tabs">
                     <button class="sub-tab active" onclick="showSubTab(event, 'equipa', 'horas')">⏱️ Horas</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'obras')">📋 Obras</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'calendarios')">📆 Calendários</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'utilizadores')">🛡️ Utilizadores</button>
                 </div>
@@ -1511,6 +1512,63 @@
                     <div style="margin-top: 20px;">
                         <button class="btn btn-primary" onclick="exportTeamHoursCSV()">📄 Exportar CSV</button>
                         <button class="btn btn-primary" onclick="exportTeamHoursJSON()">📋 Exportar JSON</button>
+                    </div>
+
+                </div>
+
+                <div id="equipa-obras" class="sub-content">
+
+                    <div class="info-panel admin-panel" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px; color: var(--admin-color);">📋 Horas por Obra</h4>
+                        <p style="font-size: 12px; color: #6c757d;">Visualize o total de horas gastas em cada obra por todos os utilizadores</p>
+                    </div>
+
+                    <div class="filter-section project-hours-filters">
+                        <div class="filter-group">
+                            <label>📊 Estado</label>
+                            <select id="projectHoursStatusFilter" onchange="updateProjectHoursView()">
+                                <option value="all">Todas as Obras</option>
+                                <option value="open">Obras Abertas</option>
+                                <option value="closed">Obras Fechadas</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>🏢 Departamento</label>
+                            <select id="projectHoursDeptFilter" onchange="updateProjectHoursView()">
+                                <option value="all">Todos</option>
+                                <option value="projeto">Projeto</option>
+                                <option value="eletrico">Elétrico</option>
+                                <option value="desenvolvimento">Desenvolvimento</option>
+                                <option value="orcamentacao">Orçamentação</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>🔍 Pesquisar</label>
+                            <input type="text" id="projectHoursSearch" placeholder="Código ou nome..." oninput="updateProjectHoursView()">
+                        </div>
+                    </div>
+
+                    <div class="project-hours-summary">
+                        <div class="project-hours-stat">
+                            <div class="project-hours-stat-value" id="totalProjectsCount">0</div>
+                            <div class="project-hours-stat-label">Obras</div>
+                        </div>
+                        <div class="project-hours-stat total">
+                            <div class="project-hours-stat-value" id="totalProjectsHours">0h</div>
+                            <div class="project-hours-stat-label">Total Horas</div>
+                        </div>
+                        <div class="project-hours-stat users">
+                            <div class="project-hours-stat-value" id="totalProjectsUsers">0</div>
+                            <div class="project-hours-stat-label">Utilizadores</div>
+                        </div>
+                    </div>
+
+                    <div class="project-hours-table-container">
+                        <div class="project-hours-table" id="projectHoursTable"></div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="exportProjectHoursCSV()">📄 Exportar CSV</button>
                     </div>
 
                 </div>

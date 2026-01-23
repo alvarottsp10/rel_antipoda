@@ -1442,6 +1442,271 @@ function getTeamVacationsSummary() {
     container.innerHTML = summaryHtml || '<p style="text-align: center; color: #95a5a6;">Sem dados disponíveis</p>';
 }
 
+function updateProjectHoursView() {
+    if (!isUserAdmin()) return;
+    
+    const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
+    const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
+    
+    const allProjects = getAllUsersProjects();
+    const allHistory = getAllUsersHistory();
+    
+    const projectHours = {};
+    
+    allHistory.forEach(session => {
+        if (session.workType !== 'project' || !session.workCode) return;
+        
+        if (!projectHours[session.workCode]) {
+            projectHours[session.workCode] = {
+                workCode: session.workCode,
+                workName: session.workName || '',
+                totalSeconds: 0,
+                users: {},
+                departments: {},
+                sessions: 0
+            };
+        }
+        
+        projectHours[session.workCode].totalSeconds += session.duration;
+        projectHours[session.workCode].sessions++;
+        
+        if (session.userName) {
+            if (!projectHours[session.workCode].users[session.userName]) {
+                projectHours[session.workCode].users[session.userName] = 0;
+            }
+            projectHours[session.workCode].users[session.userName] += session.duration;
+        }
+        
+        if (session.projectType) {
+            if (!projectHours[session.workCode].departments[session.projectType]) {
+                projectHours[session.workCode].departments[session.projectType] = 0;
+            }
+            projectHours[session.workCode].departments[session.projectType] += session.duration;
+        }
+    });
+    
+    allProjects.forEach(project => {
+        if (projectHours[project.workCode]) {
+            projectHours[project.workCode].status = project.status || 'open';
+            projectHours[project.workCode].workName = project.name || projectHours[project.workCode].workName;
+        }
+    });
+    
+    let projectsArray = Object.values(projectHours);
+    
+    if (statusFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => p.status === statusFilter);
+    }
+    
+    if (deptFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => p.departments[deptFilter] > 0);
+    }
+    
+    if (searchTerm) {
+        projectsArray = projectsArray.filter(p => 
+            p.workCode.toLowerCase().includes(searchTerm) || 
+            p.workName.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    projectsArray.sort((a, b) => b.totalSeconds - a.totalSeconds);
+    
+    const totalHours = projectsArray.reduce((sum, p) => sum + p.totalSeconds, 0);
+    const uniqueUsers = new Set();
+    projectsArray.forEach(p => {
+        Object.keys(p.users).forEach(u => uniqueUsers.add(u));
+    });
+    
+    document.getElementById('totalProjectsCount').textContent = projectsArray.length;
+    document.getElementById('totalProjectsHours').textContent = formatHoursMinutes(totalHours);
+    document.getElementById('totalProjectsUsers').textContent = uniqueUsers.size;
+    
+    renderProjectHoursTable(projectsArray);
+}
+
+function renderProjectHoursTable(projects) {
+    const container = document.getElementById('projectHoursTable');
+    if (!container) return;
+    
+    if (projects.length === 0) {
+        container.innerHTML = `
+            <div class="empty-team-data">
+                <div class="empty-icon">📋</div>
+                <p>Sem obras para mostrar</p>
+                <p style="font-size: 12px; margin-top: 10px;">Ajuste os filtros ou registe horas em obras</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="project-hours-row header">
+            <div>Obra</div>
+            <div style="text-align: center;">⏱️ Total</div>
+            <div style="text-align: center;">👥 Utilizadores</div>
+            <div style="text-align: center;">📝 Sessões</div>
+            <div style="text-align: center;">📊 Estado</div>
+        </div>
+    `;
+    
+    projects.forEach(project => {
+        const userCount = Object.keys(project.users).length;
+        const statusBadge = project.status === 'closed' 
+            ? '<span class="status-badge closed">Fechada</span>' 
+            : '<span class="status-badge open">Aberta</span>';
+        
+        const deptBadges = Object.keys(project.departments).map(dept => {
+            const deptHours = formatHoursMinutes(project.departments[dept]);
+            return `<span class="dept-mini-badge ${dept}">${getDepartmentName(dept)}: ${deptHours}</span>`;
+        }).join(' ');
+        
+        html += `
+            <div class="project-hours-row" onclick="toggleProjectDetails('${project.workCode}')">
+                <div class="project-info-col">
+                    <div class="project-code">${project.workCode}</div>
+                    <div class="project-name">${project.workName || 'Sem nome'}</div>
+                </div>
+                <div class="hours-col total">${formatHoursMinutes(project.totalSeconds)}</div>
+                <div class="users-col">${userCount}</div>
+                <div class="sessions-col">${project.sessions}</div>
+                <div class="status-col">${statusBadge}</div>
+            </div>
+            <div class="project-details-row hidden" id="details-${project.workCode.replace(/[^a-zA-Z0-9]/g, '_')}">
+                <div class="project-details-content">
+                    <div class="details-section">
+                        <h5>👥 Horas por Utilizador</h5>
+                        <div class="user-hours-list">
+                            ${Object.entries(project.users)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([userName, seconds]) => `
+                                    <div class="user-hours-item">
+                                        <span class="user-name">${userName}</span>
+                                        <span class="user-hours">${formatHoursMinutes(seconds)}</span>
+                                    </div>
+                                `).join('')}
+                        </div>
+                    </div>
+                    <div class="details-section">
+                        <h5>🏢 Horas por Departamento</h5>
+                        <div class="dept-hours-list">
+                            ${Object.entries(project.departments)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([dept, seconds]) => `
+                                    <div class="dept-hours-item">
+                                        <span class="dept-name">${getDepartmentName(dept)}</span>
+                                        <span class="dept-hours">${formatHoursMinutes(seconds)}</span>
+                                    </div>
+                                `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleProjectDetails(workCode) {
+    const safeId = workCode.replace(/[^a-zA-Z0-9]/g, '_');
+    const detailsRow = document.getElementById(`details-${safeId}`);
+    if (detailsRow) {
+        detailsRow.classList.toggle('hidden');
+    }
+}
+
+function exportProjectHoursCSV() {
+    if (!isUserAdmin()) return;
+    
+    const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
+    const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
+    
+    const allProjects = getAllUsersProjects();
+    const allHistory = getAllUsersHistory();
+    
+    const projectHours = {};
+    
+    allHistory.forEach(session => {
+        if (session.workType !== 'project' || !session.workCode) return;
+        
+        if (!projectHours[session.workCode]) {
+            projectHours[session.workCode] = {
+                workCode: session.workCode,
+                workName: session.workName || '',
+                totalSeconds: 0,
+                users: {},
+                departments: {},
+                sessions: 0
+            };
+        }
+        
+        projectHours[session.workCode].totalSeconds += session.duration;
+        projectHours[session.workCode].sessions++;
+        
+        if (session.userName) {
+            if (!projectHours[session.workCode].users[session.userName]) {
+                projectHours[session.workCode].users[session.userName] = 0;
+            }
+            projectHours[session.workCode].users[session.userName] += session.duration;
+        }
+        
+        if (session.projectType) {
+            if (!projectHours[session.workCode].departments[session.projectType]) {
+                projectHours[session.workCode].departments[session.projectType] = 0;
+            }
+            projectHours[session.workCode].departments[session.projectType] += session.duration;
+        }
+    });
+    
+    allProjects.forEach(project => {
+        if (projectHours[project.workCode]) {
+            projectHours[project.workCode].status = project.status || 'open';
+            projectHours[project.workCode].workName = project.name || projectHours[project.workCode].workName;
+        }
+    });
+    
+    let projectsArray = Object.values(projectHours);
+    
+    if (statusFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => p.status === statusFilter);
+    }
+    
+    if (deptFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => p.departments[deptFilter] > 0);
+    }
+    
+    if (searchTerm) {
+        projectsArray = projectsArray.filter(p => 
+            p.workCode.toLowerCase().includes(searchTerm) || 
+            p.workName.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    projectsArray.sort((a, b) => b.totalSeconds - a.totalSeconds);
+    
+    let csv = 'Código Obra,Nome Obra,Estado,Total Horas,Sessões,Utilizadores,Projeto (h),Elétrico (h),Desenvolvimento (h),Orçamentação (h)\n';
+    
+    projectsArray.forEach(project => {
+        const status = project.status === 'closed' ? 'Fechada' : 'Aberta';
+        const totalHours = (project.totalSeconds / 3600).toFixed(2);
+        const userCount = Object.keys(project.users).length;
+        const projHours = ((project.departments['projeto'] || 0) / 3600).toFixed(2);
+        const eletHours = ((project.departments['eletrico'] || 0) / 3600).toFixed(2);
+        const devHours = ((project.departments['desenvolvimento'] || 0) / 3600).toFixed(2);
+        const orcHours = ((project.departments['orcamentacao'] || 0) / 3600).toFixed(2);
+        
+        csv += `"${project.workCode}","${project.workName}","${status}","${totalHours}","${project.sessions}","${userCount}","${projHours}","${eletHours}","${devHours}","${orcHours}"\n`;
+    });
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `horas_por_obra_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+
 window.addEventListener('load', () => {
     initializeDefaultAdmin();
 });
