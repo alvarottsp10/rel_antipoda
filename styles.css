@@ -3386,7 +3386,62 @@ input:focus, select:focus, textarea:focus {
 }
 
 .team-hours-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
     margin-bottom: 20px;
+}
+
+.team-hours-stat {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.team-hours-stat.project {
+    border-left-color: var(--secondary-color);
+}
+
+.team-hours-stat.internal {
+    border-left-color: var(--internal-color);
+}
+
+.team-hours-stat.sessions {
+    border-left-color: var(--success-color);
+}
+
+.team-hours-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.team-hours-stat.project .team-hours-stat-value {
+    color: var(--secondary-color);
+}
+
+.team-hours-stat.internal .team-hours-stat-value {
+    color: var(--internal-color);
+}
+
+.team-hours-stat.sessions .team-hours-stat-value {
+    color: var(--success-color);
+}
+
+.team-hours-stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
+    .team-hours-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .team-hours-table-container {
@@ -3684,5 +3739,188 @@ input:focus, select:focus, textarea:focus {
 
     .user-card .user-stats {
         grid-template-columns: 1fr;
+    }
+}
+
+.team-calendar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.team-calendar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.team-calendar-user-icon {
+    font-size: 24px;
+}
+
+.team-calendar-header .calendar-year-header {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 10px 15px;
+}
+
+.team-calendar-header .year-display {
+    color: white;
+}
+
+.team-calendar-header .year-nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.team-calendar-header .year-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.team-annual-stats {
+    margin-bottom: 20px;
+}
+
+.team-calendar-grid {
+    margin-top: 0;
+}
+
+.empty-calendar-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+}
+
+.empty-calendar-message p {
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+.team-vacations-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.team-vacation-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--admin-color);
+}
+
+.team-vacation-name {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.team-vacation-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.vacation-stat {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.vacation-stat.worked {
+    background: #d4edda;
+    color: #155724;
+}
+
+.vacation-stat.vacation {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.vacation-stat.absence {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.team-day-modal-header {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    margin: -20px -25px 20px -25px;
+    padding: 20px 25px;
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.team-modal-user {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.team-modal-date {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.day-sessions-list {
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.day-session-item {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    border-left: 3px solid var(--secondary-color);
+}
+
+.day-status.auto-absence-status {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.day-status.future-status {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+}
+
+@media (max-width: 600px) {
+    .team-calendar-header {
+        padding: 12px;
+    }
+
+    .team-calendar-user-info {
+        font-size: 16px;
+    }
+
+    .team-vacations-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .team-day-modal-header {
+        margin: -15px -15px 15px -15px;
+        padding: 15px;
     }
 }

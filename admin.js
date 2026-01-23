@@ -578,7 +578,7 @@ function updateTeamHoursView() {
     document.getElementById('teamTotalHours').textContent = formatHoursMinutes(totalSeconds);
     document.getElementById('teamProjectHours').textContent = formatHoursMinutes(projectSeconds);
     document.getElementById('teamInternalHours').textContent = formatHoursMinutes(internalSeconds);
-    document.getElementById('teamSessionCount').textContent = filteredHistory.length;
+    document.getElementById('teamTotalSessions').textContent = filteredHistory.length;
     
     const userStats = {};
     filteredHistory.forEach(session => {
@@ -627,6 +627,7 @@ function renderTeamHoursTable(userStats) {
             <div class="empty-team-data">
                 <div class="empty-icon">📊</div>
                 <p>Sem dados para o período selecionado</p>
+                <p style="font-size: 12px; margin-top: 10px;">Experimente alterar os filtros ou selecionar um período diferente</p>
             </div>
         `;
         return;
@@ -677,6 +678,7 @@ function renderTeamSessionsList(sessions) {
             <div class="empty-team-data">
                 <div class="empty-icon">📋</div>
                 <p>Sem sessões para o período selecionado</p>
+                <p style="font-size: 12px; margin-top: 10px;">As sessões registadas pelos utilizadores aparecerão aqui</p>
             </div>
         `;
         return;
@@ -968,6 +970,476 @@ function loadAdminUsersList() {
             </div>
         `;
     }).join('');
+}
+
+let adminCalendarYear = new Date().getFullYear();
+let selectedUserForCalendar = null;
+
+function populateTeamCalendarUserFilter() {
+    if (!isUserAdmin()) return;
+    
+    const select = document.getElementById('teamCalendarUserFilter');
+    if (!select) return;
+    
+    const users = getUsers();
+    
+    select.innerHTML = '<option value="">Selecione um utilizador</option>';
+    users.forEach(user => {
+        select.innerHTML += `<option value="${user.username}">${user.firstName} ${user.lastName}</option>`;
+    });
+}
+
+function loadTeamCalendarView() {
+    if (!isUserAdmin()) return;
+    
+    const username = document.getElementById('teamCalendarUserFilter').value;
+    
+    if (!username) {
+        document.getElementById('teamCalendarContainer').innerHTML = `
+            <div class="empty-calendar-message">
+                <span style="font-size: 48px;">📅</span>
+                <p>Selecione um utilizador para ver o calendário</p>
+            </div>
+        `;
+        document.getElementById('teamCalendarStats').classList.add('hidden');
+        return;
+    }
+    
+    selectedUserForCalendar = username;
+    document.getElementById('teamCalendarStats').classList.remove('hidden');
+    renderTeamCalendar(adminCalendarYear, username);
+}
+
+function getUserCalendarData(year, username) {
+    const key = `calendar_${year}_${username}`;
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : {};
+}
+
+function getUserWorkHistory(username) {
+    const key = `workHistory_${username}`;
+    const history = localStorage.getItem(key);
+    return history ? JSON.parse(history) : [];
+}
+
+function hasUserWorkedOnDay(dateStr, username) {
+    const history = getUserWorkHistory(username);
+    return history.some(session => {
+        const sessionDate = new Date(session.startTime);
+        return formatDateKey(sessionDate) === dateStr;
+    });
+}
+
+function getTeamDayInfo(dateStr, username) {
+    const calendarData = getUserCalendarData(adminCalendarYear, username);
+    const date = new Date(dateStr + 'T00:00:00');
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    if (checkDate >= today) {
+        return { type: 'future', color: 'empty', icon: '', note: '' };
+    }
+    
+    if (calendarData[dateStr]) {
+        const entry = calendarData[dateStr];
+        if (entry.type === 'vacation') {
+            return { type: 'vacation', color: 'vacation', icon: '🏖️', note: entry.note };
+        }
+        if (entry.type === 'absence') {
+            return { type: 'absence', color: 'absence', icon: '❌', note: entry.note };
+        }
+        if (entry.type === 'worked') {
+            return { type: 'worked', color: 'worked', icon: '💼', note: entry.note || '' };
+        }
+    }
+    
+    const holiday = isHoliday(dateStr);
+    if (holiday) {
+        return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
+    }
+    
+    if (isWeekend(date)) {
+        return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
+    }
+    
+    if (hasUserWorkedOnDay(dateStr, username)) {
+        return { type: 'worked', color: 'worked', icon: '💼', note: '' };
+    }
+    
+    if (checkDate <= yesterday) {
+        return { type: 'auto-absence', color: 'auto-absence', icon: '⚠️', note: 'Falta (sem registo)' };
+    }
+    
+    return { type: 'empty', color: 'empty', icon: '', note: '' };
+}
+
+function renderTeamCalendar(year, username) {
+    adminCalendarYear = year;
+    const container = document.getElementById('teamCalendarContainer');
+    if (!container) return;
+    
+    const users = getUsers();
+    const user = users.find(u => u.username === username);
+    const userName = user ? `${user.firstName} ${user.lastName}` : username;
+    
+    document.getElementById('teamCalendarUserName').textContent = userName;
+    document.getElementById('teamCalendarYearDisplay').textContent = year;
+    
+    container.innerHTML = '';
+    
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    
+    let workedDays = 0;
+    let vacationDays = 0;
+    let absenceDays = 0;
+    let holidayDays = 0;
+    let weekendDays = 0;
+    
+    months.forEach((monthName, monthIndex) => {
+        const monthCard = document.createElement('div');
+        monthCard.className = 'month-card';
+        
+        const monthHeader = document.createElement('div');
+        monthHeader.className = 'month-header';
+        monthHeader.textContent = monthName;
+        monthCard.appendChild(monthHeader);
+        
+        const daysHeader = document.createElement('div');
+        daysHeader.className = 'month-days-header';
+        ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(day => {
+            const dayEl = document.createElement('div');
+            dayEl.textContent = day;
+            daysHeader.appendChild(dayEl);
+        });
+        monthCard.appendChild(daysHeader);
+        
+        const daysGrid = document.createElement('div');
+        daysGrid.className = 'month-days-grid';
+        
+        const firstDay = new Date(year, monthIndex, 1);
+        const lastDay = new Date(year, monthIndex + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'month-day empty';
+            daysGrid.appendChild(emptyDay);
+        }
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, monthIndex, day);
+            const dateStr = formatDateKey(date);
+            const dayInfo = getTeamDayInfo(dateStr, username);
+            
+            const dayEl = document.createElement('div');
+            dayEl.className = `month-day day-${dayInfo.color}`;
+            dayEl.textContent = day;
+            
+            const today = new Date();
+            if (date.toDateString() === today.toDateString()) {
+                dayEl.classList.add('today');
+            }
+            
+            if (dayInfo.icon) {
+                const icon = document.createElement('div');
+                icon.className = 'day-icon-mini';
+                icon.textContent = dayInfo.icon;
+                dayEl.appendChild(icon);
+            }
+            
+            dayEl.onclick = () => openTeamDayModal(dateStr, dayInfo, userName);
+            
+            daysGrid.appendChild(dayEl);
+            
+            switch(dayInfo.type) {
+                case 'worked': workedDays++; break;
+                case 'vacation': vacationDays++; break;
+                case 'absence': 
+                case 'auto-absence': absenceDays++; break;
+                case 'holiday': holidayDays++; break;
+                case 'weekend': weekendDays++; break;
+            }
+        }
+        
+        monthCard.appendChild(daysGrid);
+        container.appendChild(monthCard);
+    });
+    
+    const totalDays = 365 + (year % 4 === 0 ? 1 : 0);
+    const remainingDays = totalDays - workedDays - vacationDays - absenceDays - holidayDays - weekendDays;
+    
+    document.getElementById('teamStatWorkedDays').textContent = workedDays;
+    document.getElementById('teamStatVacationDays').textContent = vacationDays;
+    document.getElementById('teamStatAbsenceDays').textContent = absenceDays;
+    document.getElementById('teamStatHolidayDays').textContent = holidayDays;
+    document.getElementById('teamStatWeekendDays').textContent = weekendDays;
+    document.getElementById('teamStatRemainingDays').textContent = remainingDays;
+}
+
+function openTeamDayModal(dateStr, dayInfo, userName) {
+    const date = new Date(dateStr + 'T00:00:00');
+    const dayName = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][date.getDay()];
+    const dayNum = date.getDate();
+    const monthName = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][date.getMonth()];
+    
+    document.getElementById('teamModalUserName').textContent = userName;
+    document.getElementById('teamModalDayDate').textContent = `${dayName}, ${dayNum} de ${monthName} de ${adminCalendarYear}`;
+    
+    const contentDiv = document.getElementById('teamModalDayContent');
+    let statusHtml = '';
+    
+    if (dayInfo.type === 'vacation') {
+        statusHtml = `
+            <div class="day-status vacation-status">
+                <span class="status-icon">🏖️</span>
+                <span class="status-text">Férias</span>
+            </div>
+            ${dayInfo.note ? `<div class="day-note">📝 ${dayInfo.note}</div>` : ''}
+        `;
+    } else if (dayInfo.type === 'absence') {
+        statusHtml = `
+            <div class="day-status absence-status">
+                <span class="status-icon">❌</span>
+                <span class="status-text">Falta</span>
+            </div>
+            ${dayInfo.note ? `<div class="day-note">📝 ${dayInfo.note}</div>` : ''}
+        `;
+    } else if (dayInfo.type === 'auto-absence') {
+        statusHtml = `
+            <div class="day-status auto-absence-status">
+                <span class="status-icon">⚠️</span>
+                <span class="status-text">Falta (sem registo)</span>
+            </div>
+            <div class="day-note">Não há registos de trabalho neste dia</div>
+        `;
+    } else if (dayInfo.type === 'holiday') {
+        statusHtml = `
+            <div class="day-status holiday-status">
+                <span class="status-icon">🎉</span>
+                <span class="status-text">Feriado</span>
+            </div>
+            <div class="day-note">📅 ${dayInfo.note}</div>
+        `;
+    } else if (dayInfo.type === 'weekend') {
+        statusHtml = `
+            <div class="day-status weekend-status">
+                <span class="status-icon">🏠</span>
+                <span class="status-text">Domingo</span>
+            </div>
+        `;
+    } else if (dayInfo.type === 'worked') {
+        const sessions = getTeamDaySessions(dateStr);
+        const totalSeconds = sessions.reduce((sum, s) => sum + s.duration, 0);
+        
+        statusHtml = `
+            <div class="day-status worked-status">
+                <span class="status-icon">💼</span>
+                <span class="status-text">Dia Trabalhado</span>
+            </div>
+            <div class="day-note">⏱️ Total: ${formatDuration(totalSeconds)}</div>
+            <div class="day-sessions-list">
+                ${sessions.map(s => {
+                    const startTime = new Date(s.startTime);
+                    const timeStr = `${String(startTime.getHours()).padStart(2, '0')}:${String(startTime.getMinutes()).padStart(2, '0')}`;
+                    const typeIcon = s.workType === 'internal' ? '🏠' : '🏢';
+                    const typeName = s.workType === 'internal' ? (s.internalCategoryName || 'Interno') : (s.workCode || 'Projeto');
+                    return `<div class="day-session-item">${typeIcon} ${timeStr} - ${typeName} (${formatDuration(s.duration)})</div>`;
+                }).join('')}
+            </div>
+        `;
+    } else {
+        statusHtml = `
+            <div class="day-status future-status">
+                <span class="status-icon">📆</span>
+                <span class="status-text">Dia Futuro</span>
+            </div>
+        `;
+    }
+    
+    contentDiv.innerHTML = statusHtml;
+    
+    document.getElementById('teamDayModal').classList.add('show');
+}
+
+function getTeamDaySessions(dateStr) {
+    if (!selectedUserForCalendar) return [];
+    
+    const history = getUserWorkHistory(selectedUserForCalendar);
+    return history.filter(session => {
+        const sessionDate = new Date(session.startTime);
+        return formatDateKey(sessionDate) === dateStr;
+    });
+}
+
+function closeTeamDayModal() {
+    document.getElementById('teamDayModal').classList.remove('show');
+}
+
+function changeTeamCalendarYear(delta) {
+    const todayYear = new Date().getFullYear();
+    const newYear = adminCalendarYear + delta;
+    
+    if (newYear < todayYear - 5) {
+        return;
+    }
+    
+    adminCalendarYear = newYear;
+    if (selectedUserForCalendar) {
+        renderTeamCalendar(adminCalendarYear, selectedUserForCalendar);
+    }
+}
+
+function goToTeamCurrentYear() {
+    adminCalendarYear = new Date().getFullYear();
+    if (selectedUserForCalendar) {
+        renderTeamCalendar(adminCalendarYear, selectedUserForCalendar);
+    }
+}
+
+function exportTeamCalendarCSV() {
+    if (!isUserAdmin() || !selectedUserForCalendar) return;
+    
+    const users = getUsers();
+    const user = users.find(u => u.username === selectedUserForCalendar);
+    const userName = user ? `${user.firstName} ${user.lastName}` : selectedUserForCalendar;
+    
+    let csv = 'Data,Dia da Semana,Estado,Nota\n';
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    
+    for (let month = 0; month < 12; month++) {
+        const lastDay = new Date(adminCalendarYear, month + 1, 0).getDate();
+        for (let day = 1; day <= lastDay; day++) {
+            const date = new Date(adminCalendarYear, month, day);
+            const dateStr = formatDateKey(date);
+            const dayInfo = getTeamDayInfo(dateStr, selectedUserForCalendar);
+            
+            const dateFormatted = `${day.toString().padStart(2, '0')}/${(month + 1).toString().padStart(2, '0')}/${adminCalendarYear}`;
+            const dayName = dayNames[date.getDay()];
+            
+            let estado = '';
+            switch(dayInfo.type) {
+                case 'worked': estado = 'Trabalhado'; break;
+                case 'vacation': estado = 'Férias'; break;
+                case 'absence': estado = 'Falta'; break;
+                case 'auto-absence': estado = 'Falta (sem registo)'; break;
+                case 'holiday': estado = 'Feriado'; break;
+                case 'weekend': estado = 'Domingo'; break;
+                case 'future': estado = 'Futuro'; break;
+                default: estado = '-';
+            }
+            
+            const nota = dayInfo.note ? `"${dayInfo.note.replace(/"/g, '""')}"` : '';
+            
+            csv += `${dateFormatted},${dayName},${estado},${nota}\n`;
+        }
+    }
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `calendario_${userName.replace(/\s+/g, '_')}_${adminCalendarYear}.csv`;
+    link.click();
+}
+
+function exportAllTeamCalendarsCSV() {
+    if (!isUserAdmin()) return;
+    
+    const users = getUsers();
+    const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    
+    let csv = 'Utilizador,Data,Dia da Semana,Estado,Nota\n';
+    
+    users.forEach(user => {
+        for (let month = 0; month < 12; month++) {
+            const lastDay = new Date(adminCalendarYear, month + 1, 0).getDate();
+            for (let day = 1; day <= lastDay; day++) {
+                const date = new Date(adminCalendarYear, month, day);
+                const dateStr = formatDateKey(date);
+                const dayInfo = getTeamDayInfo(dateStr, user.username);
+                
+                const dateFormatted = `${day.toString().padStart(2, '0')}/${(month + 1).toString().padStart(2, '0')}/${adminCalendarYear}`;
+                const dayName = dayNames[date.getDay()];
+                const userName = `${user.firstName} ${user.lastName}`;
+                
+                let estado = '';
+                switch(dayInfo.type) {
+                    case 'worked': estado = 'Trabalhado'; break;
+                    case 'vacation': estado = 'Férias'; break;
+                    case 'absence': estado = 'Falta'; break;
+                    case 'auto-absence': estado = 'Falta (sem registo)'; break;
+                    case 'holiday': estado = 'Feriado'; break;
+                    case 'weekend': estado = 'Domingo'; break;
+                    case 'future': estado = 'Futuro'; break;
+                    default: estado = '-';
+                }
+                
+                const nota = dayInfo.note ? `"${dayInfo.note.replace(/"/g, '""')}"` : '';
+                
+                csv += `"${userName}",${dateFormatted},${dayName},${estado},${nota}\n`;
+            }
+        }
+    });
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `calendarios_equipa_${adminCalendarYear}.csv`;
+    link.click();
+}
+
+function getTeamVacationsSummary() {
+    if (!isUserAdmin()) return;
+    
+    const users = getUsers();
+    const container = document.getElementById('teamVacationsSummary');
+    if (!container) return;
+    
+    let summaryHtml = '';
+    
+    users.forEach(user => {
+        let vacationDays = 0;
+        let absenceDays = 0;
+        let workedDays = 0;
+        
+        for (let month = 0; month < 12; month++) {
+            const lastDay = new Date(adminCalendarYear, month + 1, 0).getDate();
+            for (let day = 1; day <= lastDay; day++) {
+                const date = new Date(adminCalendarYear, month, day);
+                const dateStr = formatDateKey(date);
+                const dayInfo = getTeamDayInfo(dateStr, user.username);
+                
+                switch(dayInfo.type) {
+                    case 'vacation': vacationDays++; break;
+                    case 'absence': 
+                    case 'auto-absence': absenceDays++; break;
+                    case 'worked': workedDays++; break;
+                }
+            }
+        }
+        
+        summaryHtml += `
+            <div class="team-vacation-card">
+                <div class="team-vacation-name">${user.firstName} ${user.lastName}</div>
+                <div class="team-vacation-stats">
+                    <span class="vacation-stat worked">💼 ${workedDays}</span>
+                    <span class="vacation-stat vacation">🏖️ ${vacationDays}</span>
+                    <span class="vacation-stat absence">❌ ${absenceDays}</span>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = summaryHtml || '<p style="text-align: center; color: #95a5a6;">Sem dados disponíveis</p>';
 }
 
 window.addEventListener('load', () => {

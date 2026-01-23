@@ -2057,7 +2057,9 @@ function showMainTab(event, tabName) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
     
     if (tabName === 'timer') {
         document.getElementById('timerTab').classList.add('active');
@@ -2069,9 +2071,15 @@ function showMainTab(event, tabName) {
         updateStats();
         updateDadosAdminStats();
         updateHoursCounter();
-    } else if (tabName === 'management') {
-        document.getElementById('managementTab').classList.add('active');
-        showSubTab(null, 'management', 'projects', true);
+    } else if (tabName === 'obras') {
+        document.getElementById('obrasTab').classList.add('active');
+        showSubTab(null, 'obras', 'lista', true);
+    } else if (tabName === 'calendario') {
+        document.getElementById('calendarioTab').classList.add('active');
+        showSubTab(null, 'calendario', 'anual', true);
+    } else if (tabName === 'equipa') {
+        document.getElementById('equipaTab').classList.add('active');
+        showSubTab(null, 'equipa', 'horas', true);
     } else if (tabName === 'profile') {
         document.getElementById('profileTab').classList.add('active');
         loadProfileData();
@@ -2100,23 +2108,34 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
         subContent.classList.add('active');
     }
     
-    if (parentTab === 'management') {
-        if (subTabName === 'projects') {
+    if (parentTab === 'obras') {
+        if (subTabName === 'lista') {
             loadProjectsList();
         } else if (subTabName === 'comments') {
             loadWorkSelectForComments();
-        } else if (subTabName === 'calendar') {
+        }
+    } else if (parentTab === 'calendario') {
+        if (subTabName === 'anual') {
             if (typeof initializeAnnualCalendar === 'function') {
                 initializeAnnualCalendar();
             }
-        } else if (subTabName === 'team-hours') {
+        } else if (subTabName === 'semanas') {
+            populateWeeksYearFilter();
+        }
+    } else if (parentTab === 'equipa') {
+        if (subTabName === 'horas') {
             if (typeof populateTeamUserFilter === 'function') {
                 populateTeamUserFilter();
             }
             if (typeof updateTeamHoursView === 'function') {
                 updateTeamHoursView();
             }
-        } else if (subTabName === 'users') {
+        } else if (subTabName === 'calendarios') {
+            if (typeof populateTeamCalendarUserFilter === 'function') {
+                populateTeamCalendarUserFilter();
+                getTeamVacationsSummary();
+            }
+        } else if (subTabName === 'utilizadores') {
             if (typeof loadAdminUsersList === 'function') {
                 loadAdminUsersList();
             }
@@ -2172,6 +2191,9 @@ function setupAdminUIEnhanced() {
         const adminSubTabs = document.querySelectorAll('.admin-sub-tab');
         adminSubTabs.forEach(tab => tab.classList.remove('hidden'));
         
+        const adminOnlyTabs = document.querySelectorAll('.admin-only-tab');
+        adminOnlyTabs.forEach(tab => tab.classList.remove('hidden'));
+        
         const newProjectBtn = document.getElementById('newProjectBtn');
         if (newProjectBtn) {
             newProjectBtn.classList.remove('hidden');
@@ -2188,6 +2210,9 @@ function setupAdminUIEnhanced() {
         
         const adminSubTabs = document.querySelectorAll('.admin-sub-tab');
         adminSubTabs.forEach(tab => tab.classList.add('hidden'));
+        
+        const adminOnlyTabs = document.querySelectorAll('.admin-only-tab');
+        adminOnlyTabs.forEach(tab => tab.classList.add('hidden'));
     }
 }
 
@@ -2595,9 +2620,5 @@ const originalShowSubTab = window.showSubTab;
 window.showSubTab = function(event, parentTab, subTabName, programmatic = false) {
     if (originalShowSubTab) {
         originalShowSubTab(event, parentTab, subTabName, programmatic);
-    }
-    
-    if (parentTab === 'management' && subTabName === 'weeks') {
-        populateWeeksYearFilter();
     }
 };
