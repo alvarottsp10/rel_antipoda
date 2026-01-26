@@ -1,4 +1,17 @@
-const HOLIDAYS_2026 = {
+const HOLIDAYS = {
+    '2025-01-01': 'Ano Novo',
+    '2025-04-18': 'Sexta-feira Santa',
+    '2025-04-20': 'Domingo de Páscoa',
+    '2025-04-25': 'Dia da Liberdade',
+    '2025-05-01': 'Dia do Trabalhador',
+    '2025-06-10': 'Dia de Portugal',
+    '2025-06-19': 'Corpo de Deus',
+    '2025-08-15': 'Assunção de Nossa Senhora',
+    '2025-10-05': 'Implantação da República',
+    '2025-11-01': 'Dia de Todos os Santos',
+    '2025-12-01': 'Restauração da Independência',
+    '2025-12-08': 'Imaculada Conceição',
+    '2025-12-25': 'Natal',
     '2026-01-01': 'Ano Novo',
     '2026-04-03': 'Sexta-feira Santa',
     '2026-04-05': 'Domingo de Páscoa',
@@ -11,7 +24,20 @@ const HOLIDAYS_2026 = {
     '2026-11-01': 'Dia de Todos os Santos',
     '2026-12-01': 'Restauração da Independência',
     '2026-12-08': 'Imaculada Conceição',
-    '2026-12-25': 'Natal'
+    '2026-12-25': 'Natal',
+    '2027-01-01': 'Ano Novo',
+    '2027-03-26': 'Sexta-feira Santa',
+    '2027-03-28': 'Domingo de Páscoa',
+    '2027-04-25': 'Dia da Liberdade',
+    '2027-05-01': 'Dia do Trabalhador',
+    '2027-05-27': 'Corpo de Deus',
+    '2027-06-10': 'Dia de Portugal',
+    '2027-08-15': 'Assunção de Nossa Senhora',
+    '2027-10-05': 'Implantação da República',
+    '2027-11-01': 'Dia de Todos os Santos',
+    '2027-12-01': 'Restauração da Independência',
+    '2027-12-08': 'Imaculada Conceição',
+    '2027-12-25': 'Natal'
 };
 
 let currentYear = 2026;
@@ -42,7 +68,7 @@ function isWeekend(date) {
 }
 
 function isHoliday(dateStr) {
-    return HOLIDAYS_2026[dateStr] || null;
+    return HOLIDAYS[dateStr] || null;
 }
 
 function hasWorkedOnDay(dateStr) {
@@ -66,9 +92,7 @@ function getDayInfo(dateStr) {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
     
-    if (checkDate >= today) {
-        return { type: 'future', color: 'empty', icon: '', note: '' };
-    }
+    const isFutureDate = checkDate > today;
     
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
@@ -90,6 +114,10 @@ function getDayInfo(dateStr) {
     
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
+    }
+    
+    if (isFutureDate) {
+        return { type: 'future', color: 'empty', icon: '', note: '' };
     }
     
     if (hasWorkedOnDay(dateStr)) {
