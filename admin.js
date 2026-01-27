@@ -1043,10 +1043,9 @@ function getTeamDayInfo(dateStr, username) {
     const checkDate = new Date(date);
     checkDate.setHours(0, 0, 0, 0);
     
-    if (checkDate >= today) {
-        return { type: 'future', color: 'empty', icon: '', note: '' };
-    }
+    const isFutureDate = checkDate > today;
     
+    // Primeiro verificar dados do calendário do utilizador (férias, faltas marcadas)
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
         if (entry.type === 'vacation') {
@@ -1060,19 +1059,28 @@ function getTeamDayInfo(dateStr, username) {
         }
     }
     
+    // Verificar feriados (antes de verificar se é futuro, para que apareçam sempre)
     const holiday = isHoliday(dateStr);
     if (holiday) {
         return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
     }
     
+    // Verificar domingos (antes de verificar se é futuro, para que apareçam sempre)
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
     }
     
+    // Agora sim, verificar se é futuro
+    if (isFutureDate) {
+        return { type: 'future', color: 'empty', icon: '', note: '' };
+    }
+    
+    // Verificar se o utilizador trabalhou neste dia
     if (hasUserWorkedOnDay(dateStr, username)) {
         return { type: 'worked', color: 'worked', icon: '💼', note: '' };
     }
     
+    // Se é um dia passado sem registo, marcar como falta automática
     if (checkDate <= yesterday) {
         return { type: 'auto-absence', color: 'auto-absence', icon: '⚠️', note: 'Falta (sem registo)' };
     }
@@ -1704,6 +1712,330 @@ function exportProjectHoursCSV() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `horas_por_obra_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+
+function exportReopensCSV() {
+    if (!isUserAdmin()) return;
+    
+    const allProjects = getAllUsersProjects();
+    const allHistory = getAllUsersHistory();
+    
+    let csv = 'Código Obra,Nome Obra,Estado,Tipo Reabertura,Data Reabertura,Comentário,Horas Após Reabertura,Utilizador,Horas Utilizador\n';
+    
+    allProjects.forEach(project => {
+        if (!project.reopenHistory || project.reopenHistory.length === 0) return;
+        
+        const status = project.status === 'closed' ? 'Fechada' : 'Aberta';
+        
+        // Processar cada tipo de reabertura separadamente
+        const clientReopens = project.reopenHistory.filter(r => r.reason === 'client_change');
+        const errorReopens = project.reopenHistory.filter(r => r.reason === 'our_error');
+        
+        // Calcular horas para alterações do cliente
+        if (clientReopens.length > 0) {
+            const firstClientDate = new Date(Math.min(...clientReopens.map(r => new Date(r.date))));
+            const clientUsers = {};
+            let clientTotal = 0;
+            
+            allHistory.forEach(session => {
+                if (session.workType !== 'project' || session.workCode !== project.workCode) return;
+                const sessionDate = new Date(session.startTime);
+                if (sessionDate >= firstClientDate) {
+                    clientTotal += session.duration;
+                    const userName = session.userName || 'Desconhecido';
+                    if (!clientUsers[userName]) clientUsers[userName] = 0;
+                    clientUsers[userName] += session.duration;
+                }
+            });
+            
+            clientReopens.forEach(reopen => {
+                const date = new Date(reopen.date);
+                const dateStr = date.getDate().toString().padStart(2, '0') + '/' + (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+                const comment = (reopen.comment || '').replace(/"/g, '""');
+                const totalHours = (clientTotal / 3600).toFixed(2);
+                
+                if (Object.keys(clientUsers).length > 0) {
+                    Object.entries(clientUsers).forEach(([userName, seconds]) => {
+                        const userHours = (seconds / 3600).toFixed(2);
+                        csv += '"' + project.workCode + '","' + (project.name || '') + '","' + status + '","Alteração Cliente","' + dateStr + '","' + comment + '","' + totalHours + '","' + userName + '","' + userHours + '"\n';
+                    });
+                } else {
+                    csv += '"' + project.workCode + '","' + (project.name || '') + '","' + status + '","Alteração Cliente","' + dateStr + '","' + comment + '","' + totalHours + '","",""\n';
+                }
+            });
+        }
+        
+        // Calcular horas para erros internos
+        if (errorReopens.length > 0) {
+            const firstErrorDate = new Date(Math.min(...errorReopens.map(r => new Date(r.date))));
+            const errorUsers = {};
+            let errorTotal = 0;
+            
+            allHistory.forEach(session => {
+                if (session.workType !== 'project' || session.workCode !== project.workCode) return;
+                const sessionDate = new Date(session.startTime);
+                if (sessionDate >= firstErrorDate) {
+                    errorTotal += session.duration;
+                    const userName = session.userName || 'Desconhecido';
+                    if (!errorUsers[userName]) errorUsers[userName] = 0;
+                    errorUsers[userName] += session.duration;
+                }
+            });
+            
+            errorReopens.forEach(reopen => {
+                const date = new Date(reopen.date);
+                const dateStr = date.getDate().toString().padStart(2, '0') + '/' + (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+                const comment = (reopen.comment || '').replace(/"/g, '""');
+                const totalHours = (errorTotal / 3600).toFixed(2);
+                
+                if (Object.keys(errorUsers).length > 0) {
+                    Object.entries(errorUsers).forEach(([userName, seconds]) => {
+                        const userHours = (seconds / 3600).toFixed(2);
+                        csv += '"' + project.workCode + '","' + (project.name || '') + '","' + status + '","Erro Interno","' + dateStr + '","' + comment + '","' + totalHours + '","' + userName + '","' + userHours + '"\n';
+                    });
+                } else {
+                    csv += '"' + project.workCode + '","' + (project.name || '') + '","' + status + '","Erro Interno","' + dateStr + '","' + comment + '","' + totalHours + '","",""\n';
+                }
+            });
+        }
+    });
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'reaberturas_' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+}
+
+function updateAdminReopensView() {
+    if (!isUserAdmin()) return;
+    
+    const allProjects = getAllUsersProjects();
+    const allHistory = getAllUsersHistory();
+    
+    const userHours = {};
+    const clientProjects = [];
+    const errorProjects = [];
+    let totalClientHours = 0;
+    let totalErrorHours = 0;
+    
+    allProjects.forEach(project => {
+        if (!project.reopenHistory || project.reopenHistory.length === 0) return;
+        
+        const clientReopens = project.reopenHistory.filter(r => r.reason === 'client_change');
+        const errorReopens = project.reopenHistory.filter(r => r.reason === 'our_error');
+        
+        const firstClientDate = clientReopens.length > 0 ? new Date(Math.min(...clientReopens.map(r => new Date(r.date)))) : null;
+        const firstErrorDate = errorReopens.length > 0 ? new Date(Math.min(...errorReopens.map(r => new Date(r.date)))) : null;
+        
+        const projectSessions = allHistory.filter(s => s.workType === 'project' && s.workCode === project.workCode);
+        
+        let projectClientHours = 0;
+        let projectErrorHours = 0;
+        const projectClientUsers = {};
+        const projectErrorUsers = {};
+        
+        projectSessions.forEach(session => {
+            const sessionDate = new Date(session.startTime);
+            const userName = session.userName || 'Desconhecido';
+            
+            if (firstClientDate && sessionDate >= firstClientDate) {
+                projectClientHours += session.duration;
+                if (!projectClientUsers[userName]) projectClientUsers[userName] = 0;
+                projectClientUsers[userName] += session.duration;
+                
+                if (!userHours[userName]) userHours[userName] = { client: 0, error: 0 };
+                userHours[userName].client += session.duration;
+            }
+            
+            if (firstErrorDate && sessionDate >= firstErrorDate) {
+                projectErrorHours += session.duration;
+                if (!projectErrorUsers[userName]) projectErrorUsers[userName] = 0;
+                projectErrorUsers[userName] += session.duration;
+                
+                if (!userHours[userName]) userHours[userName] = { client: 0, error: 0 };
+                userHours[userName].error += session.duration;
+            }
+        });
+        
+        if (clientReopens.length > 0) {
+            totalClientHours += projectClientHours;
+            clientProjects.push({
+                workCode: project.workCode,
+                name: project.name,
+                status: project.status,
+                hours: projectClientHours,
+                users: projectClientUsers,
+                reopenCount: clientReopens.length,
+                reopenHistory: clientReopens
+            });
+        }
+        
+        if (errorReopens.length > 0) {
+            totalErrorHours += projectErrorHours;
+            errorProjects.push({
+                workCode: project.workCode,
+                name: project.name,
+                status: project.status,
+                hours: projectErrorHours,
+                users: projectErrorUsers,
+                reopenCount: errorReopens.length,
+                reopenHistory: errorReopens
+            });
+        }
+    });
+    
+    const totalProjects = new Set([...clientProjects.map(p => p.workCode), ...errorProjects.map(p => p.workCode)]).size;
+    const totalHours = totalClientHours + totalErrorHours;
+    
+    document.getElementById('adminReopenTotalCount').textContent = totalProjects;
+    document.getElementById('adminReopenTotalHours').textContent = formatHoursMinutes(totalHours);
+    document.getElementById('adminReopenClientCount').textContent = clientProjects.length;
+    document.getElementById('adminReopenClientHours').textContent = formatHoursMinutes(totalClientHours);
+    document.getElementById('adminReopenErrorCount').textContent = errorProjects.length;
+    document.getElementById('adminReopenErrorHours').textContent = formatHoursMinutes(totalErrorHours);
+    
+    renderAdminReopensUsersTable(userHours);
+    renderAdminReopensProjectsList(clientProjects, errorProjects);
+}
+
+function renderAdminReopensUsersTable(userHours) {
+    const container = document.getElementById('adminReopenUsersTable');
+    if (!container) return;
+    
+    const usersArray = Object.entries(userHours).map(([name, hours]) => ({
+        name,
+        client: hours.client,
+        error: hours.error,
+        total: hours.client + hours.error
+    })).sort((a, b) => b.total - a.total);
+    
+    if (usersArray.length === 0) {
+        container.innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Sem dados de reaberturas</p>';
+        return;
+    }
+    
+    let html = '<div class="admin-reopen-table"><div class="admin-reopen-row header"><div>Utilizador</div><div>👤 Alt. Cliente</div><div>⚠️ Erro Interno</div><div>📊 Total</div></div>';
+    
+    usersArray.forEach(user => {
+        html += '<div class="admin-reopen-row">';
+        html += '<div class="user-name">' + user.name + '</div>';
+        html += '<div class="hours client">' + formatHoursMinutes(user.client) + '</div>';
+        html += '<div class="hours error">' + formatHoursMinutes(user.error) + '</div>';
+        html += '<div class="hours total">' + formatHoursMinutes(user.total) + '</div>';
+        html += '</div>';
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderAdminReopensProjectsList(clientProjects, errorProjects) {
+    const container = document.getElementById('adminReopenProjectsList');
+    if (!container) return;
+    
+    const allProjects = [...clientProjects.map(p => ({...p, type: 'client'})), ...errorProjects.map(p => ({...p, type: 'error'}))];
+    allProjects.sort((a, b) => b.hours - a.hours);
+    
+    if (allProjects.length === 0) {
+        container.innerHTML = '<p style="color: #95a5a6; text-align: center; padding: 20px;">Sem obras reabertas</p>';
+        return;
+    }
+    
+    let html = '';
+    allProjects.forEach(project => {
+        const typeIcon = project.type === 'client' ? '👤' : '⚠️';
+        const typeLabel = project.type === 'client' ? 'Alt. Cliente' : 'Erro Interno';
+        const typeClass = project.type === 'client' ? 'client' : 'error';
+        const statusBadge = project.status === 'closed' ? '<span class="status-badge closed">Fechada</span>' : '<span class="status-badge open">Aberta</span>';
+        const safeId = 'admin_' + project.workCode.replace(/[^a-zA-Z0-9]/g, '_') + '_' + project.type;
+        
+        html += '<div class="admin-reopen-project" onclick="toggleAdminReopenDetails(\'' + safeId + '\')">';
+        html += '<div class="admin-reopen-project-header">';
+        html += '<div class="project-info"><span class="type-badge ' + typeClass + '">' + typeIcon + ' ' + typeLabel + '</span>';
+        html += '<span class="project-code">' + project.workCode + '</span><span class="project-name">' + (project.name || '') + '</span></div>';
+        html += '<div class="project-stats">' + statusBadge + '<span class="project-hours">' + formatHoursMinutes(project.hours) + '</span></div>';
+        html += '</div>';
+        html += '<div class="admin-reopen-project-details hidden" id="' + safeId + '">';
+        
+        html += '<div class="details-section"><h5>👥 Horas por Utilizador</h5><div class="users-list">';
+        Object.entries(project.users).sort((a, b) => b[1] - a[1]).forEach(([name, seconds]) => {
+            html += '<div class="user-item"><span>' + name + '</span><span>' + formatHoursMinutes(seconds) + '</span></div>';
+        });
+        if (Object.keys(project.users).length === 0) {
+            html += '<p class="no-data">Sem horas registadas</p>';
+        }
+        html += '</div></div>';
+        
+        html += '<div class="details-section"><h5>📅 Histórico</h5><div class="history-list">';
+        project.reopenHistory.forEach(r => {
+            const date = new Date(r.date);
+            const dateStr = date.getDate().toString().padStart(2, '0') + '/' + (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+            html += '<div class="history-item"><span class="date">' + dateStr + '</span><span class="comment">' + (r.comment || 'Sem observação') + '</span></div>';
+        });
+        html += '</div></div>';
+        
+        html += '</div></div>';
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleAdminReopenDetails(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden');
+}
+
+function exportAdminReopensCSV() {
+    if (!isUserAdmin()) return;
+    
+    const allProjects = getAllUsersProjects();
+    const allHistory = getAllUsersHistory();
+    
+    let csv = 'Tipo,Código Obra,Nome,Estado,Utilizador,Horas Após Reabertura,Data Reabertura,Comentário\n';
+    
+    allProjects.forEach(project => {
+        if (!project.reopenHistory || project.reopenHistory.length === 0) return;
+        
+        const clientReopens = project.reopenHistory.filter(r => r.reason === 'client_change');
+        const errorReopens = project.reopenHistory.filter(r => r.reason === 'our_error');
+        const status = project.status === 'closed' ? 'Fechada' : 'Aberta';
+        
+        [{ reopens: clientReopens, type: 'Alteração Cliente' }, { reopens: errorReopens, type: 'Erro Interno' }].forEach(({ reopens, type }) => {
+            if (reopens.length === 0) return;
+            
+            const firstDate = new Date(Math.min(...reopens.map(r => new Date(r.date))));
+            const userHours = {};
+            
+            allHistory.filter(s => s.workType === 'project' && s.workCode === project.workCode).forEach(session => {
+                if (new Date(session.startTime) >= firstDate) {
+                    const userName = session.userName || 'Desconhecido';
+                    if (!userHours[userName]) userHours[userName] = 0;
+                    userHours[userName] += session.duration;
+                }
+            });
+            
+            reopens.forEach(r => {
+                const date = new Date(r.date);
+                const dateStr = date.getDate().toString().padStart(2, '0') + '/' + (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+                const comment = (r.comment || '').replace(/"/g, '""');
+                
+                if (Object.keys(userHours).length > 0) {
+                    Object.entries(userHours).forEach(([userName, seconds]) => {
+                        csv += '"' + type + '","' + project.workCode + '","' + (project.name || '') + '","' + status + '","' + userName + '","' + (seconds/3600).toFixed(2) + '","' + dateStr + '","' + comment + '"\n';
+                    });
+                } else {
+                    csv += '"' + type + '","' + project.workCode + '","' + (project.name || '') + '","' + status + '","","0","' + dateStr + '","' + comment + '"\n';
+                }
+            });
+        });
+    });
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'reaberturas_equipa_' + new Date().toISOString().split('T')[0] + '.csv';
     link.click();
 }
 

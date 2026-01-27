@@ -2111,6 +2111,10 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
     if (parentTab === 'obras') {
         if (subTabName === 'lista') {
             loadProjectsList();
+        } else if (subTabName === 'reaberturas') {
+            if (typeof updateReopensView === 'function') {
+                updateReopensView();
+            }
         } else if (subTabName === 'comments') {
             loadWorkSelectForComments();
         }
@@ -2133,6 +2137,10 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
         } else if (subTabName === 'obras') {
             if (typeof updateProjectHoursView === 'function') {
                 updateProjectHoursView();
+            }
+        } else if (subTabName === 'reaberturas') {
+            if (typeof updateAdminReopensView === 'function') {
+                updateAdminReopensView();
             }
         } else if (subTabName === 'calendarios') {
             if (typeof populateTeamCalendarUserFilter === 'function') {
@@ -2618,6 +2626,126 @@ function updateWeeksWeekFilter() {
     weekSelect.innerHTML = options;
     
     updateWeeksView();
+}
+
+function updateReopensView() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    
+    // Usa dados globais dos projetos e histórico pessoal do utilizador
+    const allProjects = JSON.parse(localStorage.getItem('projects_global')) || [];
+    const myHistory = getWorkHistory();
+    
+    const clientReopens = [];
+    const errorReopens = [];
+    
+    allProjects.forEach(project => {
+        if (!project.reopenHistory || project.reopenHistory.length === 0) return;
+        
+        const clientReopenDates = project.reopenHistory
+            .filter(r => r.reason === 'client_change')
+            .map(r => new Date(r.date));
+        
+        const errorReopenDates = project.reopenHistory
+            .filter(r => r.reason === 'our_error')
+            .map(r => new Date(r.date));
+        
+        const firstClientReopen = clientReopenDates.length > 0 ? new Date(Math.min(...clientReopenDates)) : null;
+        const firstErrorReopen = errorReopenDates.length > 0 ? new Date(Math.min(...errorReopenDates)) : null;
+        
+        let clientHours = 0;
+        let errorHours = 0;
+        
+        const projectSessions = myHistory.filter(s => s.workType === 'project' && s.workCode === project.workCode);
+        
+        projectSessions.forEach(session => {
+            const sessionDate = new Date(session.startTime);
+            if (firstClientReopen && sessionDate >= firstClientReopen) {
+                clientHours += session.duration;
+            }
+            if (firstErrorReopen && sessionDate >= firstErrorReopen) {
+                errorHours += session.duration;
+            }
+        });
+        
+        if (clientReopenDates.length > 0) {
+            clientReopens.push({
+                workCode: project.workCode,
+                name: project.name,
+                status: project.status,
+                reopenHistory: project.reopenHistory.filter(r => r.reason === 'client_change'),
+                totalHours: clientHours,
+                reopenCount: clientReopenDates.length
+            });
+        }
+        
+        if (errorReopenDates.length > 0) {
+            errorReopens.push({
+                workCode: project.workCode,
+                name: project.name,
+                status: project.status,
+                reopenHistory: project.reopenHistory.filter(r => r.reason === 'our_error'),
+                totalHours: errorHours,
+                reopenCount: errorReopenDates.length
+            });
+        }
+    });
+    
+    const clientTotalHours = clientReopens.reduce((sum, p) => sum + p.totalHours, 0);
+    const errorTotalHours = errorReopens.reduce((sum, p) => sum + p.totalHours, 0);
+    
+    document.getElementById('reopenClientCount').textContent = clientReopens.length;
+    document.getElementById('reopenClientHours').textContent = formatHoursMinutes(clientTotalHours);
+    document.getElementById('reopenErrorCount').textContent = errorReopens.length;
+    document.getElementById('reopenErrorHours').textContent = formatHoursMinutes(errorTotalHours);
+    
+    renderReopenList('reopenClientList', clientReopens, 'client_change');
+    renderReopenList('reopenErrorList', errorReopens, 'our_error');
+}
+
+function renderReopenList(containerId, projects, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const typeLabel = type === 'client_change' ? 'alteração do cliente' : 'erro interno';
+    const typeIcon = type === 'client_change' ? '👤' : '⚠️';
+    
+    if (projects.length === 0) {
+        container.innerHTML = '<div class="empty-reopen-data"><div class="empty-icon">' + typeIcon + '</div><p>Sem obras reabertas por ' + typeLabel + '</p></div>';
+        return;
+    }
+    
+    projects.sort((a, b) => b.totalHours - a.totalHours);
+    
+    let html = '';
+    projects.forEach(project => {
+        const statusBadge = project.status === 'closed' ? '<span class="status-badge closed">Fechada</span>' : '<span class="status-badge open">Aberta</span>';
+        const safeId = project.workCode.replace(/[^a-zA-Z0-9]/g, '_') + '_' + type;
+        
+        html += '<div class="reopen-item" onclick="toggleReopenDetails(\'' + safeId + '\')">';
+        html += '<div class="reopen-item-header">';
+        html += '<div class="reopen-item-info"><div class="reopen-item-code">' + project.workCode + '</div><div class="reopen-item-name">' + (project.name || 'Sem nome') + '</div></div>';
+        html += '<div class="reopen-item-stats"><span class="reopen-badge">' + project.reopenCount + 'x reaberta</span>' + statusBadge + '<span class="reopen-hours">' + formatHoursMinutes(project.totalHours) + '</span></div>';
+        html += '</div>';
+        html += '<div class="reopen-item-details hidden" id="details-' + safeId + '">';
+        html += '<div class="reopen-detail-section"><h5>📅 Histórico de Reaberturas</h5><div class="reopen-history-list">';
+        
+        project.reopenHistory.forEach(r => {
+            const date = new Date(r.date);
+            const dateStr = date.getDate().toString().padStart(2, '0') + '/' + (date.getMonth() + 1).toString().padStart(2, '0') + '/' + date.getFullYear();
+            html += '<div class="reopen-history-item"><span class="reopen-date">' + dateStr + '</span><span class="reopen-note">' + (r.comment || 'Sem observação') + '</span></div>';
+        });
+        
+        html += '</div></div></div></div>';
+    });
+    
+    container.innerHTML = html;
+}
+
+function toggleReopenDetails(id) {
+    const details = document.getElementById('details-' + id);
+    if (details) {
+        details.classList.toggle('hidden');
+    }
 }
 
 const originalShowSubTab = window.showSubTab;

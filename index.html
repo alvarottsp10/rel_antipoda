@@ -1233,6 +1233,7 @@
 
                 <div class="sub-tabs">
                     <button class="sub-tab active" onclick="showSubTab(event, 'obras', 'lista')">📋 Lista</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'obras', 'reaberturas')">🔄 Reaberturas</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'obras', 'comments')">💬 Comentários</button>
                 </div>
 
@@ -1271,6 +1272,55 @@
                         </select>
                     </div>
                     <div id="projectsList" class="projects-list"></div>
+
+                </div>
+
+                <div id="obras-reaberturas" class="sub-content">
+                    <div class="info-panel" style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">📊 Estatísticas de obras que foram reabertas após conclusão. As horas mostradas são apenas as trabalhadas após a reabertura.</p>
+                    </div>
+
+                    <div class="reopen-stats-summary">
+                        <div class="reopen-stat-card client">
+                            <div class="reopen-stat-icon">👤</div>
+                            <div class="reopen-stat-content">
+                                <div class="reopen-stat-title">Alterações do Cliente</div>
+                                <div class="reopen-stat-row">
+                                    <span class="reopen-stat-label">Obras:</span>
+                                    <span class="reopen-stat-value" id="reopenClientCount">0</span>
+                                </div>
+                                <div class="reopen-stat-row highlight">
+                                    <span class="reopen-stat-label">Horas Após Reabertura:</span>
+                                    <span class="reopen-stat-value" id="reopenClientHours">0h</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reopen-stat-card error">
+                            <div class="reopen-stat-icon">⚠️</div>
+                            <div class="reopen-stat-content">
+                                <div class="reopen-stat-title">Erros Internos</div>
+                                <div class="reopen-stat-row">
+                                    <span class="reopen-stat-label">Obras:</span>
+                                    <span class="reopen-stat-value" id="reopenErrorCount">0</span>
+                                </div>
+                                <div class="reopen-stat-row highlight">
+                                    <span class="reopen-stat-label">Horas Após Reabertura:</span>
+                                    <span class="reopen-stat-value" id="reopenErrorHours">0h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reopen-sections">
+                        <div class="reopen-section">
+                            <h4 class="reopen-section-title client">👤 Obras Reabertas por Alteração do Cliente</h4>
+                            <div id="reopenClientList" class="reopen-list"></div>
+                        </div>
+                        <div class="reopen-section">
+                            <h4 class="reopen-section-title error">⚠️ Obras Reabertas por Erro Interno</h4>
+                            <div id="reopenErrorList" class="reopen-list"></div>
+                        </div>
+                    </div>
 
                 </div>
 
@@ -1424,6 +1474,7 @@
                 <div class="sub-tabs">
                     <button class="sub-tab active" onclick="showSubTab(event, 'equipa', 'horas')">⏱️ Horas</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'obras')">📋 Obras</button>
+                    <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'reaberturas')">🔄 Reaberturas</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'calendarios')">📆 Calendários</button>
                     <button class="sub-tab" onclick="showSubTab(event, 'equipa', 'utilizadores')">🛡️ Utilizadores</button>
                 </div>
@@ -1569,6 +1620,70 @@
 
                     <div style="margin-top: 20px;">
                         <button class="btn btn-primary" onclick="exportProjectHoursCSV()">📄 Exportar CSV</button>
+                    </div>
+
+                </div>
+
+                <div id="equipa-reaberturas" class="sub-content">
+
+                    <div class="info-panel admin-panel" style="margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px; color: var(--admin-color);">🔄 Reaberturas da Equipa</h4>
+                        <p style="font-size: 12px; color: #6c757d;">Visualize as horas gastas em obras reabertas por todos os utilizadores</p>
+                    </div>
+
+                    <div class="reopen-stats-summary">
+                        <div class="reopen-stat-card total">
+                            <div class="reopen-stat-icon">📊</div>
+                            <div class="reopen-stat-content">
+                                <div class="reopen-stat-title">Total Geral</div>
+                                <div class="reopen-stat-row">
+                                    <span class="reopen-stat-label">Obras Reabertas:</span>
+                                    <span class="reopen-stat-value" id="adminReopenTotalCount">0</span>
+                                </div>
+                                <div class="reopen-stat-row highlight">
+                                    <span class="reopen-stat-label">Total Horas:</span>
+                                    <span class="reopen-stat-value" id="adminReopenTotalHours">0h</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reopen-stat-card client">
+                            <div class="reopen-stat-icon">👤</div>
+                            <div class="reopen-stat-content">
+                                <div class="reopen-stat-title">Alterações do Cliente</div>
+                                <div class="reopen-stat-row">
+                                    <span class="reopen-stat-label">Obras:</span>
+                                    <span class="reopen-stat-value" id="adminReopenClientCount">0</span>
+                                </div>
+                                <div class="reopen-stat-row highlight">
+                                    <span class="reopen-stat-label">Horas:</span>
+                                    <span class="reopen-stat-value" id="adminReopenClientHours">0h</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="reopen-stat-card error">
+                            <div class="reopen-stat-icon">⚠️</div>
+                            <div class="reopen-stat-content">
+                                <div class="reopen-stat-title">Erros Internos</div>
+                                <div class="reopen-stat-row">
+                                    <span class="reopen-stat-label">Obras:</span>
+                                    <span class="reopen-stat-value" id="adminReopenErrorCount">0</span>
+                                </div>
+                                <div class="reopen-stat-row highlight">
+                                    <span class="reopen-stat-label">Horas:</span>
+                                    <span class="reopen-stat-value" id="adminReopenErrorHours">0h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 25px 0 15px; color: var(--admin-color);">👥 Horas por Utilizador</h4>
+                    <div class="admin-reopen-users-table" id="adminReopenUsersTable"></div>
+
+                    <h4 style="margin: 25px 0 15px; color: var(--admin-color);">📋 Detalhe por Obra</h4>
+                    <div class="admin-reopen-projects-list" id="adminReopenProjectsList"></div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="exportAdminReopensCSV()">📄 Exportar CSV</button>
                     </div>
 
                 </div>
