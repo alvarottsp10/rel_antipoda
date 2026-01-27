@@ -1045,7 +1045,6 @@ function getTeamDayInfo(dateStr, username) {
     
     const isFutureDate = checkDate > today;
     
-    // Primeiro verificar dados do calendário do utilizador (férias, faltas marcadas)
     if (calendarData[dateStr]) {
         const entry = calendarData[dateStr];
         if (entry.type === 'vacation') {
@@ -1059,28 +1058,23 @@ function getTeamDayInfo(dateStr, username) {
         }
     }
     
-    // Verificar feriados (antes de verificar se é futuro, para que apareçam sempre)
     const holiday = isHoliday(dateStr);
     if (holiday) {
         return { type: 'holiday', color: 'holiday', icon: '🎉', note: holiday };
     }
     
-    // Verificar domingos (antes de verificar se é futuro, para que apareçam sempre)
     if (isWeekend(date)) {
         return { type: 'weekend', color: 'weekend', icon: '🏠', note: '' };
     }
     
-    // Agora sim, verificar se é futuro
     if (isFutureDate) {
         return { type: 'future', color: 'empty', icon: '', note: '' };
     }
     
-    // Verificar se o utilizador trabalhou neste dia
     if (hasUserWorkedOnDay(dateStr, username)) {
         return { type: 'worked', color: 'worked', icon: '💼', note: '' };
     }
     
-    // Se é um dia passado sem registo, marcar como falta automática
     if (checkDate <= yesterday) {
         return { type: 'auto-absence', color: 'auto-absence', icon: '⚠️', note: 'Falta (sem registo)' };
     }
@@ -1453,18 +1447,31 @@ function getTeamVacationsSummary() {
 function updateProjectHoursView() {
     if (!isUserAdmin()) return;
     
+    populateAdminProjectFilters();
+    
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const obraFilter = document.getElementById('projectHoursObraSelect')?.value || 'all';
     const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
+    const subcategoryFilter = document.getElementById('projectHoursSubcategoryFilter')?.value || 'all';
+    const userFilter = document.getElementById('projectHoursUserFilter')?.value || 'all';
     const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
     
     const allProjects = getAllUsersProjects();
     const allHistory = getAllUsersHistory();
     
+    let filteredHistory = allHistory.filter(session => {
+        if (session.workType !== 'project' || !session.workCode) return false;
+        
+        if (deptFilter !== 'all' && session.projectType !== deptFilter) return false;
+        if (subcategoryFilter !== 'all' && session.subcategory !== subcategoryFilter) return false;
+        if (userFilter !== 'all' && session.userName !== userFilter) return false;
+        
+        return true;
+    });
+
     const projectHours = {};
     
-    allHistory.forEach(session => {
-        if (session.workType !== 'project' || !session.workCode) return;
-        
+    filteredHistory.forEach(session => {
         if (!projectHours[session.workCode]) {
             projectHours[session.workCode] = {
                 workCode: session.workCode,
@@ -1472,12 +1479,13 @@ function updateProjectHoursView() {
                 totalSeconds: 0,
                 users: {},
                 departments: {},
-                sessions: 0
+                subcategories: {},
+                sessions: []
             };
         }
         
         projectHours[session.workCode].totalSeconds += session.duration;
-        projectHours[session.workCode].sessions++;
+        projectHours[session.workCode].sessions.push(session);
         
         if (session.userName) {
             if (!projectHours[session.workCode].users[session.userName]) {
@@ -1491,6 +1499,13 @@ function updateProjectHoursView() {
                 projectHours[session.workCode].departments[session.projectType] = 0;
             }
             projectHours[session.workCode].departments[session.projectType] += session.duration;
+        }
+        
+        if (session.subcategory) {
+            if (!projectHours[session.workCode].subcategories[session.subcategory]) {
+                projectHours[session.workCode].subcategories[session.subcategory] = 0;
+            }
+            projectHours[session.workCode].subcategories[session.subcategory] += session.duration;
         }
     });
     
@@ -1507,8 +1522,8 @@ function updateProjectHoursView() {
         projectsArray = projectsArray.filter(p => p.status === statusFilter);
     }
     
-    if (deptFilter !== 'all') {
-        projectsArray = projectsArray.filter(p => p.departments[deptFilter] > 0);
+    if (obraFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => p.workCode === obraFilter);
     }
     
     if (searchTerm) {
@@ -1521,6 +1536,7 @@ function updateProjectHoursView() {
     projectsArray.sort((a, b) => b.totalSeconds - a.totalSeconds);
     
     const totalHours = projectsArray.reduce((sum, p) => sum + p.totalSeconds, 0);
+    const totalSessions = projectsArray.reduce((sum, p) => sum + p.sessions.length, 0);
     const uniqueUsers = new Set();
     projectsArray.forEach(p => {
         Object.keys(p.users).forEach(u => uniqueUsers.add(u));
@@ -1528,86 +1544,142 @@ function updateProjectHoursView() {
     
     document.getElementById('totalProjectsCount').textContent = projectsArray.length;
     document.getElementById('totalProjectsHours').textContent = formatHoursMinutes(totalHours);
+    document.getElementById('totalProjectsSessions').textContent = totalSessions;
     document.getElementById('totalProjectsUsers').textContent = uniqueUsers.size;
     
-    renderProjectHoursTable(projectsArray);
+    renderAdminProjectHoursList(projectsArray);
 }
 
-function renderProjectHoursTable(projects) {
+function populateAdminProjectFilters() {
+    const obraSelect = document.getElementById('projectHoursObraSelect');
+    const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    
+    if (obraSelect && obraSelect.options.length <= 1) {
+        const allProjects = getAllUsersProjects();
+        let filteredProjects = allProjects;
+        
+        if (statusFilter === 'open') {
+            filteredProjects = allProjects.filter(p => p.status === 'open');
+        } else if (statusFilter === 'closed') {
+            filteredProjects = allProjects.filter(p => p.status === 'closed');
+        }
+        
+        filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
+        
+        filteredProjects.forEach(project => {
+            const statusIcon = project.status === 'open' ? '🟢' : '🔴';
+            obraSelect.innerHTML += `<option value="${project.workCode}">${statusIcon} ${project.workCode} - ${project.name || 'Sem nome'}</option>`;
+        });
+    }
+    
+    const userSelect = document.getElementById('projectHoursUserFilter');
+    if (userSelect && userSelect.options.length <= 1) {
+        const users = getUsers();
+        users.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        users.forEach(user => {
+            userSelect.innerHTML += `<option value="${user.firstName} ${user.lastName}">${user.firstName} ${user.lastName}</option>`;
+        });
+    }
+}
+
+function updateAdminProjectSelect() {
+    const obraSelect = document.getElementById('projectHoursObraSelect');
+    const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    
+    if (!obraSelect) return;
+    
+    obraSelect.innerHTML = '<option value="all">Todas as Obras</option>';
+    
+    const allProjects = getAllUsersProjects();
+    let filteredProjects = allProjects;
+    
+    if (statusFilter === 'open') {
+        filteredProjects = allProjects.filter(p => p.status === 'open');
+    } else if (statusFilter === 'closed') {
+        filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
+    
+    filteredProjects.forEach(project => {
+        const statusIcon = project.status === 'open' ? '🟢' : '🔴';
+        obraSelect.innerHTML += `<option value="${project.workCode}">${statusIcon} ${project.workCode} - ${project.name || 'Sem nome'}</option>`;
+    });
+}
+
+function updateAdminSubcategories() {
+    const department = document.getElementById('projectHoursDeptFilter')?.value || 'all';
+    const subcategorySelect = document.getElementById('projectHoursSubcategoryFilter');
+    const subcategoryGroup = document.getElementById('adminSubcategoryGroup');
+    
+    if (!subcategorySelect) return;
+    
+    subcategorySelect.innerHTML = '<option value="all">Todas</option>';
+    
+    const subcategories = {
+        'projeto': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
+        'eletrico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
+        'desenvolvimento': [],
+        'orcamentacao': ['Orçamento', 'Ordem de produção']
+    };
+    
+    if (department !== 'all' && subcategories[department] && subcategories[department].length > 0) {
+        if (subcategoryGroup) subcategoryGroup.style.display = 'flex';
+        subcategories[department].forEach(sub => {
+            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+        });
+    } else {
+        if (subcategoryGroup) subcategoryGroup.style.display = department === 'all' ? 'flex' : 'none';
+        
+        if (department === 'all') {
+            const allSubs = new Set();
+            Object.values(subcategories).forEach(subs => {
+                subs.forEach(sub => allSubs.add(sub));
+            });
+            Array.from(allSubs).sort().forEach(sub => {
+                subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+        }
+    }
+}
+
+function renderAdminProjectHoursList(projectsArray) {
     const container = document.getElementById('projectHoursTable');
     if (!container) return;
     
-    if (projects.length === 0) {
+    if (projectsArray.length === 0) {
         container.innerHTML = `
-            <div class="empty-team-data">
-                <div class="empty-icon">📋</div>
-                <p>Sem obras para mostrar</p>
-                <p style="font-size: 12px; margin-top: 10px;">Ajuste os filtros ou registe horas em obras</p>
+            <div class="horas-obra-empty">
+                <div class="horas-obra-empty-icon">📋</div>
+                <p>Sem registos para os filtros selecionados</p>
+                <p style="font-size: 12px; margin-top: 10px;">Experimente alterar os filtros ou selecionar uma obra diferente</p>
             </div>
         `;
         return;
     }
     
-    let html = `
-        <div class="project-hours-row header">
-            <div>Obra</div>
-            <div style="text-align: center;">⏱️ Total</div>
-            <div style="text-align: center;">👥 Utilizadores</div>
-            <div style="text-align: center;">📝 Sessões</div>
-            <div style="text-align: center;">📊 Estado</div>
-        </div>
-    `;
-    
-    projects.forEach(project => {
-        const userCount = Object.keys(project.users).length;
-        const statusBadge = project.status === 'closed' 
-            ? '<span class="status-badge closed">Fechada</span>' 
-            : '<span class="status-badge open">Aberta</span>';
-        
-        const deptBadges = Object.keys(project.departments).map(dept => {
-            const deptHours = formatHoursMinutes(project.departments[dept]);
-            return `<span class="dept-mini-badge ${dept}">${getDepartmentName(dept)}: ${deptHours}</span>`;
-        }).join(' ');
+    let html = '';
+    projectsArray.forEach(data => {
+        const statusClass = data.status === 'open' ? 'open' : 'closed';
+        const statusText = data.status === 'open' ? 'Aberta' : 'Concluída';
+        const safeId = 'admin_' + data.workCode.replace(/[^a-zA-Z0-9]/g, '_');
         
         html += `
-            <div class="project-hours-row" onclick="toggleProjectDetails('${project.workCode}')">
-                <div class="project-info-col">
-                    <div class="project-code">${project.workCode}</div>
-                    <div class="project-name">${project.workName || 'Sem nome'}</div>
+            <div class="horas-obra-card">
+                <div class="horas-obra-card-header" onclick="toggleAdminProjectDetails('${safeId}')">
+                    <div class="horas-obra-card-info">
+                        <div class="horas-obra-card-code">${data.workCode}</div>
+                        <div class="horas-obra-card-name">${data.workName || 'Sem nome'}</div>
+                    </div>
+                    <div class="horas-obra-card-stats">
+                        <span class="horas-obra-status-badge ${statusClass}">${statusText}</span>
+                        <span class="horas-obra-card-sessions">${data.sessions.length} sessões</span>
+                        <span class="horas-obra-card-hours">${formatHoursMinutes(data.totalSeconds)}</span>
+                    </div>
                 </div>
-                <div class="hours-col total">${formatHoursMinutes(project.totalSeconds)}</div>
-                <div class="users-col">${userCount}</div>
-                <div class="sessions-col">${project.sessions}</div>
-                <div class="status-col">${statusBadge}</div>
-            </div>
-            <div class="project-details-row hidden" id="details-${project.workCode.replace(/[^a-zA-Z0-9]/g, '_')}">
-                <div class="project-details-content">
-                    <div class="details-section">
-                        <h5>👥 Horas por Utilizador</h5>
-                        <div class="user-hours-list">
-                            ${Object.entries(project.users)
-                                .sort((a, b) => b[1] - a[1])
-                                .map(([userName, seconds]) => `
-                                    <div class="user-hours-item">
-                                        <span class="user-name">${userName}</span>
-                                        <span class="user-hours">${formatHoursMinutes(seconds)}</span>
-                                    </div>
-                                `).join('')}
-                        </div>
-                    </div>
-                    <div class="details-section">
-                        <h5>🏢 Horas por Departamento</h5>
-                        <div class="dept-hours-list">
-                            ${Object.entries(project.departments)
-                                .sort((a, b) => b[1] - a[1])
-                                .map(([dept, seconds]) => `
-                                    <div class="dept-hours-item">
-                                        <span class="dept-name">${getDepartmentName(dept)}</span>
-                                        <span class="dept-hours">${formatHoursMinutes(seconds)}</span>
-                                    </div>
-                                `).join('')}
-                        </div>
-                    </div>
+                <div class="horas-obra-card-details hidden" id="${safeId}">
+                    ${renderAdminProjectBreakdown(data)}
+                    ${renderAdminProjectSessions(data.sessions)}
                 </div>
             </div>
         `;
@@ -1616,11 +1688,88 @@ function renderProjectHoursTable(projects) {
     container.innerHTML = html;
 }
 
-function toggleProjectDetails(workCode) {
-    const safeId = workCode.replace(/[^a-zA-Z0-9]/g, '_');
-    const detailsRow = document.getElementById(`details-${safeId}`);
-    if (detailsRow) {
-        detailsRow.classList.toggle('hidden');
+function renderAdminProjectBreakdown(data) {
+    let html = '<div class="horas-obra-breakdown">';
+    
+    if (Object.keys(data.users).length > 0) {
+        html += '<h5>👥 Por Utilizador</h5><div class="horas-obra-breakdown-grid">';
+        Object.entries(data.users).sort((a, b) => b[1] - a[1]).forEach(([userName, seconds]) => {
+            html += `
+                <div class="horas-obra-breakdown-item department">
+                    <div class="horas-obra-breakdown-label">${userName}</div>
+                    <div class="horas-obra-breakdown-value">${formatHoursMinutes(seconds)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    if (Object.keys(data.departments).length > 0) {
+        html += '<h5 style="margin-top: 15px;">🏢 Por Departamento</h5><div class="horas-obra-breakdown-grid">';
+        Object.entries(data.departments).sort((a, b) => b[1] - a[1]).forEach(([dept, seconds]) => {
+            html += `
+                <div class="horas-obra-breakdown-item department">
+                    <div class="horas-obra-breakdown-label">${getDepartmentName(dept)}</div>
+                    <div class="horas-obra-breakdown-value">${formatHoursMinutes(seconds)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    if (Object.keys(data.subcategories).length > 0) {
+        html += '<h5 style="margin-top: 15px;">📂 Por Subcategoria</h5><div class="horas-obra-breakdown-grid">';
+        Object.entries(data.subcategories).sort((a, b) => b[1] - a[1]).forEach(([sub, seconds]) => {
+            html += `
+                <div class="horas-obra-breakdown-item subcategory">
+                    <div class="horas-obra-breakdown-label">${sub}</div>
+                    <div class="horas-obra-breakdown-value">${formatHoursMinutes(seconds)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function renderAdminProjectSessions(sessions) {
+    if (sessions.length === 0) return '';
+    
+    const sortedSessions = [...sessions].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    const displaySessions = sortedSessions.slice(0, 15);
+    
+    let html = '<div class="horas-obra-sessions-list">';
+    html += `<h5>📝 Últimas Sessões ${sessions.length > 15 ? `(${displaySessions.length} de ${sessions.length})` : ''}</h5>`;
+    
+    displaySessions.forEach(session => {
+        const date = new Date(session.startTime);
+        const dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const dept = getDepartmentName(session.projectType) || 'N/A';
+        const sub = session.subcategory || '';
+        const userName = session.userName || 'Desconhecido';
+        
+        html += `
+            <div class="horas-obra-session-item">
+                <div class="horas-obra-session-info">
+                    <div class="horas-obra-session-date">${dateStr} às ${timeStr} - ${userName}</div>
+                    <div class="horas-obra-session-meta">${dept}${sub ? ' • ' + sub : ''}</div>
+                </div>
+                <div class="horas-obra-session-duration">${formatHoursMinutes(session.duration)}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function toggleAdminProjectDetails(id) {
+    const details = document.getElementById(id);
+    if (details) {
+        details.classList.toggle('hidden');
     }
 }
 
@@ -1628,90 +1777,67 @@ function exportProjectHoursCSV() {
     if (!isUserAdmin()) return;
     
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const obraFilter = document.getElementById('projectHoursObraSelect')?.value || 'all';
     const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
+    const subcategoryFilter = document.getElementById('projectHoursSubcategoryFilter')?.value || 'all';
+    const userFilter = document.getElementById('projectHoursUserFilter')?.value || 'all';
     const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
     
     const allProjects = getAllUsersProjects();
     const allHistory = getAllUsersHistory();
     
-    const projectHours = {};
-    
-    allHistory.forEach(session => {
-        if (session.workType !== 'project' || !session.workCode) return;
-        
-        if (!projectHours[session.workCode]) {
-            projectHours[session.workCode] = {
-                workCode: session.workCode,
-                workName: session.workName || '',
-                totalSeconds: 0,
-                users: {},
-                departments: {},
-                sessions: 0
-            };
-        }
-        
-        projectHours[session.workCode].totalSeconds += session.duration;
-        projectHours[session.workCode].sessions++;
-        
-        if (session.userName) {
-            if (!projectHours[session.workCode].users[session.userName]) {
-                projectHours[session.workCode].users[session.userName] = 0;
-            }
-            projectHours[session.workCode].users[session.userName] += session.duration;
-        }
-        
-        if (session.projectType) {
-            if (!projectHours[session.workCode].departments[session.projectType]) {
-                projectHours[session.workCode].departments[session.projectType] = 0;
-            }
-            projectHours[session.workCode].departments[session.projectType] += session.duration;
-        }
+    let filteredHistory = allHistory.filter(session => {
+        if (session.workType !== 'project' || !session.workCode) return false;
+        if (deptFilter !== 'all' && session.projectType !== deptFilter) return false;
+        if (subcategoryFilter !== 'all' && session.subcategory !== subcategoryFilter) return false;
+        if (userFilter !== 'all' && session.userName !== userFilter) return false;
+        return true;
     });
     
-    allProjects.forEach(project => {
-        if (projectHours[project.workCode]) {
-            projectHours[project.workCode].status = project.status || 'open';
-            projectHours[project.workCode].workName = project.name || projectHours[project.workCode].workName;
-        }
-    });
-    
-    let projectsArray = Object.values(projectHours);
-    
-    if (statusFilter !== 'all') {
-        projectsArray = projectsArray.filter(p => p.status === statusFilter);
-    }
-    
-    if (deptFilter !== 'all') {
-        projectsArray = projectsArray.filter(p => p.departments[deptFilter] > 0);
+    if (statusFilter !== 'all' || obraFilter !== 'all') {
+        const validCodes = new Set();
+        allProjects.forEach(p => {
+            if (statusFilter !== 'all' && p.status !== statusFilter) return;
+            if (obraFilter !== 'all' && p.workCode !== obraFilter) return;
+            validCodes.add(p.workCode);
+        });
+        filteredHistory = filteredHistory.filter(s => validCodes.has(s.workCode));
     }
     
     if (searchTerm) {
-        projectsArray = projectsArray.filter(p => 
-            p.workCode.toLowerCase().includes(searchTerm) || 
-            p.workName.toLowerCase().includes(searchTerm)
-        );
+        filteredHistory = filteredHistory.filter(s => {
+            const project = allProjects.find(p => p.workCode === s.workCode);
+            return s.workCode.toLowerCase().includes(searchTerm) || 
+                   (project?.name || '').toLowerCase().includes(searchTerm);
+        });
     }
     
-    projectsArray.sort((a, b) => b.totalSeconds - a.totalSeconds);
+    let csv = 'Código Obra,Nome Obra,Estado,Utilizador,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Duração (h),Comentário\n';
     
-    let csv = 'Código Obra,Nome Obra,Estado,Total Horas,Sessões,Utilizadores,Projeto (h),Elétrico (h),Desenvolvimento (h),Orçamentação (h)\n';
-    
-    projectsArray.forEach(project => {
-        const status = project.status === 'closed' ? 'Fechada' : 'Aberta';
-        const totalHours = (project.totalSeconds / 3600).toFixed(2);
-        const userCount = Object.keys(project.users).length;
-        const projHours = ((project.departments['projeto'] || 0) / 3600).toFixed(2);
-        const eletHours = ((project.departments['eletrico'] || 0) / 3600).toFixed(2);
-        const devHours = ((project.departments['desenvolvimento'] || 0) / 3600).toFixed(2);
-        const orcHours = ((project.departments['orcamentacao'] || 0) / 3600).toFixed(2);
+    filteredHistory.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)).forEach(session => {
+        const project = allProjects.find(p => p.workCode === session.workCode);
+        const startDate = new Date(session.startTime);
+        const endDate = new Date(session.endTime);
         
-        csv += `"${project.workCode}","${project.workName}","${status}","${totalHours}","${project.sessions}","${userCount}","${projHours}","${eletHours}","${devHours}","${orcHours}"\n`;
+        const dateStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
+        const startTimeStr = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+        const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+        const durationHours = (session.duration / 3600).toFixed(2);
+        
+        const status = project ? (project.status === 'open' ? 'Aberta' : 'Concluída') : 'N/A';
+        const projectName = project ? (project.name || '') : '';
+        const dept = getDepartmentName(session.projectType) || '';
+        const sub = session.subcategory || '';
+        const comment = (session.comment || '').replace(/"/g, '""');
+        const userName = session.userName || '';
+        
+        csv += `"${session.workCode}","${projectName}","${status}","${userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${durationHours}","${comment}"\n`;
     });
     
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `horas_por_obra_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `horas_por_obra_equipa_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
 }
 
@@ -1728,11 +1854,9 @@ function exportReopensCSV() {
         
         const status = project.status === 'closed' ? 'Fechada' : 'Aberta';
         
-        // Processar cada tipo de reabertura separadamente
         const clientReopens = project.reopenHistory.filter(r => r.reason === 'client_change');
         const errorReopens = project.reopenHistory.filter(r => r.reason === 'our_error');
         
-        // Calcular horas para alterações do cliente
         if (clientReopens.length > 0) {
             const firstClientDate = new Date(Math.min(...clientReopens.map(r => new Date(r.date))));
             const clientUsers = {};
@@ -1766,7 +1890,6 @@ function exportReopensCSV() {
             });
         }
         
-        // Calcular horas para erros internos
         if (errorReopens.length > 0) {
             const firstErrorDate = new Date(Math.min(...errorReopens.map(r => new Date(r.date))));
             const errorUsers = {};

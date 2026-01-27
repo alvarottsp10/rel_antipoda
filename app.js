@@ -2111,6 +2111,8 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
     if (parentTab === 'obras') {
         if (subTabName === 'lista') {
             loadProjectsList();
+        } else if (subTabName === 'horas') {
+            initHorasPorObra();
         } else if (subTabName === 'reaberturas') {
             if (typeof updateReopensView === 'function') {
                 updateReopensView();
@@ -2631,15 +2633,19 @@ function updateWeeksWeekFilter() {
 function updateReopensView() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     
-    // Usa dados globais dos projetos e histórico pessoal do utilizador
     const allProjects = JSON.parse(localStorage.getItem('projects_global')) || [];
     const myHistory = getWorkHistory();
+    
+    console.log('updateReopensView - Total projects:', allProjects.length);
+    console.log('updateReopensView - My history sessions:', myHistory.length);
     
     const clientReopens = [];
     const errorReopens = [];
     
     allProjects.forEach(project => {
         if (!project.reopenHistory || project.reopenHistory.length === 0) return;
+        
+        console.log('Project with reopenHistory:', project.workCode, project.reopenHistory);
         
         const clientReopenDates = project.reopenHistory
             .filter(r => r.reason === 'client_change')
@@ -2657,13 +2663,19 @@ function updateReopensView() {
         
         const projectSessions = myHistory.filter(s => s.workType === 'project' && s.workCode === project.workCode);
         
+        console.log('Sessions for', project.workCode, ':', projectSessions.length);
+        
         projectSessions.forEach(session => {
             const sessionDate = new Date(session.startTime);
+            
             if (firstClientReopen && sessionDate >= firstClientReopen) {
                 clientHours += session.duration;
+                console.log('Adding to clientHours:', session.duration, 'from session on', sessionDate);
             }
+            
             if (firstErrorReopen && sessionDate >= firstErrorReopen) {
                 errorHours += session.duration;
+                console.log('Adding to errorHours:', session.duration, 'from session on', sessionDate);
             }
         });
         
@@ -2692,6 +2704,9 @@ function updateReopensView() {
     
     const clientTotalHours = clientReopens.reduce((sum, p) => sum + p.totalHours, 0);
     const errorTotalHours = errorReopens.reduce((sum, p) => sum + p.totalHours, 0);
+    
+    console.log('Final - Client reopens:', clientReopens.length, 'Total hours:', clientTotalHours);
+    console.log('Final - Error reopens:', errorReopens.length, 'Total hours:', errorTotalHours);
     
     document.getElementById('reopenClientCount').textContent = clientReopens.length;
     document.getElementById('reopenClientHours').textContent = formatHoursMinutes(clientTotalHours);
@@ -2746,6 +2761,315 @@ function toggleReopenDetails(id) {
     if (details) {
         details.classList.toggle('hidden');
     }
+}
+
+
+function initHorasPorObra() {
+    populateHorasPorObraSelect();
+    updateHorasPorObraSubcategories();
+    updateHorasPorObra();
+}
+
+function populateHorasPorObraSelect() {
+    const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const select = document.getElementById('horasObraSelect');
+    const allProjects = getProjects();
+    
+    let filteredProjects = allProjects;
+    if (statusFilter === 'open') {
+        filteredProjects = allProjects.filter(p => p.status === 'open');
+    } else if (statusFilter === 'closed') {
+        filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
+    
+    select.innerHTML = '<option value="all">Todas as Obras</option>';
+    filteredProjects.forEach(project => {
+        const statusIcon = project.status === 'open' ? '🟢' : '🔴';
+        select.innerHTML += `<option value="${project.workCode}">${statusIcon} ${project.workCode} - ${project.name || 'Sem nome'}</option>`;
+    });
+}
+
+function updateHorasPorObraSubcategories() {
+    const department = document.getElementById('horasObraDepartmentFilter').value;
+    const subcategorySelect = document.getElementById('horasObraSubcategoryFilter');
+    const subcategoryGroup = document.getElementById('horasObraSubcategoryGroup');
+    
+    subcategorySelect.innerHTML = '<option value="all">Todas</option>';
+    
+    if (department !== 'all' && subcategories[department] && subcategories[department].length > 0) {
+        subcategoryGroup.style.display = 'flex';
+        subcategories[department].forEach(sub => {
+            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+        });
+    } else {
+        subcategoryGroup.style.display = department === 'all' ? 'flex' : 'none';
+        
+        if (department === 'all') {
+            const allSubs = new Set();
+            Object.values(subcategories).forEach(subs => {
+                subs.forEach(sub => allSubs.add(sub));
+            });
+            Array.from(allSubs).sort().forEach(sub => {
+                subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+        }
+    }
+}
+
+function updateHorasPorObra() {
+    const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const selectedProject = document.getElementById('horasObraSelect').value;
+    const departmentFilter = document.getElementById('horasObraDepartmentFilter').value;
+    const subcategoryFilter = document.getElementById('horasObraSubcategoryFilter').value;
+    
+    populateHorasPorObraSelect();
+    
+    const allProjects = getProjects();
+    const myHistory = getWorkHistory();
+        let filteredProjects = allProjects;
+    if (statusFilter === 'open') {
+        filteredProjects = allProjects.filter(p => p.status === 'open');
+    } else if (statusFilter === 'closed') {
+        filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (selectedProject !== 'all') {
+        filteredProjects = filteredProjects.filter(p => p.workCode === selectedProject);
+    }
+    
+    let filteredSessions = myHistory.filter(s => s.workType === 'project');
+    
+    if (departmentFilter !== 'all') {
+        filteredSessions = filteredSessions.filter(s => s.projectType === departmentFilter);
+    }
+    
+    if (subcategoryFilter !== 'all') {
+        filteredSessions = filteredSessions.filter(s => s.subcategory === subcategoryFilter);
+    }
+    
+    const projectsData = {};
+    
+    filteredProjects.forEach(project => {
+        const projectSessions = filteredSessions.filter(s => s.workCode === project.workCode);
+        
+        if (projectSessions.length > 0 || selectedProject === project.workCode) {
+            const totalSeconds = projectSessions.reduce((sum, s) => sum + s.duration, 0);
+            
+            const byDepartment = {};
+            projectSessions.forEach(s => {
+                const dept = s.projectType || 'outros';
+                if (!byDepartment[dept]) byDepartment[dept] = 0;
+                byDepartment[dept] += s.duration;
+            });
+            
+            const bySubcategory = {};
+            projectSessions.forEach(s => {
+                const sub = s.subcategory || 'Sem subcategoria';
+                if (!bySubcategory[sub]) bySubcategory[sub] = 0;
+                bySubcategory[sub] += s.duration;
+            });
+            
+            projectsData[project.workCode] = {
+                project: project,
+                sessions: projectSessions,
+                totalSeconds: totalSeconds,
+                byDepartment: byDepartment,
+                bySubcategory: bySubcategory
+            };
+        }
+    });
+    
+    const totalHours = Object.values(projectsData).reduce((sum, p) => sum + p.totalSeconds, 0);
+    const totalSessions = Object.values(projectsData).reduce((sum, p) => sum + p.sessions.length, 0);
+    const totalProjects = Object.keys(projectsData).length;
+    
+    document.getElementById('horasObraTotalHours').textContent = formatHoursMinutes(totalHours);
+    document.getElementById('horasObraTotalSessions').textContent = totalSessions;
+    document.getElementById('horasObraTotalProjects').textContent = totalProjects;
+    
+    renderHorasPorObraList(projectsData);
+}
+
+function renderHorasPorObraList(projectsData) {
+    const container = document.getElementById('horasObraList');
+    
+    if (Object.keys(projectsData).length === 0) {
+        container.innerHTML = `
+            <div class="horas-obra-empty">
+                <div class="horas-obra-empty-icon">📋</div>
+                <p>Sem registos para os filtros selecionados</p>
+                <p style="font-size: 12px; margin-top: 10px;">Experimente alterar os filtros ou selecionar uma obra diferente</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const sortedProjects = Object.values(projectsData).sort((a, b) => b.totalSeconds - a.totalSeconds);
+    
+    let html = '';
+    sortedProjects.forEach(data => {
+        const project = data.project;
+        const statusClass = project.status === 'open' ? 'open' : 'closed';
+        const statusText = project.status === 'open' ? 'Aberta' : 'Concluída';
+        const safeId = project.workCode.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        html += `
+            <div class="horas-obra-card">
+                <div class="horas-obra-card-header" onclick="toggleHorasObraDetails('${safeId}')">
+                    <div class="horas-obra-card-info">
+                        <div class="horas-obra-card-code">${project.workCode}</div>
+                        <div class="horas-obra-card-name">${project.name || 'Sem nome'}</div>
+                    </div>
+                    <div class="horas-obra-card-stats">
+                        <span class="horas-obra-status-badge ${statusClass}">${statusText}</span>
+                        <span class="horas-obra-card-sessions">${data.sessions.length} sessões</span>
+                        <span class="horas-obra-card-hours">${formatHoursMinutes(data.totalSeconds)}</span>
+                    </div>
+                </div>
+                <div class="horas-obra-card-details hidden" id="horas-obra-${safeId}">
+                    ${renderHorasObraBreakdown(data)}
+                    ${renderHorasObraSessions(data.sessions)}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function renderHorasObraBreakdown(data) {
+    let html = '<div class="horas-obra-breakdown">';
+    
+    if (Object.keys(data.byDepartment).length > 0) {
+        html += '<h5>🏢 Por Departamento</h5><div class="horas-obra-breakdown-grid">';
+        Object.entries(data.byDepartment).sort((a, b) => b[1] - a[1]).forEach(([dept, seconds]) => {
+            html += `
+                <div class="horas-obra-breakdown-item department">
+                    <div class="horas-obra-breakdown-label">${getDepartmentName(dept)}</div>
+                    <div class="horas-obra-breakdown-value">${formatHoursMinutes(seconds)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    if (Object.keys(data.bySubcategory).length > 0) {
+        html += '<h5 style="margin-top: 15px;">📂 Por Subcategoria</h5><div class="horas-obra-breakdown-grid">';
+        Object.entries(data.bySubcategory).sort((a, b) => b[1] - a[1]).forEach(([sub, seconds]) => {
+            html += `
+                <div class="horas-obra-breakdown-item subcategory">
+                    <div class="horas-obra-breakdown-label">${sub}</div>
+                    <div class="horas-obra-breakdown-value">${formatHoursMinutes(seconds)}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function renderHorasObraSessions(sessions) {
+    if (sessions.length === 0) return '';
+    
+    const sortedSessions = [...sessions].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    
+    const displaySessions = sortedSessions.slice(0, 10);
+    
+    let html = '<div class="horas-obra-sessions-list">';
+    html += `<h5>📝 Últimas Sessões ${sessions.length > 10 ? `(${displaySessions.length} de ${sessions.length})` : ''}</h5>`;
+    
+    displaySessions.forEach(session => {
+        const date = new Date(session.startTime);
+        const dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const dept = getDepartmentName(session.projectType) || 'N/A';
+        const sub = session.subcategory || '';
+        
+        html += `
+            <div class="horas-obra-session-item">
+                <div class="horas-obra-session-info">
+                    <div class="horas-obra-session-date">${dateStr} às ${timeStr}</div>
+                    <div class="horas-obra-session-meta">${dept}${sub ? ' • ' + sub : ''}</div>
+                </div>
+                <div class="horas-obra-session-duration">${formatHoursMinutes(session.duration)}</div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function toggleHorasObraDetails(id) {
+    const details = document.getElementById('horas-obra-' + id);
+    if (details) {
+        details.classList.toggle('hidden');
+    }
+}
+
+function exportHorasPorObraCSV() {
+    const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const selectedProject = document.getElementById('horasObraSelect').value;
+    const departmentFilter = document.getElementById('horasObraDepartmentFilter').value;
+    const subcategoryFilter = document.getElementById('horasObraSubcategoryFilter').value;
+    
+    const allProjects = getProjects();
+    const myHistory = getWorkHistory();
+    
+    let filteredProjects = allProjects;
+    if (statusFilter === 'open') {
+        filteredProjects = allProjects.filter(p => p.status === 'open');
+    } else if (statusFilter === 'closed') {
+        filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (selectedProject !== 'all') {
+        filteredProjects = filteredProjects.filter(p => p.workCode === selectedProject);
+    }
+    
+    let filteredSessions = myHistory.filter(s => s.workType === 'project');
+    
+    if (departmentFilter !== 'all') {
+        filteredSessions = filteredSessions.filter(s => s.projectType === departmentFilter);
+    }
+    
+    if (subcategoryFilter !== 'all') {
+        filteredSessions = filteredSessions.filter(s => s.subcategory === subcategoryFilter);
+    }
+    
+    const projectCodes = new Set(filteredProjects.map(p => p.workCode));
+    filteredSessions = filteredSessions.filter(s => projectCodes.has(s.workCode));
+    
+    let csv = 'Código Obra,Nome Obra,Estado,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Duração (h),Comentário\n';
+    
+    filteredSessions.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)).forEach(session => {
+        const project = allProjects.find(p => p.workCode === session.workCode);
+        const startDate = new Date(session.startTime);
+        const endDate = new Date(session.endTime);
+        
+        const dateStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
+        const startTimeStr = `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
+        const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+        const durationHours = (session.duration / 3600).toFixed(2);
+        
+        const status = project ? (project.status === 'open' ? 'Aberta' : 'Concluída') : 'N/A';
+        const projectName = project ? (project.name || '') : '';
+        const dept = getDepartmentName(session.projectType) || '';
+        const sub = session.subcategory || '';
+        const comment = (session.comment || '').replace(/"/g, '""');
+        
+        csv += `"${session.workCode}","${projectName}","${status}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${durationHours}","${comment}"\n`;
+    });
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `horas_por_obra_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
 }
 
 const originalShowSubTab = window.showSubTab;
