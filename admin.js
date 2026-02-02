@@ -141,7 +141,7 @@ function promoteToAdmin(username) {
         }
     });
 }
-
+      
 function demoteFromAdmin(username) {
     if (!isUserAdmin()) {
         showAlert('Erro', 'Apenas administradores podem remover privilégios.');
