@@ -11,7 +11,10 @@
     <title>Folha de Controlo de Obra - Relógio</title>
 
     <link rel="stylesheet" href="styles.css">
-
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 </head>
 
 <body>
@@ -496,6 +499,18 @@
 
             <div class="form-group">
 
+                <label>⏰ Tipo de Horas</label>
+
+                <select id="manualHoursType">
+                    <option value="normal">📅 Horas Normais</option>
+                    <option value="extra">⏰ Horas Extra</option>
+                    <option value="weekend">🎉 Fim de Semana</option>
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
                 <label>Comentário (opcional)</label>
 
                 <textarea id="manualComment" placeholder="Adicione observações..."></textarea>
@@ -731,12 +746,26 @@
     <div class="container">
 
         <div class="header" id="mainHeader">
+            
+            <!-- Logo Antípoda (fixo) -->
+            <div class="header-logo">
+                <img src="antipoda_lda_logo.png" alt="Antípoda" class="company-logo-fixed">
+            </div>
 
-            <h1>⏱️ Controlo de Obra</h1>
+            <!-- Título Central -->
+            <div class="header-title">
+                <h1>⏱️ Controlo de Obra</h1>
+                <p>Sistema de Gestão de Horas de Trabalho</p>
+                <div id="adminBadge" class="admin-badge hidden">🛡️ ADMINISTRADOR</div>
+            </div>
 
-            <p>Sistema de Gestão de Horas de Trabalho</p>
-
-            <div id="adminBadge" class="admin-badge hidden">🛡️ ADMINISTRADOR</div>
+            <!-- Foto de Perfil do Utilizador -->
+            <div class="header-user-photo hidden" id="headerUserPhoto">
+                <img id="headerPhotoImg" src="" alt="Perfil" class="header-photo">
+                <div class="header-photo-placeholder" id="headerPhotoPlaceholder">
+                    <span id="headerPhotoInitials">?</span>
+                </div>
+            </div>
 
         </div>
 
@@ -861,162 +890,128 @@
             <div id="timerTab" class="tab-content active">
 
                 <div class="timer-display">
-
                     <div class="time" id="currentTime">00:00:00</div>
-
                     <div class="date" id="currentDate">Data</div>
-
                 </div>
-
-                
 
                 <div class="info-panel">
-
                     <div class="info-item">
-
                         <span class="label">Utilizador:</span>
-
                         <span class="value" id="userName">-</span>
-
                     </div>
-
                 </div>
 
-
-
-                <div class="radio-group">
-
-                    <div class="radio-option">
-
-                        <input type="radio" id="workTypeProject" name="workType" value="project" checked onchange="updateWorkTypeFields()">
-
-                        <label for="workTypeProject" class="radio-label">🏢 Trabalho de Projeto</label>
-
+                <div class="work-timer" id="workTimerDisplay">
+                    <div class="status" id="timerStatus">Parado</div>
+                    <div class="timer" id="workTimer">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-success" id="startBtn" onclick="startWork()">Iniciar</button>
+                        <button class="btn btn-warning hidden" id="pauseBtn" onclick="pauseWork()">⏸️ Pausar</button>
+                        <button class="btn btn-success hidden" id="resumeBtn" onclick="resumeWork()">▶️ Retomar</button>
+                        <button class="btn btn-danger hidden" id="stopBtn" onclick="stopWork()">⏹️ Parar</button>
                     </div>
-
-                    <div class="radio-option internal">
-
-                        <input type="radio" id="workTypeInternal" name="workType" value="internal" onchange="updateWorkTypeFields()">
-
-                        <label for="workTypeInternal" class="radio-label">🏠 Trabalho Interno</label>
-
-                    </div>
-
                 </div>
-
-
-
-                <div id="projectFields">
-
-                    <div class="form-group">
-
-                        <label for="projectSelect">Selecionar Obra</label>
-
-                        <select id="projectSelect" onchange="updateProjectInfo()">
-
-                            <option value="">-- Selecione uma obra aberta --</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="projectType">Departamento / Tipo de Projeto</label>
-
-                        <select id="projectType" onchange="updateSubcategories()">
-
-                            <option value="">Selecione o departamento</option>
-
-                            <option value="projeto">Projeto</option>
-
-                            <option value="eletrico">Elétrico</option>
-
-                            <option value="desenvolvimento">Desenvolvimento</option>
-
-                            <option value="orcamentacao">Orçamentação</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group" id="subcategoryGroup" style="display: none;">
-
-                        <label for="subcategory">Subcategoria</label>
-
-                        <select id="subcategory">
-
-                            <option value="">Selecione a subcategoria</option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-
-                <div id="internalFields" class="hidden">
-
-                    <div class="form-group">
-
-                        <label for="internalCategory">Categoria de Trabalho Interno</label>
-
-                        <select id="internalCategory" onchange="updateMeetingProjects()">
-
-                            <option value="reuniao">Reunião</option>
-
-                            <option value="formacao">Formação</option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="form-group" id="meetingProjectsGroup" style="display: none;">
-
-                        <label>Obras Relacionadas (opcional)</label>
-
-                        <div id="meetingProjectsList" class="checkbox-group"></div>
-
-                        <div class="projects-count" id="meetingProjectsCount">0 obras selecionadas</div>
-
-                    </div>
-
-                    <div class="form-group">
-
-                        <label for="internalDescription">Descrição</label>
-
-                        <input type="text" id="internalDescription" placeholder="Ex: Reunião semanal de equipa">
-
-                    </div>
-
-                </div>
-
-
 
                 <div id="timerError" class="error-message hidden"></div>
 
+                <button class="btn btn-warning btn-manual-add" onclick="openManualEntry()">➕ Adicionar Sessão Manual</button>
 
-
-                <div class="work-timer" id="workTimerDisplay">
-
-                    <div class="status" id="timerStatus">Parado</div>
-
-                    <div class="timer" id="workTimer">00:00:00</div>
-
-                    <div class="timer-controls">
-
-                        <button class="btn btn-success" id="startBtn" onclick="startWork()">Iniciar</button>
-
-                        <button class="btn btn-danger hidden" id="stopBtn" onclick="stopWork()">Parar</button>
-
+                <div id="lastSessionPanel" class="last-session-panel hidden">
+                    <div class="last-session-info">
+                        <span class="last-session-label">Última sessão:</span>
+                        <span id="lastSessionDesc" class="last-session-desc"></span>
                     </div>
-
+                    <button class="btn btn-primary btn-small" onclick="repeatLastSession()">🔄 Repetir</button>
                 </div>
 
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="workTypeProject" name="workType" value="project" checked onchange="updateWorkTypeFields()">
+                        <label for="workTypeProject" class="radio-label">🏢 Trabalho de Projeto</label>
+                    </div>
+                    <div class="radio-option internal">
+                        <input type="radio" id="workTypeInternal" name="workType" value="internal" onchange="updateWorkTypeFields()">
+                        <label for="workTypeInternal" class="radio-label">🏠 Trabalho Interno</label>
+                    </div>
+                </div>
 
+                <div class="form-group">
+                    <label for="hoursType">⏰ Tipo de Horas</label>
+                    <select id="hoursType">
+                        <option value="normal">📅 Horas Normais</option>
+                        <option value="extra">⏰ Horas Extra</option>
+                        <option value="weekend">🎉 Fim de Semana</option>
+                    </select>
+                </div>
 
-                <button class="btn btn-warning btn-manual-add" onclick="openManualEntry()">➕ Adicionar Sessão Manual</button>
+                <div id="projectFields">
+                    <div class="form-group">
+                        <label for="projectSelect">Selecionar Obra</label>
+                        <select id="projectSelect" onchange="updateProjectInfo()">
+                            <option value="">-- Selecione uma obra aberta --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="projectType">Departamento / Tipo de Projeto</label>
+                        <select id="projectType" onchange="updateSubcategories()">
+                            <option value="">Selecione o departamento</option>
+                            <option value="projeto">Projeto</option>
+                            <option value="eletrico">Elétrico</option>
+                            <option value="desenvolvimento">Desenvolvimento</option>
+                            <option value="orcamentacao">Orçamentação</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="subcategoryGroup" style="display: none;">
+                        <label for="subcategory">Subcategoria</label>
+                        <select id="subcategory">
+                            <option value="">Selecione a subcategoria</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="internalFields" class="hidden">
+                    <div class="form-group">
+                        <label for="internalCategory">Categoria de Trabalho Interno</label>
+                        <select id="internalCategory" onchange="updateMeetingProjects()">
+                            <option value="reuniao">Reunião</option>
+                            <option value="formacao">Formação</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="meetingProjectsGroup" style="display: none;">
+                        <label>Obras Relacionadas (opcional)</label>
+                        <div id="meetingProjectsList" class="checkbox-group"></div>
+                        <div class="projects-count" id="meetingProjectsCount">0 obras selecionadas</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="internalDescription">Descrição</label>
+                        <input type="text" id="internalDescription" placeholder="Ex: Reunião semanal de equipa">
+                    </div>
+                </div>
+
+                <div class="daily-goal-section">
+                    <div class="daily-goal-header">
+                        <span>🎯 Meta Diária</span>
+                        <select id="dailyGoalSelect" onchange="updateDailyGoal()">
+                            <option value="0">Sem meta</option>
+                            <option value="4">4 horas</option>
+                            <option value="6">6 horas</option>
+                            <option value="8" selected>8 horas</option>
+                            <option value="9">9 horas</option>
+                            <option value="10">10 horas</option>
+                        </select>
+                    </div>
+                    <div class="daily-goal-progress">
+                        <div class="daily-goal-bar">
+                            <div class="daily-goal-fill" id="dailyGoalFill" style="width: 0%"></div>
+                        </div>
+                        <div class="daily-goal-text">
+                            <span id="dailyGoalCurrent">0h 0m</span> / <span id="dailyGoalTarget">8h</span>
+                            <span id="dailyGoalPercent">(0%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="logout()" style="margin-top: 20px; width: 100%;">Sair</button>
 
             </div>
 
@@ -1024,42 +1019,63 @@
 
             <div id="dadosTab" class="tab-content">
                 <h3 style="margin-bottom: 20px;">📊 Dados</h3>
+
+                <div class="dados-section">
+
+                    <h4 style="margin-bottom: 10px; color: var(--primary-color);">📋 Histórico Recente</h4>
+                    
+                    <!-- Pesquisa no histórico -->
+                    <div class="history-search-container">
+                        <input type="text" id="historySearch" placeholder="🔍 Pesquisar por obra ou descrição..." onkeyup="filterWorkHistory()">
+                    </div>
+
+                    <div id="workHistory" class="work-history"></div>
+
+                </div>
+
                 <div class="dados-section">
 
                     <h4 style="margin-bottom: 15px; color: var(--primary-color);">📅 Hoje</h4>
 
-                    
-
-
                     <div class="stat-card-large">
-
                         <div class="stat-value-large" id="todayTotalHours">0h 0m</div>
-
                         <div class="stat-label-large">⏱️ Total Trabalhado</div>
-
                     </div>
 
-                    
-
-
+                    <!-- Projeto vs Interno -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">📊 Por Tipo de Trabalho</h5>
                     <div class="stats-grid-two">
-
                         <div class="stat-card" style="border-color: var(--secondary-color);">
-
                             <div class="stat-value" style="color: var(--secondary-color);" id="todayProjectHours">0h 0m</div>
-
                             <div class="stat-label">🏢 Projeto</div>
-
                         </div>
-
                         <div class="stat-card" style="border-color: var(--internal-color);">
-
                             <div class="stat-value" style="color: var(--internal-color);" id="todayInternalHours">0h 0m</div>
-
                             <div class="stat-label">🏠 Interno</div>
-
                         </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="todayPieChart" width="200" height="200"></canvas>
+                    </div>
 
+                    <!-- Tipo de Horas -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">⏰ Por Tipo de Horas</h5>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-color: #3498db;">
+                            <div class="stat-value" style="color: #3498db;" id="todayNormalHours">0h 0m</div>
+                            <div class="stat-label">📅 Normais</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #e67e22;">
+                            <div class="stat-value" style="color: #e67e22;" id="todayExtraHours">0h 0m</div>
+                            <div class="stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #9b59b6;">
+                            <div class="stat-value" style="color: #9b59b6;" id="todayWeekendHours">0h 0m</div>
+                            <div class="stat-label">🎉 Fim Semana</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="todayHoursTypeChart" width="200" height="200"></canvas>
                     </div>
 
                 </div>
@@ -1071,49 +1087,98 @@
 
                     <h4 style="margin-bottom: 15px; color: var(--primary-color);">📊 Esta Semana</h4>
 
-                    
-
-
                     <div class="stat-card-large">
-
                         <div class="stat-value-large" id="weekTotalHours">0h 0m</div>
-
                         <div class="stat-label-large">⏱️ Total Trabalhado</div>
-
                     </div>
 
-                    
-
-
+                    <!-- Projeto vs Interno -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">📊 Por Tipo de Trabalho</h5>
                     <div class="stats-grid-two">
-
                         <div class="stat-card" style="border-color: var(--secondary-color);">
-
                             <div class="stat-value" style="color: var(--secondary-color);" id="weekProjectHours">0h 0m</div>
-
                             <div class="stat-label">🏢 Projeto</div>
-
                         </div>
-
                         <div class="stat-card" style="border-color: var(--internal-color);">
-
                             <div class="stat-value" style="color: var(--internal-color);" id="weekInternalHours">0h 0m</div>
-
                             <div class="stat-label">🏠 Interno</div>
-
                         </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weekPieChart" width="200" height="200"></canvas>
+                    </div>
 
+                    <!-- Tipo de Horas -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">⏰ Por Tipo de Horas</h5>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-color: #3498db;">
+                            <div class="stat-value" style="color: #3498db;" id="weekNormalHours">0h 0m</div>
+                            <div class="stat-label">📅 Normais</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #e67e22;">
+                            <div class="stat-value" style="color: #e67e22;" id="weekExtraHours">0h 0m</div>
+                            <div class="stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #9b59b6;">
+                            <div class="stat-value" style="color: #9b59b6;" id="weekWeekendHours">0h 0m</div>
+                            <div class="stat-label">🎉 Fim Semana</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weekHoursTypeChart" width="200" height="200"></canvas>
                     </div>
 
                 </div>
 
-
+                <!-- Resumo Mensal -->
                 <div class="dados-section">
-
-                    <h4 style="margin-bottom: 10px; color: var(--primary-color);">📋 Histórico Recente</h4>
-
-                    <div id="workHistory" class="work-history"></div>
-
+                    <h4 style="margin-bottom: 15px; color: var(--primary-color);">📆 Este Mês</h4>
+                    <div class="stat-card-large">
+                        <div class="stat-value-large" id="monthTotalHours">0h 0m</div>
+                        <div class="stat-label-large">⏱️ Total Trabalhado</div>
+                    </div>
+                    
+                    <!-- Projeto vs Interno -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">📊 Por Tipo de Trabalho</h5>
+                    <div class="stats-grid-two">
+                        <div class="stat-card" style="border-color: var(--secondary-color);">
+                            <div class="stat-value" style="color: var(--secondary-color);" id="monthProjectHours">0h 0m</div>
+                            <div class="stat-label">🏢 Projeto</div>
+                        </div>
+                        <div class="stat-card" style="border-color: var(--internal-color);">
+                            <div class="stat-value" style="color: var(--internal-color);" id="monthInternalHours">0h 0m</div>
+                            <div class="stat-label">🏠 Interno</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthPieChart" width="200" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Tipo de Horas -->
+                    <h5 style="margin: 15px 0 10px 0; color: #666;">⏰ Por Tipo de Horas</h5>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-color: #3498db;">
+                            <div class="stat-value" style="color: #3498db;" id="monthNormalHours">0h 0m</div>
+                            <div class="stat-label">📅 Normais</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #e67e22;">
+                            <div class="stat-value" style="color: #e67e22;" id="monthExtraHours">0h 0m</div>
+                            <div class="stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="stat-card" style="border-color: #9b59b6;">
+                            <div class="stat-value" style="color: #9b59b6;" id="monthWeekendHours">0h 0m</div>
+                            <div class="stat-label">🎉 Fim Semana</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthHoursTypeChart" width="200" height="200"></canvas>
+                    </div>
+                    
+                    <!-- Gráfico de barras últimas 4 semanas -->
+                    <div class="weekly-chart-container">
+                        <h5 style="margin: 15px 0 10px 0; color: #666;">📊 Últimas 4 Semanas</h5>
+                        <div class="weekly-chart" id="weeklyChart"></div>
+                    </div>
                 </div>
 
 
@@ -1278,7 +1343,7 @@
 
                 <div id="obras-horas" class="sub-content">
                     <div class="info-panel" style="margin-bottom: 20px;">
-                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">⏱️ Consulte as horas trabalhadas em cada obra, filtradas por estado, departamento e subcategoria.</p>
+                        <p style="color: #6c757d; font-size: 14px; line-height: 1.6;">⏱️ Consulte as horas trabalhadas em cada obra, filtradas por estado, departamento, subcategoria e tipo de hora.</p>
                     </div>
 
                     <div class="filters-grid">
@@ -1312,6 +1377,15 @@
                                 <option value="all">Todas</option>
                             </select>
                         </div>
+                        <div class="filter-group">
+                            <label>Tipo de Hora</label>
+                            <select id="horasObraHoursTypeFilter" onchange="updateHorasPorObra()">
+                                <option value="all">Todos</option>
+                                <option value="normal">🕐 Normal</option>
+                                <option value="extra">⏰ Extra</option>
+                                <option value="weekend">🎉 Fim de Semana</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="horas-obra-summary">
@@ -1326,6 +1400,18 @@
                         <div class="horas-obra-stat">
                             <div class="horas-obra-stat-value" id="horasObraTotalProjects">0</div>
                             <div class="horas-obra-stat-label">Obras</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #3498db;">
+                            <div class="horas-obra-stat-value" id="horasObraNormalHours" style="color: #3498db;">0h 0m</div>
+                            <div class="horas-obra-stat-label">🕐 Normal</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #e67e22;">
+                            <div class="horas-obra-stat-value" id="horasObraExtraHours" style="color: #e67e22;">0h 0m</div>
+                            <div class="horas-obra-stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #9b59b6;">
+                            <div class="horas-obra-stat-value" id="horasObraWeekendHours" style="color: #9b59b6;">0h 0m</div>
+                            <div class="horas-obra-stat-label">🎉 Fim de Semana</div>
                         </div>
                     </div>
 
@@ -1673,6 +1759,15 @@
                             </select>
                         </div>
                         <div class="filter-group">
+                            <label>⏰ Tipo de Horas</label>
+                            <select id="projectHoursTypeFilter" onchange="updateProjectHoursView()">
+                                <option value="all">Todos os Tipos</option>
+                                <option value="normal">📅 Horas Normais</option>
+                                <option value="extra">⏰ Horas Extra</option>
+                                <option value="weekend">🎉 Fim de Semana</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <label>Pesquisar</label>
                             <input type="text" id="projectHoursSearch" placeholder="Código ou nome..." oninput="updateProjectHoursView()">
                         </div>
@@ -1968,6 +2063,24 @@
 
                     </div>
 
+                    <div class="filter-section">
+
+                        <label>⏰ Filtrar por Tipo de Horas</label>
+
+                        <select id="hoursTypeFilter" onchange="updateReports()">
+
+                            <option value="all">Todos os Tipos</option>
+
+                            <option value="normal">📅 Horas Normais</option>
+
+                            <option value="extra">⏰ Horas Extra</option>
+
+                            <option value="weekend">🎉 Fim de Semana</option>
+
+                        </select>
+
+                    </div>
+
                     <div class="stats-grid">
 
                         <div class="stat-card">
@@ -1986,6 +2099,25 @@
 
                         </div>
 
+                    </div>
+
+                    <!-- Estatísticas por Tipo de Horas -->
+                    <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h5 style="margin-bottom: 15px; color: #666;">⏰ Totais por Tipo de Horas</h5>
+                        <div class="stats-grid">
+                            <div class="stat-card" style="border-color: #3498db;">
+                                <div class="stat-value" style="color: #3498db;" id="reportNormalHours">0h 0m</div>
+                                <div class="stat-label">📅 Horas</div>
+                            </div>
+                            <div class="stat-card" style="border-color: #e67e22;">
+                                <div class="stat-value" style="color: #e67e22;" id="reportExtraHours">0h 0m</div>
+                                <div class="stat-label">⏰ Horas Extra</div>
+                            </div>
+                            <div class="stat-card" style="border-color: #9b59b6;">
+                                <div class="stat-value" style="color: #9b59b6;" id="reportWeekendHours">0h 0m</div>
+                                <div class="stat-label">🎉 Fim de Semana</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -2227,8 +2359,6 @@
             </div>
 
 
-
-            <button class="btn btn-secondary" onclick="logout()" style="margin-top: 20px;">Sair</button>
 
         </div>
 

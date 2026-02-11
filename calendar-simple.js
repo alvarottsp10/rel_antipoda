@@ -64,7 +64,7 @@ function formatDateKey(date) {
 
 function isWeekend(date) {
     const dayOfWeek = date.getDay();
-    return dayOfWeek === 0; 
+    return false; // Domingos são dias de trabalho 
 }
 
 function isHoliday(dateStr) {
