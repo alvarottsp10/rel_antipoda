@@ -618,6 +618,7 @@ function stopWork() {
     if (!timerInterval) return;
     clearInterval(timerInterval);
     timerInterval = null;
+    document.title = 'Folha de Controlo de Obra - Relógio';
     stopInactivityMonitor();
     const endTime = new Date();
     const duration = timerSeconds;
@@ -726,6 +727,11 @@ function updateTimerDisplay() {
     const seconds = timerSeconds % 60;
     const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     document.getElementById('workTimer').textContent = timeString;
+    // Update browser tab title with timer
+    if (timerInterval) {
+        const prefix = timerPaused ? '⏸ ' : '';
+        document.title = prefix + timeString + ' - Folha de Controlo de Obra';
+    }
     const floatTime = document.querySelector('.float-time');
     const floatStatus = document.querySelector('.float-status');
     if (floatTime && floatStatus) {
