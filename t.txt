@@ -1,6 +1,4 @@
 localStorage.clear()
 location.reload()
 
-Corrijir o bug da tab Dados
-Filtrar obras pelo cliente, perguntar onde eles colocam o cliente
 Para depois : Adicionar botao link para processo no servidor

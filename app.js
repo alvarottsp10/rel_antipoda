@@ -8,7 +8,7 @@ let inactivityTimer = null;
 let lastActivityTime = Date.now();
 let timerPaused = false;
 let pausedSeconds = 0;
-let windowIsVisible = true; // Rastrear se janela está visível
+let windowIsVisible = true; 
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
 
 const subcategories = {
@@ -23,6 +23,44 @@ function showConfirm(title, message, onConfirm) {
     document.getElementById('confirmMessage').textContent = message;
     confirmCallback = onConfirm;
     document.getElementById('confirmModal').classList.add('show');
+}
+
+function getClientFromProject(project) {
+    const code = project.workCode || '';
+    const codeParts = code.split(' - ');
+    if (codeParts.length > 1) {
+        return codeParts[codeParts.length - 1].trim();
+    }
+    const name = project.name || '';
+    const nameParts = name.split(' - ');
+    if (nameParts.length > 1) {
+        return nameParts[nameParts.length - 1].trim();
+    }
+    return '';
+}
+
+function populateClientFilters() {
+    const projects = getProjects();
+    const clients = new Set();
+    projects.forEach(p => {
+        const client = getClientFromProject(p);
+        if (client) clients.add(client);
+    });
+    const sortedClients = Array.from(clients).sort((a, b) => a.localeCompare(b, 'pt'));
+    
+    const selects = [
+        document.getElementById('projectClientFilter'),
+        document.getElementById('horasObraClientFilter')
+    ];
+    selects.forEach(select => {
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = '<option value="all">Todos os Clientes</option>';
+        sortedClients.forEach(client => {
+            select.innerHTML += `<option value="${client}">${client}</option>`;
+        });
+        if (current && current !== 'all') select.value = current;
+    });
 }
 
 function showAlert(title, message) {
@@ -564,7 +602,7 @@ function startWork() {
         startTime: startTime.toISOString(), 
         workType: workType, 
         username: user.username,
-        hoursType: hoursType  // Guardar tipo de horas
+        hoursType: hoursType 
     };
 
     if (workType === 'project') {
@@ -596,7 +634,7 @@ function startWork() {
         document.getElementById('internalDescription').disabled = true;
     }
     document.querySelectorAll('input[name="workType"]').forEach(radio => radio.disabled = true);
-    document.getElementById('hoursType').disabled = true; // Bloquear tipo de horas
+    document.getElementById('hoursType').disabled = true; 
 
     document.getElementById('floatingTimer').classList.remove('hidden');
     if (workType === 'internal') {
@@ -642,7 +680,7 @@ function stopWork() {
         document.getElementById('internalDescription').disabled = false;
     }
     document.querySelectorAll('input[name="workType"]').forEach(radio => radio.disabled = false);
-    document.getElementById('hoursType').disabled = false; // Desbloquear tipo de horas
+    document.getElementById('hoursType').disabled = false; 
 
     document.getElementById('floatingTimer').classList.add('hidden');
     document.getElementById('floatingTimer').classList.remove('internal');
@@ -665,23 +703,19 @@ function stopWork() {
     loadWorkSelectForComments();
 }
 
-// ==================== SISTEMA DE PAUSA MANUAL ====================
 
 function pauseWork() {
     if (!timerInterval) return;
     
-    // Pausar o timer mas NÃO gravar no histórico
     timerPaused = true;
     pausedSeconds = 0;
     
-    // Atualizar interface
     document.getElementById('pauseBtn').classList.add('hidden');
     document.getElementById('resumeBtn').classList.remove('hidden');
     document.getElementById('stopBtn').classList.remove('hidden');
     document.getElementById('timerStatus').textContent = '⏸️ Pausado';
     document.getElementById('timerStatus').classList.remove('active');
     
-    // Guardar estado pausado no localStorage
     const timerState = JSON.parse(localStorage.getItem('activeTimer'));
     if (timerState) {
         timerState.paused = true;
@@ -696,19 +730,16 @@ function pauseWork() {
 function resumeWork() {
     if (!timerInterval) return;
     
-    // Retomar o timer
     timerPaused = false;
     pausedSeconds = 0;
     lastActivityTime = Date.now();
     
-    // Atualizar interface
     document.getElementById('pauseBtn').classList.remove('hidden');
     document.getElementById('resumeBtn').classList.add('hidden');
     document.getElementById('stopBtn').classList.remove('hidden');
     document.getElementById('timerStatus').textContent = 'Em trabalho...';
     document.getElementById('timerStatus').classList.add('active');
     
-    // Atualizar estado no localStorage
     const timerState = JSON.parse(localStorage.getItem('activeTimer'));
     if (timerState) {
         timerState.paused = false;
@@ -719,7 +750,6 @@ function resumeWork() {
     console.log('▶️ Timer retomado');
 }
 
-// =========================================================
 
 function updateTimerDisplay() {
     const hours = Math.floor(timerSeconds / 3600);
@@ -727,7 +757,6 @@ function updateTimerDisplay() {
     const seconds = timerSeconds % 60;
     const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     document.getElementById('workTimer').textContent = timeString;
-    // Update browser tab title with timer
     if (timerInterval) {
         const prefix = timerPaused ? '⏸ ' : '';
         document.title = prefix + timeString + ' - Folha de Controlo de Obra';
@@ -756,14 +785,12 @@ function saveWorkSession(startTime, endTime, duration, comment = '') {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const workType = document.querySelector('input[name="workType"]:checked').value;
     
-    // Buscar tipo de horas do activeTimer ou do campo
     const activeTimer = localStorage.getItem('activeTimer');
-    let hoursType = 'normal'; // Valor padrão
+    let hoursType = 'normal';
     if (activeTimer) {
         const timerData = JSON.parse(activeTimer);
         hoursType = timerData.hoursType || 'normal';
     } else {
-        // Fallback: buscar do campo (pode não estar disponível)
         const hoursTypeField = document.getElementById('hoursType');
         if (hoursTypeField) {
             hoursType = hoursTypeField.value;
@@ -774,7 +801,7 @@ function saveWorkSession(startTime, endTime, duration, comment = '') {
         id: Date.now(), 
         userName: `${user.firstName} ${user.lastName}`, 
         workType: workType, 
-        hoursType: hoursType,  // Adicionar tipo de horas
+        hoursType: hoursType,  
         startTime: startTime.toISOString(), 
         endTime: endTime.toISOString(), 
         duration, 
@@ -843,9 +870,7 @@ function resumeActiveTimer() {
 
     document.getElementById('startBtn').classList.add('hidden');
     
-    // Verificar se estava pausado
     if (state.paused) {
-        // Restaurar estado pausado
         timerPaused = true;
         timerSeconds = state.timerSeconds || timerSeconds;
         document.getElementById('pauseBtn').classList.add('hidden');
@@ -854,7 +879,6 @@ function resumeActiveTimer() {
         document.getElementById('timerStatus').textContent = '⏸️ Pausado';
         document.getElementById('timerStatus').classList.remove('active');
     } else {
-        // Estado normal (a correr)
         document.getElementById('pauseBtn').classList.remove('hidden');
         document.getElementById('resumeBtn').classList.add('hidden');
         document.getElementById('stopBtn').classList.remove('hidden');
@@ -890,7 +914,6 @@ function resumeActiveTimer() {
 
 function resetActivityTimer() { lastActivityTime = Date.now(); }
 
-// Recalcular timer baseado no tempo real (não em incrementos)
 function recalculateTimerFromStartTime() {
     if (!timerInterval || !startTime) return;
     
@@ -916,7 +939,6 @@ function stopInactivityMonitor() {
 }
 
 function checkInactivity() {
-    // NÃO detetar inatividade se a janela estiver minimizada/escondida
     if (!windowIsVisible) {
         return;
     }
@@ -955,7 +977,6 @@ function resumeTimer() {
     document.getElementById('timerStatus').textContent = 'Em trabalho...';
     document.getElementById('timerStatus').classList.add('active');
     
-    // Mostrar botões corretos (Pausar e Parar, esconder Retomar)
     document.getElementById('pauseBtn').classList.remove('hidden');
     document.getElementById('resumeBtn').classList.add('hidden');
     document.getElementById('stopBtn').classList.remove('hidden');
@@ -975,13 +996,29 @@ function loadWorkHistory() {
         return;
     }
     
-    // Aplicar filtro de pesquisa se existir
+    const clientSelect = document.getElementById('historyClientFilter');
+    if (clientSelect) {
+        const currentClient = clientSelect.value;
+        const clients = new Set();
+        const projects = getProjects();
+        projects.forEach(p => {
+            const client = getClientFromProject(p);
+            if (client) clients.add(client);
+        });
+        clientSelect.innerHTML = '<option value="all">Todos os Clientes</option>';
+        Array.from(clients).sort((a, b) => a.localeCompare(b, 'pt')).forEach(client => {
+            clientSelect.innerHTML += `<option value="${client}">${client}</option>`;
+        });
+        if (currentClient && currentClient !== 'all') clientSelect.value = currentClient;
+    }
+    
     const searchInput = document.getElementById('historySearch');
     const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const clientFilter = clientSelect ? clientSelect.value : 'all';
     
     let filteredHistory = history;
     if (searchTerm) {
-        filteredHistory = history.filter(session => {
+        filteredHistory = filteredHistory.filter(session => {
             const workCode = (session.workCode || '').toLowerCase();
             const workName = (session.workName || '').toLowerCase();
             const description = (session.internalDescription || '').toLowerCase();
@@ -989,6 +1026,15 @@ function loadWorkHistory() {
             return workCode.includes(searchTerm) || workName.includes(searchTerm) || 
                    description.includes(searchTerm) || comment.includes(searchTerm);
         });
+    }
+    
+    if (clientFilter !== 'all') {
+        const projects = getProjects();
+        const clientCodes = new Set();
+        projects.forEach(p => {
+            if (getClientFromProject(p) === clientFilter) clientCodes.add(p.workCode);
+        });
+        filteredHistory = filteredHistory.filter(s => s.workType === 'project' && clientCodes.has(s.workCode));
     }
     
     if (filteredHistory.length === 0) {
@@ -1004,7 +1050,6 @@ function loadWorkHistory() {
         if (session.workType === 'internal') { badgesHtml += '<span class="hist-badge badge-internal">🏠 Interno</span>'; }
         if (session.manualEntry) { badgesHtml += '<span class="hist-badge badge-manual">📝 Inserido Manualmente</span>'; }
         if (session.manualEdit) { badgesHtml += '<span class="hist-badge badge-edited">✏️ Editado Manualmente</span>'; }
-        // Badge de tipo de horas
         if (session.hoursType === 'extra') { badgesHtml += '<span class="hist-badge badge-extra">⏰ Horas Extra</span>'; }
         if (session.hoursType === 'weekend') { badgesHtml += '<span class="hist-badge badge-weekend">🎉 Fim de Semana</span>'; }
         let mainInfo = '';
@@ -1041,7 +1086,6 @@ function loadWorkHistory() {
     }).join('');
 }
 
-// Filtrar histórico por pesquisa
 function filterWorkHistory() {
     loadWorkHistory();
 }
@@ -1380,16 +1424,22 @@ function createNewProject() {
 
 function loadProjectsList() {
     const statusFilter = document.getElementById('projectStatusFilter').value;
+    const clientFilter = document.getElementById('projectClientFilter') ? document.getElementById('projectClientFilter').value : 'all';
     const projects = getProjects();
     const container = document.getElementById('projectsList');
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const isAdmin = user && user.isAdmin === true;
     
+    populateClientFilters();
     updateProjectsStats(projects);
     
     let filteredProjects = projects;
     if (statusFilter === 'open') { filteredProjects = projects.filter(p => p.status === 'open'); }
     else if (statusFilter === 'closed') { filteredProjects = projects.filter(p => p.status === 'closed'); }
+    
+    if (clientFilter !== 'all') {
+        filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
+    }
     if (filteredProjects.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #95a5a6; padding: 20px;">Sem obras para mostrar</p>';
         return;
@@ -1688,7 +1738,6 @@ function updateUserStats() {
             } else if (session.workType === 'internal') {
                 todayInternal += duration;
             }
-            // Contar por tipo de horas
             const hoursType = session.hoursType || 'normal';
             if (hoursType === 'normal') todayNormal += duration;
             else if (hoursType === 'extra') todayExtra += duration;
@@ -1704,7 +1753,6 @@ function updateUserStats() {
         } else if (workType === 'internal') {
             todayInternal += timerSeconds;
         }
-        // Incluir timer ativo no tipo de horas
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
             const timerData = JSON.parse(activeTimer);
@@ -1737,7 +1785,6 @@ function updateUserStats() {
             } else if (session.workType === 'internal') {
                 weekInternal += duration;
             }
-            // Contar por tipo de horas
             const hoursType = session.hoursType || 'normal';
             if (hoursType === 'normal') weekNormal += duration;
             else if (hoursType === 'extra') weekExtra += duration;
@@ -1753,7 +1800,6 @@ function updateUserStats() {
         } else if (workType === 'internal') {
             weekInternal += timerSeconds;
         }
-        // Incluir timer ativo no tipo de horas
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
             const timerData = JSON.parse(activeTimer);
@@ -1776,7 +1822,6 @@ function updateUserStats() {
     if (todayProjectEl) todayProjectEl.textContent = formatHoursMinutes(todayProject);
     if (todayInternalEl) todayInternalEl.textContent = formatHoursMinutes(todayInternal);
     
-    // Atualizar tipo de horas Hoje
     const todayNormalEl = document.getElementById('todayNormalHours');
     const todayExtraEl = document.getElementById('todayExtraHours');
     const todayWeekendEl = document.getElementById('todayWeekendHours');
@@ -1788,7 +1833,6 @@ function updateUserStats() {
     if (weekProjectEl) weekProjectEl.textContent = formatHoursMinutes(weekProject);
     if (weekInternalEl) weekInternalEl.textContent = formatHoursMinutes(weekInternal);
     
-    // Atualizar tipo de horas Esta Semana
     const weekNormalEl = document.getElementById('weekNormalHours');
     const weekExtraEl = document.getElementById('weekExtraHours');
     const weekWeekendEl = document.getElementById('weekWeekendHours');
@@ -1918,7 +1962,6 @@ function updateReports() {
         }
     }
     
-    // Aplicar filtro de tipo de horas
     if (hoursTypeFilter !== 'all') {
         filteredHistory = filteredHistory.filter(s => (s.hoursType || 'normal') === hoursTypeFilter);
     }
@@ -1926,7 +1969,6 @@ function updateReports() {
     const projectSeconds = filteredHistory.filter(s => s.workType === 'project').reduce((sum, s) => sum + s.duration, 0);
     const internalSeconds = filteredHistory.filter(s => s.workType === 'internal').reduce((sum, s) => sum + s.duration, 0);
     
-    // Calcular totais por tipo de horas
     const normalSeconds = filteredHistory.filter(s => (s.hoursType || 'normal') === 'normal').reduce((sum, s) => sum + s.duration, 0);
     const extraSeconds = filteredHistory.filter(s => s.hoursType === 'extra').reduce((sum, s) => sum + s.duration, 0);
     const weekendSeconds = filteredHistory.filter(s => s.hoursType === 'weekend').reduce((sum, s) => sum + s.duration, 0);
@@ -1934,7 +1976,6 @@ function updateReports() {
     document.getElementById('totalProjectHours').textContent = formatHours(projectSeconds);
     document.getElementById('totalInternalHours').textContent = formatHours(internalSeconds);
     
-    // Atualizar totais por tipo de horas
     const reportNormalEl = document.getElementById('reportNormalHours');
     const reportExtraEl = document.getElementById('reportExtraHours');
     const reportWeekendEl = document.getElementById('reportWeekendHours');
@@ -1955,7 +1996,6 @@ function updateReports() {
         if (session.workType === 'internal') { badgesHtml += '<span class="hist-badge badge-internal">🏠 Interno</span>'; }
         if (session.manualEntry) { badgesHtml += '<span class="hist-badge badge-manual">📝 Inserido Manualmente</span>'; }
         if (session.manualEdit) { badgesHtml += '<span class="hist-badge badge-edited">✏️ Editado Manualmente</span>'; }
-        // Badge de tipo de horas
         if (session.hoursType === 'extra') { badgesHtml += '<span class="hist-badge badge-extra">⏰ Horas Extra</span>'; }
         if (session.hoursType === 'weekend') { badgesHtml += '<span class="hist-badge badge-weekend">🎉 Fim de Semana</span>'; }
         let mainInfo = '';
@@ -2018,7 +2058,6 @@ function exportCSV() {
         const comment = session.comment || '';
         const workTypeLabel = session.workType === 'internal' ? 'Interno' : 'Projeto';
         
-        // Traduzir tipo de horas
         let hoursTypeLabel = 'Horas Normais';
         if (session.hoursType === 'extra') hoursTypeLabel = 'Horas Extra';
         if (session.hoursType === 'weekend') hoursTypeLabel = 'Fim de Semana';
@@ -2043,7 +2082,6 @@ function exportCSV() {
         csv += `${startDateStr},${startTimeStr},${endDateStr},${endTimeStr},"${session.userName}","${workTypeLabel}","${hoursTypeLabel}","${departmentCategory}","${subcategory}","${workCodeDescription}","${workName}","${relatedProjects}",${session.duration},${hours},"${comment}"\n`;
     });
     
-    // Adicionar resumo de totais por tipo de horas
     const totalNormal = history.filter(s => (s.hoursType || 'normal') === 'normal').reduce((sum, s) => sum + s.duration, 0);
     const totalExtra = history.filter(s => s.hoursType === 'extra').reduce((sum, s) => sum + s.duration, 0);
     const totalWeekend = history.filter(s => s.hoursType === 'weekend').reduce((sum, s) => sum + s.duration, 0);
@@ -2784,7 +2822,6 @@ function calculateWeeksInYear(year, history) {
                     internalSeconds += session.duration || 0;
                 }
                 
-                // Calcular por tipo de horas
                 const hoursType = session.hoursType || 'normal';
                 if (hoursType === 'normal') {
                     normalSeconds += session.duration || 0;
@@ -3080,14 +3117,21 @@ function initHorasPorObra() {
 
 function populateHorasPorObraSelect() {
     const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const clientFilter = document.getElementById('horasObraClientFilter') ? document.getElementById('horasObraClientFilter').value : 'all';
     const select = document.getElementById('horasObraSelect');
     const allProjects = getProjects();
+    
+    populateClientFilters();
     
     let filteredProjects = allProjects;
     if (statusFilter === 'open') {
         filteredProjects = allProjects.filter(p => p.status === 'open');
     } else if (statusFilter === 'closed') {
         filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (clientFilter !== 'all') {
+        filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
     }
     
     filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
@@ -3128,6 +3172,7 @@ function updateHorasPorObraSubcategories() {
 
 function updateHorasPorObra() {
     const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const clientFilter = document.getElementById('horasObraClientFilter') ? document.getElementById('horasObraClientFilter').value : 'all';
     const selectedProject = document.getElementById('horasObraSelect').value;
     const departmentFilter = document.getElementById('horasObraDepartmentFilter').value;
     const subcategoryFilter = document.getElementById('horasObraSubcategoryFilter').value;
@@ -3142,6 +3187,10 @@ function updateHorasPorObra() {
         filteredProjects = allProjects.filter(p => p.status === 'open');
     } else if (statusFilter === 'closed') {
         filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (clientFilter !== 'all') {
+        filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
     }
     
     if (selectedProject !== 'all') {
@@ -3206,7 +3255,6 @@ function updateHorasPorObra() {
     const totalSessions = Object.values(projectsData).reduce((sum, p) => sum + p.sessions.length, 0);
     const totalProjects = Object.keys(projectsData).length;
     
-    // Calcular totais por tipo de hora
     let totalNormal = 0, totalExtra = 0, totalWeekend = 0;
     Object.values(projectsData).forEach(p => {
         totalNormal += p.byHoursType['normal'] || 0;
@@ -3381,6 +3429,7 @@ function toggleHorasObraDetails(id) {
 
 function exportHorasPorObraCSV() {
     const statusFilter = document.getElementById('horasObraStatusFilter').value;
+    const clientFilter = document.getElementById('horasObraClientFilter') ? document.getElementById('horasObraClientFilter').value : 'all';
     const selectedProject = document.getElementById('horasObraSelect').value;
     const departmentFilter = document.getElementById('horasObraDepartmentFilter').value;
     const subcategoryFilter = document.getElementById('horasObraSubcategoryFilter').value;
@@ -3394,6 +3443,10 @@ function exportHorasPorObraCSV() {
         filteredProjects = allProjects.filter(p => p.status === 'open');
     } else if (statusFilter === 'closed') {
         filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (clientFilter !== 'all') {
+        filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
     }
     
     if (selectedProject !== 'all') {
@@ -3419,7 +3472,7 @@ function exportHorasPorObraCSV() {
     
     const hoursTypeNames = { 'normal': 'Normal', 'extra': 'Extra', 'weekend': 'Fim de Semana' };
     
-    let csv = 'Código Obra,Nome Obra,Estado,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Tipo de Hora,Duração (h),Comentário\n';
+    let csv = 'Código Obra,Nome Obra,Cliente,Estado,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Tipo de Hora,Duração (h),Comentário\n';
     
     filteredSessions.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)).forEach(session => {
         const project = allProjects.find(p => p.workCode === session.workCode);
@@ -3433,12 +3486,13 @@ function exportHorasPorObraCSV() {
         
         const status = project ? (project.status === 'open' ? 'Aberta' : 'Concluída') : 'N/A';
         const projectName = project ? (project.name || '') : '';
+        const clientName = project ? getClientFromProject(project) : '';
         const dept = getDepartmentName(session.projectType) || '';
         const sub = session.subcategory || '';
         const ht = hoursTypeNames[session.hoursType || 'normal'] || 'Normal';
         const comment = (session.comment || '').replace(/"/g, '""');
         
-        csv += `"${session.workCode}","${projectName}","${status}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${ht}","${durationHours}","${comment}"\n`;
+        csv += `"${session.workCode}","${projectName}","${clientName}","${status}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${ht}","${durationHours}","${comment}"\n`;
     });
     
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -3455,15 +3509,12 @@ window.showSubTab = function(event, parentTab, subTabName, programmatic = false)
     }
 };
 
-// ==================== NOVAS FUNCIONALIDADES ====================
 
-// Duplicar sessão
 function duplicateSession(sessionId) {
     const history = getWorkHistory();
     const session = history.find(s => s.id === sessionId);
     if (!session) return;
     
-    // Abrir modal de entrada manual com dados pré-preenchidos
     openManualEntry();
     
     setTimeout(() => {
@@ -3489,7 +3540,6 @@ function duplicateSession(sessionId) {
             }
         }
         
-        // Definir data/hora para agora
         const now = new Date();
         const oneHourAgo = new Date(now.getTime() - session.duration * 1000);
         document.getElementById('manualStartTime').value = formatDateTimeLocal(oneHourAgo);
@@ -3499,7 +3549,6 @@ function duplicateSession(sessionId) {
     showAlert('Duplicar Sessão', 'Dados da sessão copiados. Ajuste as datas e guarde.');
 }
 
-// Meta diária
 let dailyGoalHours = 8;
 
 function updateDailyGoal() {
@@ -3526,7 +3575,6 @@ function updateDailyGoalProgress() {
     const todayHistory = history.filter(h => new Date(h.startTime) >= today);
     const todaySeconds = todayHistory.reduce((sum, h) => sum + h.duration, 0);
     
-    // Adicionar tempo do timer atual se estiver a correr
     let totalSeconds = todaySeconds;
     if (timerInterval && startTime) {
         totalSeconds += timerSeconds;
@@ -3542,7 +3590,6 @@ function updateDailyGoalProgress() {
     
     if (fill) {
         fill.style.width = percent + '%';
-        // Mudar cor baseado no progresso
         if (percent >= 100) {
             fill.style.backgroundColor = '#27ae60';
         } else if (percent >= 75) {
@@ -3558,7 +3605,6 @@ function updateDailyGoalProgress() {
     if (percentEl) percentEl.textContent = dailyGoalHours > 0 ? `(${Math.round(percent)}%)` : '';
 }
 
-// Estatísticas mensais
 function updateMonthStats() {
     const history = getWorkHistory();
     const now = new Date();
@@ -3569,12 +3615,10 @@ function updateMonthStats() {
     let monthProject = monthHistory.filter(h => h.workType === 'project').reduce((sum, h) => sum + h.duration, 0);
     let monthInternal = monthHistory.filter(h => h.workType === 'internal').reduce((sum, h) => sum + h.duration, 0);
     
-    // Calcular por tipo de horas
     let monthNormal = monthHistory.filter(h => (h.hoursType || 'normal') === 'normal').reduce((sum, h) => sum + h.duration, 0);
     let monthExtra = monthHistory.filter(h => h.hoursType === 'extra').reduce((sum, h) => sum + h.duration, 0);
     let monthWeekend = monthHistory.filter(h => h.hoursType === 'weekend').reduce((sum, h) => sum + h.duration, 0);
     
-    // INCLUIR TIMER ATIVO se estiver a correr
     if (timerInterval && timerSeconds) {
         monthTotal += timerSeconds;
         const workType = document.querySelector('input[name="workType"]:checked')?.value;
@@ -3583,7 +3627,6 @@ function updateMonthStats() {
         } else if (workType === 'internal') {
             monthInternal += timerSeconds;
         }
-        // Incluir timer ativo no tipo de horas
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
             const timerData = JSON.parse(activeTimer);
@@ -3602,7 +3645,6 @@ function updateMonthStats() {
     if (projectEl) projectEl.textContent = formatHoursMinutes(monthProject);
     if (internalEl) internalEl.textContent = formatHoursMinutes(monthInternal);
     
-    // Atualizar tipo de horas Este Mês
     const monthNormalEl = document.getElementById('monthNormalHours');
     const monthExtraEl = document.getElementById('monthExtraHours');
     const monthWeekendEl = document.getElementById('monthWeekendHours');
@@ -3610,14 +3652,11 @@ function updateMonthStats() {
     if (monthExtraEl) monthExtraEl.textContent = formatHoursMinutes(monthExtra);
     if (monthWeekendEl) monthWeekendEl.textContent = formatHoursMinutes(monthWeekend);
     
-    // Atualizar gráfico semanal
     updateWeeklyChart();
     
-    // Atualizar gráficos circulares
     updatePieCharts();
 }
 
-// Gráfico de barras das últimas 4 semanas
 function updateWeeklyChart() {
     const container = document.getElementById('weeklyChart');
     if (!container) return;
@@ -3626,7 +3665,6 @@ function updateWeeklyChart() {
     const now = new Date();
     const weeks = [];
     
-    // Calcular últimas 4 semanas
     for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay() - (i * 7));
@@ -3653,7 +3691,6 @@ function updateWeeklyChart() {
         });
     }
     
-    // Encontrar máximo para escala
     const maxHours = Math.max(...weeks.map(w => w.total / 3600), 1);
     
     container.innerHTML = weeks.map(week => {
@@ -3674,7 +3711,6 @@ function updateWeeklyChart() {
     }).join('');
 }
 
-// ==================== GRÁFICOS CIRCULARES (DONUT CHARTS) ====================
 
 function drawDonutChart(canvasId, projectHours, internalHours) {
     const canvas = document.getElementById(canvasId);
@@ -3688,11 +3724,9 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
     
     const total = projectHours + internalHours;
     
-    // Limpar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     if (total === 0) {
-        // Mostrar círculo cinzento se não houver dados
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.fillStyle = '#e9ecef';
@@ -3703,7 +3737,6 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         
-        // Texto "Sem dados"
         ctx.fillStyle = '#95a5a6';
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
@@ -3715,7 +3748,6 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
     const projectAngle = (projectHours / total) * 2 * Math.PI;
     const internalAngle = (internalHours / total) * 2 * Math.PI;
     
-    // Desenhar fatia de Projeto (azul/roxo)
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + projectAngle);
     ctx.arc(centerX, centerY, innerRadius, -Math.PI / 2 + projectAngle, -Math.PI / 2, true);
@@ -3726,7 +3758,6 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
     ctx.fillStyle = gradientProject;
     ctx.fill();
     
-    // Desenhar fatia de Interno (rosa/vermelho)
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, -Math.PI / 2 + projectAngle, -Math.PI / 2 + projectAngle + internalAngle);
     ctx.arc(centerX, centerY, innerRadius, -Math.PI / 2 + projectAngle + internalAngle, -Math.PI / 2 + projectAngle, true);
@@ -3737,21 +3768,17 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
     ctx.fillStyle = gradientInternal;
     ctx.fill();
     
-    // Centro branco
     ctx.beginPath();
     ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     
-    // Percentagens
     const projectPercent = Math.round((projectHours / total) * 100);
     const internalPercent = Math.round((internalHours / total) * 100);
     
-    // Mostrar AMBAS as percentagens
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Percentagem de Projeto (azul)
     ctx.fillStyle = '#667eea';
     ctx.font = 'bold 16px Arial';
     ctx.fillText(projectPercent + '%', centerX, centerY - 12);
@@ -3759,7 +3786,6 @@ function drawDonutChart(canvasId, projectHours, internalHours) {
     ctx.fillStyle = '#7f8c8d';
     ctx.fillText('Projeto', centerX, centerY - 0);
     
-    // Percentagem de Interno (rosa)
     ctx.fillStyle = '#ff7675';
     ctx.font = 'bold 16px Arial';
     ctx.fillText(internalPercent + '%', centerX, centerY + 12);
@@ -3780,11 +3806,9 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
     
     const total = normalHours + extraHours + weekendHours;
     
-    // Limpar canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     if (total === 0) {
-        // Mostrar círculo cinzento se não houver dados
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.fillStyle = '#e9ecef';
@@ -3795,7 +3819,6 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         
-        // Texto "Sem dados"
         ctx.fillStyle = '#95a5a6';
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
@@ -3806,14 +3829,12 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
     
     let startAngle = -Math.PI / 2;
     
-    // Cores para cada tipo
     const colors = {
-        normal: '#3498db',    // Azul
-        extra: '#e67e22',     // Laranja
-        weekend: '#9b59b6'    // Roxo
+        normal: '#3498db',   
+        extra: '#e67e22',     
+        weekend: '#9b59b6'
     };
     
-    // Desenhar fatia de Horas Normais
     if (normalHours > 0) {
         const angle = (normalHours / total) * 2 * Math.PI;
         ctx.beginPath();
@@ -3825,7 +3846,6 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
         startAngle += angle;
     }
     
-    // Desenhar fatia de Horas Extra
     if (extraHours > 0) {
         const angle = (extraHours / total) * 2 * Math.PI;
         ctx.beginPath();
@@ -3837,7 +3857,6 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
         startAngle += angle;
     }
     
-    // Desenhar fatia de Fim de Semana
     if (weekendHours > 0) {
         const angle = (weekendHours / total) * 2 * Math.PI;
         ctx.beginPath();
@@ -3848,18 +3867,15 @@ function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours
         ctx.fill();
     }
     
-    // Centro branco
     ctx.beginPath();
     ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     
-    // Percentagens
     const normalPercent = Math.round((normalHours / total) * 100);
     const extraPercent = Math.round((extraHours / total) * 100);
     const weekendPercent = Math.round((weekendHours / total) * 100);
     
-    // Mostrar percentagens no centro (apenas se > 0)
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = '10px Arial';
@@ -3900,7 +3916,6 @@ function updatePieCharts() {
     const history = getWorkHistory();
     const now = new Date();
     
-    // Calcular Hoje
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
@@ -3912,7 +3927,6 @@ function updatePieCharts() {
     let todayProject = todayHistory.filter(h => h.workType === 'project').reduce((sum, h) => sum + h.duration, 0);
     let todayInternal = todayHistory.filter(h => h.workType === 'internal').reduce((sum, h) => sum + h.duration, 0);
     
-    // Adicionar timer ativo se estiver a correr
     if (timerInterval && timerSeconds) {
         const workType = document.querySelector('input[name="workType"]:checked')?.value;
         if (workType === 'project') {
@@ -3922,7 +3936,6 @@ function updatePieCharts() {
         }
     }
     
-    // Calcular Esta Semana
     const dayOfWeek = now.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
@@ -3936,7 +3949,6 @@ function updatePieCharts() {
     let weekProject = weekHistory.filter(h => h.workType === 'project').reduce((sum, h) => sum + h.duration, 0);
     let weekInternal = weekHistory.filter(h => h.workType === 'internal').reduce((sum, h) => sum + h.duration, 0);
     
-    // Adicionar timer ativo se estiver a correr
     if (timerInterval && timerSeconds) {
         const workType = document.querySelector('input[name="workType"]:checked')?.value;
         if (workType === 'project') {
@@ -3946,14 +3958,12 @@ function updatePieCharts() {
         }
     }
     
-    // Calcular Este Mês
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthHistory = history.filter(h => new Date(h.startTime) >= startOfMonth);
     
     let monthProject = monthHistory.filter(h => h.workType === 'project').reduce((sum, h) => sum + h.duration, 0);
     let monthInternal = monthHistory.filter(h => h.workType === 'internal').reduce((sum, h) => sum + h.duration, 0);
     
-    // Adicionar timer ativo
     if (timerInterval && timerSeconds) {
         const workType = document.querySelector('input[name="workType"]:checked')?.value;
         if (workType === 'project') {
@@ -3963,19 +3973,15 @@ function updatePieCharts() {
         }
     }
     
-    // Desenhar gráficos Projeto vs Interno
     drawDonutChart('todayPieChart', todayProject, todayInternal);
     drawDonutChart('weekPieChart', weekProject, weekInternal);
     drawDonutChart('monthPieChart', monthProject, monthInternal);
     
-    // Calcular e desenhar gráficos de Tipo de Horas
     
-    // Hoje - por tipo
     let todayNormal = todayHistory.filter(h => (h.hoursType || 'normal') === 'normal').reduce((sum, h) => sum + h.duration, 0);
     let todayExtra = todayHistory.filter(h => h.hoursType === 'extra').reduce((sum, h) => sum + h.duration, 0);
     let todayWeekend = todayHistory.filter(h => h.hoursType === 'weekend').reduce((sum, h) => sum + h.duration, 0);
     
-    // Incluir timer ativo
     if (timerInterval && timerSeconds) {
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
@@ -3987,12 +3993,10 @@ function updatePieCharts() {
         }
     }
     
-    // Esta Semana - por tipo
     let weekNormal = weekHistory.filter(h => (h.hoursType || 'normal') === 'normal').reduce((sum, h) => sum + h.duration, 0);
     let weekExtra = weekHistory.filter(h => h.hoursType === 'extra').reduce((sum, h) => sum + h.duration, 0);
     let weekWeekend = weekHistory.filter(h => h.hoursType === 'weekend').reduce((sum, h) => sum + h.duration, 0);
     
-    // Incluir timer ativo
     if (timerInterval && timerSeconds) {
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
@@ -4004,12 +4008,10 @@ function updatePieCharts() {
         }
     }
     
-    // Este Mês - por tipo
     let monthNormal = monthHistory.filter(h => (h.hoursType || 'normal') === 'normal').reduce((sum, h) => sum + h.duration, 0);
     let monthExtra = monthHistory.filter(h => h.hoursType === 'extra').reduce((sum, h) => sum + h.duration, 0);
     let monthWeekend = monthHistory.filter(h => h.hoursType === 'weekend').reduce((sum, h) => sum + h.duration, 0);
     
-    // Incluir timer ativo
     if (timerInterval && timerSeconds) {
         const activeTimer = localStorage.getItem('activeTimer');
         if (activeTimer) {
@@ -4021,13 +4023,11 @@ function updatePieCharts() {
         }
     }
     
-    // Desenhar gráficos de Tipo de Horas
     drawHoursTypeDonutChart('todayHoursTypeChart', todayNormal, todayExtra, todayWeekend);
     drawHoursTypeDonutChart('weekHoursTypeChart', weekNormal, weekExtra, weekWeekend);
     drawHoursTypeDonutChart('monthHoursTypeChart', monthNormal, monthExtra, monthWeekend);
 }
 
-// Favoritos de obras
 function getFavoriteProjects() {
     const saved = localStorage.getItem('favoriteProjects');
     return saved ? JSON.parse(saved) : [];
@@ -4048,16 +4048,14 @@ function toggleFavoriteProject(projectId) {
     }
     
     saveFavoriteProjects(favorites);
-    loadProjectSelects(); // Recarregar selects com favoritos no topo
+    loadProjectSelects(); 
 }
 
-// Sobrescrever loadProjectSelects para mostrar favoritos primeiro
 const originalLoadProjectSelects = loadProjectSelects;
 function loadProjectSelectsWithFavorites() {
     const openProjects = getOpenProjects();
     const favorites = getFavoriteProjects();
     
-    // Separar favoritos e não favoritos
     const favoriteProjects = openProjects.filter(p => favorites.includes(p.id));
     const otherProjects = openProjects.filter(p => !favorites.includes(p.id));
     
@@ -4089,17 +4087,14 @@ function loadProjectSelectsWithFavorites() {
     });
 }
 
-// Substituir função original
 loadProjectSelects = loadProjectSelectsWithFavorites;
 
-// Notificação de fim de dia
 let endOfDayNotified = false;
 
 function checkEndOfDayNotification() {
     const now = new Date();
     const hour = now.getHours();
     
-    // Verificar às 18h
     if (hour === 18 && !endOfDayNotified) {
         const history = getWorkHistory();
         const today = new Date();
@@ -4117,13 +4112,11 @@ function checkEndOfDayNotification() {
         }
     }
     
-    // Reset à meia-noite
     if (hour === 0) {
         endOfDayNotified = false;
     }
 }
 
-// Inicialização das novas funcionalidades
 const originalShowApp = showApp;
 showApp = function() {
     originalShowApp();
@@ -4132,11 +4125,9 @@ showApp = function() {
     updateMonthStats();
     showLastSessionPanel();
     
-    // Verificar notificação a cada minuto
     setInterval(checkEndOfDayNotification, 60000);
 };
 
-// Atualizar meta diária quando o timer muda
 const originalUpdateTimerDisplay = updateTimerDisplay;
 let monthStatsUpdateCounter = 0;
 let pieChartUpdateCounter = 0;
@@ -4145,14 +4136,12 @@ if (typeof updateTimerDisplay === 'function') {
         originalUpdateTimerDisplay();
         updateDailyGoalProgress();
         
-        // Atualizar stats mensais a cada 10 segundos (não em cada segundo)
         monthStatsUpdateCounter++;
         if (monthStatsUpdateCounter >= 10) {
             updateMonthStats();
             monthStatsUpdateCounter = 0;
         }
         
-        // Atualizar gráficos circulares a cada 5 segundos
         pieChartUpdateCounter++;
         if (pieChartUpdateCounter >= 5) {
             updatePieCharts();
@@ -4161,7 +4150,6 @@ if (typeof updateTimerDisplay === 'function') {
     };
 }
 
-// Atualizar stats quando para o timer
 const originalStopWork = stopWork;
 stopWork = function() {
     originalStopWork();
@@ -4172,9 +4160,7 @@ stopWork = function() {
     }, 500);
 };
 
-// ==================== FUNCIONALIDADES ÚTEIS ====================
 
-// Mostrar painel da última sessão
 function showLastSessionPanel() {
     const history = getWorkHistory();
     const panel = document.getElementById('lastSessionPanel');
@@ -4197,7 +4183,6 @@ function showLastSessionPanel() {
     panel.classList.remove('hidden');
 }
 
-// Repetir última sessão
 function repeatLastSession() {
     const history = getWorkHistory();
     if (history.length === 0) {
@@ -4207,7 +4192,6 @@ function repeatLastSession() {
     
     const lastSession = history[0];
     
-    // Preencher campos do timer
     if (lastSession.workType === 'project') {
         document.getElementById('workTypeProject').checked = true;
         updateWorkTypeFields();
@@ -4239,7 +4223,6 @@ function repeatLastSession() {
     showToastNotification('Configuração da última sessão carregada!', 'success');
 }
 
-// Toast de notificação simples
 function showToastNotification(message, type = 'info') {
     const existing = document.querySelector('.toast-notification');
     if (existing) existing.remove();
@@ -4256,7 +4239,6 @@ function showToastNotification(message, type = 'info') {
     }, 2500);
 }
 
-// ==================== SINCRONIZAR FOTO DE PERFIL COM CABEÇALHO ====================
 
 function updateHeaderPhoto() {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -4270,17 +4252,14 @@ function updateHeaderPhoto() {
     
     if (!headerPhoto) return;
     
-    // Mostrar container (remover hidden e adicionar active)
     headerPhoto.classList.remove('hidden');
     headerPhoto.classList.add('active');
     
     if (photoData && headerPhotoImg) {
-        // Tem foto
         headerPhotoImg.src = photoData;
         headerPhotoImg.classList.add('active');
         if (headerPhotoPlaceholder) headerPhotoPlaceholder.classList.add('hidden');
     } else {
-        // Sem foto - mostrar iniciais
         if (headerPhotoImg) headerPhotoImg.classList.remove('active');
         if (headerPhotoPlaceholder) headerPhotoPlaceholder.classList.remove('hidden');
         
@@ -4303,46 +4282,38 @@ function hideHeaderPhoto() {
     }
 }
 
-// Interceptar loadProfilePhoto original para atualizar também o cabeçalho
 const _originalLoadProfilePhoto = loadProfilePhoto;
 loadProfilePhoto = function() {
     _originalLoadProfilePhoto();
     updateHeaderPhoto();
 };
 
-// Interceptar handleProfilePhotoChange para atualizar cabeçalho
 const _originalHandleProfilePhotoChange = handleProfilePhotoChange;
 handleProfilePhotoChange = function(event) {
     _originalHandleProfilePhotoChange(event);
     setTimeout(() => updateHeaderPhoto(), 100);
 };
 
-// Interceptar removeProfilePhoto para atualizar cabeçalho
 const _originalRemoveProfilePhoto = removeProfilePhoto;
 removeProfilePhoto = function() {
     _originalRemoveProfilePhoto();
     setTimeout(() => updateHeaderPhoto(), 100);
 };
 
-// Atualizar no showApp
-// Alias para compatibilidade
 window.setupAdminUI = setupAdminUIEnhanced;
 
-// Override showApp para atualizar foto no cabeçalho
 const _originalShowApp3 = showApp;
 showApp = function() {
     _originalShowApp3();
     setTimeout(() => updateHeaderPhoto(), 100);
 };
 
-// Esconder no showLogin
 const _originalShowLogin3 = showLogin;
 showLogin = function() {
     _originalShowLogin3();
     hideHeaderPhoto();
 };
 
-// Inicializar ao carregar
 document.addEventListener('DOMContentLoaded', function() {
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
@@ -4350,27 +4321,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ==================== DETEÇÃO DE VISIBILIDADE DA JANELA ====================
-// Resolver bug: não detetar inatividade quando janela está minimizada
-
-// Detetar quando janela fica escondida (minimizada, outra aba, etc.)
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Janela escondida - utilizador pode estar a trabalhar noutro lado
         windowIsVisible = false;
         console.log('🔵 Janela minimizada - deteção de inatividade PAUSADA');
     } else {
-        // Janela voltou a estar visível
         windowIsVisible = true;
-        // Resetar timer de atividade para não acusar imediatamente
         lastActivityTime = Date.now();
-        // Recalcular timer para mostrar tempo correto
         recalculateTimerFromStartTime();
         console.log('🟢 Janela ativa - deteção de inatividade RETOMADA + Timer atualizado');
     }
 });
 
-// Fallback para browsers mais antigos (focus/blur)
 window.addEventListener('blur', function() {
     windowIsVisible = false;
     console.log('🔵 Janela perdeu foco - deteção de inatividade PAUSADA');
@@ -4379,7 +4341,6 @@ window.addEventListener('blur', function() {
 window.addEventListener('focus', function() {
     windowIsVisible = true;
     lastActivityTime = Date.now();
-    // Recalcular timer também no focus
     recalculateTimerFromStartTime();
     console.log('🟢 Janela ganhou foco - deteção de inatividade RETOMADA + Timer atualizado');
 });

@@ -473,11 +473,37 @@ function populateTeamUserFilter() {
     });
 }
 
+function populateAdminClientFilters() {
+    const allProjects = getAllUsersProjects();
+    const clients = new Set();
+    allProjects.forEach(p => {
+        const client = getClientFromProject(p);
+        if (client) clients.add(client);
+    });
+    const sorted = Array.from(clients).sort((a, b) => a.localeCompare(b, 'pt'));
+    
+    const selects = [
+        document.getElementById('teamClientFilter'),
+        document.getElementById('projectHoursClientFilter')
+    ];
+    selects.forEach(select => {
+        if (!select) return;
+        const current = select.value;
+        select.innerHTML = '<option value="all">Todos os Clientes</option>';
+        sorted.forEach(client => {
+            select.innerHTML += `<option value="${client}">${client}</option>`;
+        });
+        if (current && current !== 'all') select.value = current;
+    });
+}
+
 function getTeamHoursFilters() {
     const userFilter = document.getElementById('teamUserFilter')?.value || 'all';
     const periodFilter = document.getElementById('teamPeriodFilter')?.value || 'week';
     const workTypeFilter = document.getElementById('teamWorkTypeFilter')?.value || 'all';
     const departmentFilter = document.getElementById('teamDepartmentFilter')?.value || 'all';
+    const clientFilter = document.getElementById('teamClientFilter')?.value || 'all';
+    const hoursTypeFilter = document.getElementById('teamHoursTypeFilter')?.value || 'all';
     const dateFrom = document.getElementById('teamDateFrom')?.value || '';
     const dateTo = document.getElementById('teamDateTo')?.value || '';
     
@@ -514,6 +540,8 @@ function getTeamHoursFilters() {
         periodFilter,
         workTypeFilter,
         departmentFilter,
+        clientFilter,
+        hoursTypeFilter,
         startDate,
         endDate
     };
@@ -537,10 +565,19 @@ function updateTeamHoursView() {
     if (!isUserAdmin()) return;
     
     toggleCustomDateFields();
+    populateAdminClientFilters();
     
     const filters = getTeamHoursFilters();
     const allHistory = getAllUsersHistory();
     const users = getUsers();
+    const allProjects = getAllUsersProjects();
+    
+    const clientCodes = new Set();
+    if (filters.clientFilter !== 'all') {
+        allProjects.forEach(p => {
+            if (getClientFromProject(p) === filters.clientFilter) clientCodes.add(p.workCode);
+        });
+    }
     
     let filteredHistory = allHistory.filter(session => {
         const sessionDate = new Date(session.startTime);
@@ -568,17 +605,35 @@ function updateTeamHoursView() {
             }
         }
         
+        if (filters.clientFilter !== 'all') {
+            if (session.workType !== 'project' || !clientCodes.has(session.workCode)) {
+                return false;
+            }
+        }
+        
+        if (filters.hoursTypeFilter !== 'all') {
+            if ((session.hoursType || 'normal') !== filters.hoursTypeFilter) {
+                return false;
+            }
+        }
+        
         return true;
     });
     
     const totalSeconds = filteredHistory.reduce((sum, s) => sum + s.duration, 0);
     const projectSeconds = filteredHistory.filter(s => s.workType === 'project').reduce((sum, s) => sum + s.duration, 0);
     const internalSeconds = filteredHistory.filter(s => s.workType === 'internal').reduce((sum, s) => sum + s.duration, 0);
+    const normalSeconds = filteredHistory.filter(s => (s.hoursType || 'normal') === 'normal').reduce((sum, s) => sum + s.duration, 0);
+    const extraSeconds = filteredHistory.filter(s => s.hoursType === 'extra').reduce((sum, s) => sum + s.duration, 0);
+    const weekendSeconds = filteredHistory.filter(s => s.hoursType === 'weekend').reduce((sum, s) => sum + s.duration, 0);
     
     document.getElementById('teamTotalHours').textContent = formatHoursMinutes(totalSeconds);
     document.getElementById('teamProjectHours').textContent = formatHoursMinutes(projectSeconds);
     document.getElementById('teamInternalHours').textContent = formatHoursMinutes(internalSeconds);
     document.getElementById('teamTotalSessions').textContent = filteredHistory.length;
+    document.getElementById('teamNormalHours').textContent = formatHoursMinutes(normalSeconds);
+    document.getElementById('teamExtraHours').textContent = formatHoursMinutes(extraSeconds);
+    document.getElementById('teamWeekendHours').textContent = formatHoursMinutes(weekendSeconds);
     
     const userStats = {};
     filteredHistory.forEach(session => {
@@ -703,6 +758,12 @@ function renderTeamSessionsList(sessions) {
         if (session.manualEdit) {
             badgesHtml += '<span class="hist-badge badge-edited">✏️ Editado</span>';
         }
+        if (session.hoursType === 'extra') {
+            badgesHtml += '<span class="hist-badge badge-extra">⏰ Horas Extra</span>';
+        }
+        if (session.hoursType === 'weekend') {
+            badgesHtml += '<span class="hist-badge badge-weekend">🎉 Fim de Semana</span>';
+        }
         
         let mainInfo = '';
         let subInfo = '';
@@ -759,6 +820,14 @@ function exportTeamHoursCSV() {
     const filters = getTeamHoursFilters();
     const allHistory = getAllUsersHistory();
     const users = getUsers();
+    const allProjects = getAllUsersProjects();
+    
+    const clientCodes = new Set();
+    if (filters.clientFilter !== 'all') {
+        allProjects.forEach(p => {
+            if (getClientFromProject(p) === filters.clientFilter) clientCodes.add(p.workCode);
+        });
+    }
     
     let filteredHistory = allHistory.filter(session => {
         const sessionDate = new Date(session.startTime);
@@ -786,10 +855,24 @@ function exportTeamHoursCSV() {
             }
         }
         
+        if (filters.clientFilter !== 'all') {
+            if (session.workType !== 'project' || !clientCodes.has(session.workCode)) {
+                return false;
+            }
+        }
+        
+        if (filters.hoursTypeFilter !== 'all') {
+            if ((session.hoursType || 'normal') !== filters.hoursTypeFilter) {
+                return false;
+            }
+        }
+        
         return true;
     });
     
-    let csv = 'Utilizador,Data,Hora Início,Hora Fim,Duração (h),Tipo,Departamento,Código Obra,Nome Obra,Subcategoria,Descrição,Comentário\n';
+    const hoursTypeNames = { 'normal': 'Normal', 'extra': 'Extra', 'weekend': 'Fim de Semana' };
+    
+    let csv = 'Utilizador,Data,Hora Início,Hora Fim,Duração (h),Tipo,Departamento,Código Obra,Nome Obra,Cliente,Subcategoria,Tipo de Hora,Descrição,Comentário\n';
     
     filteredHistory.forEach(session => {
         const startDate = new Date(session.startTime);
@@ -804,11 +887,14 @@ function exportTeamHoursCSV() {
         const departamento = session.workType === 'project' ? (getDepartmentName(session.projectType) || '') : '';
         const codigoObra = session.workCode || '';
         const nomeObra = session.workName || '';
+        const project = allProjects.find(p => p.workCode === codigoObra);
+        const clientName = project ? getClientFromProject(project) : '';
         const subcategoria = session.subcategory || '';
+        const ht = hoursTypeNames[session.hoursType || 'normal'] || 'Normal';
         const descricao = session.workType === 'internal' ? (session.internalDescription || '') : '';
         const comentario = session.comment || '';
         
-        csv += `"${session.userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${durationHours}","${tipo}","${departamento}","${codigoObra}","${nomeObra}","${subcategoria}","${descricao}","${comentario}"\n`;
+        csv += `"${session.userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${durationHours}","${tipo}","${departamento}","${codigoObra}","${nomeObra}","${clientName}","${subcategoria}","${ht}","${descricao}","${comentario}"\n`;
     });
     
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1448,12 +1534,15 @@ function updateProjectHoursView() {
     if (!isUserAdmin()) return;
     
     populateAdminProjectFilters();
+    populateAdminClientFilters();
     
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const clientFilter = document.getElementById('projectHoursClientFilter')?.value || 'all';
     const obraFilter = document.getElementById('projectHoursObraSelect')?.value || 'all';
     const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
     const subcategoryFilter = document.getElementById('projectHoursSubcategoryFilter')?.value || 'all';
     const userFilter = document.getElementById('projectHoursUserFilter')?.value || 'all';
+    const hoursTypeFilter = document.getElementById('projectHoursTypeFilter')?.value || 'all';
     const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
     
     const allProjects = getAllUsersProjects();
@@ -1465,6 +1554,7 @@ function updateProjectHoursView() {
         if (deptFilter !== 'all' && session.projectType !== deptFilter) return false;
         if (subcategoryFilter !== 'all' && session.subcategory !== subcategoryFilter) return false;
         if (userFilter !== 'all' && session.userName !== userFilter) return false;
+        if (hoursTypeFilter !== 'all' && (session.hoursType || 'normal') !== hoursTypeFilter) return false;
         
         return true;
     });
@@ -1477,6 +1567,9 @@ function updateProjectHoursView() {
                 workCode: session.workCode,
                 workName: session.workName || '',
                 totalSeconds: 0,
+                normalSeconds: 0,
+                extraSeconds: 0,
+                weekendSeconds: 0,
                 users: {},
                 departments: {},
                 subcategories: {},
@@ -1486,6 +1579,11 @@ function updateProjectHoursView() {
         
         projectHours[session.workCode].totalSeconds += session.duration;
         projectHours[session.workCode].sessions.push(session);
+        
+        const ht = session.hoursType || 'normal';
+        if (ht === 'normal') projectHours[session.workCode].normalSeconds += session.duration;
+        else if (ht === 'extra') projectHours[session.workCode].extraSeconds += session.duration;
+        else if (ht === 'weekend') projectHours[session.workCode].weekendSeconds += session.duration;
         
         if (session.userName) {
             if (!projectHours[session.workCode].users[session.userName]) {
@@ -1522,6 +1620,13 @@ function updateProjectHoursView() {
         projectsArray = projectsArray.filter(p => p.status === statusFilter);
     }
     
+    if (clientFilter !== 'all') {
+        projectsArray = projectsArray.filter(p => {
+            const project = allProjects.find(pr => pr.workCode === p.workCode);
+            return project && getClientFromProject(project) === clientFilter;
+        });
+    }
+    
     if (obraFilter !== 'all') {
         projectsArray = projectsArray.filter(p => p.workCode === obraFilter);
     }
@@ -1537,6 +1642,9 @@ function updateProjectHoursView() {
     
     const totalHours = projectsArray.reduce((sum, p) => sum + p.totalSeconds, 0);
     const totalSessions = projectsArray.reduce((sum, p) => sum + p.sessions.length, 0);
+    const totalNormal = projectsArray.reduce((sum, p) => sum + p.normalSeconds, 0);
+    const totalExtra = projectsArray.reduce((sum, p) => sum + p.extraSeconds, 0);
+    const totalWeekend = projectsArray.reduce((sum, p) => sum + p.weekendSeconds, 0);
     const uniqueUsers = new Set();
     projectsArray.forEach(p => {
         Object.keys(p.users).forEach(u => uniqueUsers.add(u));
@@ -1546,6 +1654,9 @@ function updateProjectHoursView() {
     document.getElementById('totalProjectsHours').textContent = formatHoursMinutes(totalHours);
     document.getElementById('totalProjectsSessions').textContent = totalSessions;
     document.getElementById('totalProjectsUsers').textContent = uniqueUsers.size;
+    document.getElementById('totalProjectsNormalHours').textContent = formatHoursMinutes(totalNormal);
+    document.getElementById('totalProjectsExtraHours').textContent = formatHoursMinutes(totalExtra);
+    document.getElementById('totalProjectsWeekendHours').textContent = formatHoursMinutes(totalWeekend);
     
     renderAdminProjectHoursList(projectsArray);
 }
@@ -1553,6 +1664,7 @@ function updateProjectHoursView() {
 function populateAdminProjectFilters() {
     const obraSelect = document.getElementById('projectHoursObraSelect');
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const clientFilter = document.getElementById('projectHoursClientFilter')?.value || 'all';
     
     if (obraSelect && obraSelect.options.length <= 1) {
         const allProjects = getAllUsersProjects();
@@ -1562,6 +1674,10 @@ function populateAdminProjectFilters() {
             filteredProjects = allProjects.filter(p => p.status === 'open');
         } else if (statusFilter === 'closed') {
             filteredProjects = allProjects.filter(p => p.status === 'closed');
+        }
+        
+        if (clientFilter !== 'all') {
+            filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
         }
         
         filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
@@ -1585,6 +1701,7 @@ function populateAdminProjectFilters() {
 function updateAdminProjectSelect() {
     const obraSelect = document.getElementById('projectHoursObraSelect');
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const clientFilter = document.getElementById('projectHoursClientFilter')?.value || 'all';
     
     if (!obraSelect) return;
     
@@ -1597,6 +1714,10 @@ function updateAdminProjectSelect() {
         filteredProjects = allProjects.filter(p => p.status === 'open');
     } else if (statusFilter === 'closed') {
         filteredProjects = allProjects.filter(p => p.status === 'closed');
+    }
+    
+    if (clientFilter !== 'all') {
+        filteredProjects = filteredProjects.filter(p => getClientFromProject(p) === clientFilter);
     }
     
     filteredProjects.sort((a, b) => a.workCode.localeCompare(b.workCode));
@@ -1777,10 +1898,12 @@ function exportProjectHoursCSV() {
     if (!isUserAdmin()) return;
     
     const statusFilter = document.getElementById('projectHoursStatusFilter')?.value || 'all';
+    const clientFilter = document.getElementById('projectHoursClientFilter')?.value || 'all';
     const obraFilter = document.getElementById('projectHoursObraSelect')?.value || 'all';
     const deptFilter = document.getElementById('projectHoursDeptFilter')?.value || 'all';
     const subcategoryFilter = document.getElementById('projectHoursSubcategoryFilter')?.value || 'all';
     const userFilter = document.getElementById('projectHoursUserFilter')?.value || 'all';
+    const hoursTypeFilter = document.getElementById('projectHoursTypeFilter')?.value || 'all';
     const searchTerm = document.getElementById('projectHoursSearch')?.value?.toLowerCase() || '';
     
     const allProjects = getAllUsersProjects();
@@ -1791,14 +1914,16 @@ function exportProjectHoursCSV() {
         if (deptFilter !== 'all' && session.projectType !== deptFilter) return false;
         if (subcategoryFilter !== 'all' && session.subcategory !== subcategoryFilter) return false;
         if (userFilter !== 'all' && session.userName !== userFilter) return false;
+        if (hoursTypeFilter !== 'all' && (session.hoursType || 'normal') !== hoursTypeFilter) return false;
         return true;
     });
     
-    if (statusFilter !== 'all' || obraFilter !== 'all') {
+    if (statusFilter !== 'all' || obraFilter !== 'all' || clientFilter !== 'all') {
         const validCodes = new Set();
         allProjects.forEach(p => {
             if (statusFilter !== 'all' && p.status !== statusFilter) return;
             if (obraFilter !== 'all' && p.workCode !== obraFilter) return;
+            if (clientFilter !== 'all' && getClientFromProject(p) !== clientFilter) return;
             validCodes.add(p.workCode);
         });
         filteredHistory = filteredHistory.filter(s => validCodes.has(s.workCode));
@@ -1812,7 +1937,9 @@ function exportProjectHoursCSV() {
         });
     }
     
-    let csv = 'Código Obra,Nome Obra,Estado,Utilizador,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Duração (h),Comentário\n';
+    const hoursTypeNames = { 'normal': 'Normal', 'extra': 'Extra', 'weekend': 'Fim de Semana' };
+    
+    let csv = 'Código Obra,Nome Obra,Cliente,Estado,Utilizador,Data,Hora Início,Hora Fim,Departamento,Subcategoria,Tipo de Hora,Duração (h),Comentário\n';
     
     filteredHistory.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)).forEach(session => {
         const project = allProjects.find(p => p.workCode === session.workCode);
@@ -1826,12 +1953,14 @@ function exportProjectHoursCSV() {
         
         const status = project ? (project.status === 'open' ? 'Aberta' : 'Concluída') : 'N/A';
         const projectName = project ? (project.name || '') : '';
+        const clientName = project ? getClientFromProject(project) : '';
         const dept = getDepartmentName(session.projectType) || '';
         const sub = session.subcategory || '';
+        const ht = hoursTypeNames[session.hoursType || 'normal'] || 'Normal';
         const comment = (session.comment || '').replace(/"/g, '""');
         const userName = session.userName || '';
         
-        csv += `"${session.workCode}","${projectName}","${status}","${userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${durationHours}","${comment}"\n`;
+        csv += `"${session.workCode}","${projectName}","${clientName}","${status}","${userName}","${dateStr}","${startTimeStr}","${endTimeStr}","${dept}","${sub}","${ht}","${durationHours}","${comment}"\n`;
     });
     
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });

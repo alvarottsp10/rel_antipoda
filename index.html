@@ -1024,9 +1024,12 @@
 
                     <h4 style="margin-bottom: 10px; color: var(--primary-color);">📋 Histórico Recente</h4>
                     
-                    <!-- Pesquisa no histórico -->
-                    <div class="history-search-container">
-                        <input type="text" id="historySearch" placeholder="🔍 Pesquisar por obra ou descrição..." onkeyup="filterWorkHistory()">
+                    <!-- Filtros do histórico -->
+                    <div class="history-search-container" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <input type="text" id="historySearch" placeholder="🔍 Pesquisar por obra ou descrição..." onkeyup="filterWorkHistory()" style="flex: 2; min-width: 180px;">
+                        <select id="historyClientFilter" onchange="filterWorkHistory()" style="flex: 1; min-width: 140px;">
+                            <option value="all">Todos os Clientes</option>
+                        </select>
                     </div>
 
                     <div id="workHistory" class="work-history"></div>
@@ -1329,13 +1332,21 @@
                         </div>
                     </div>
 
-                    <div class="filter-section">
-                        <label>Filtrar Obras</label>
-                        <select id="projectStatusFilter" onchange="loadProjectsList()">
-                            <option value="open">Obras Abertas</option>
-                            <option value="closed">Obras Fechadas</option>
-                            <option value="all">Todas as Obras</option>
-                        </select>
+                    <div class="filter-section" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label>Filtrar Obras</label>
+                            <select id="projectStatusFilter" onchange="loadProjectsList()">
+                                <option value="open">Obras Abertas</option>
+                                <option value="closed">Obras Fechadas</option>
+                                <option value="all">Todas as Obras</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label>Cliente</label>
+                            <select id="projectClientFilter" onchange="loadProjectsList()">
+                                <option value="all">Todos os Clientes</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="projectsList" class="projects-list"></div>
 
@@ -1353,6 +1364,12 @@
                                 <option value="all">Todas</option>
                                 <option value="open">Abertas</option>
                                 <option value="closed">Concluídas</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Cliente</label>
+                            <select id="horasObraClientFilter" onchange="updateHorasPorObra()">
+                                <option value="all">Todos os Clientes</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -1676,6 +1693,21 @@
                                 <option value="orcamentacao">Orçamentação</option>
                             </select>
                         </div>
+                        <div class="filter-group">
+                            <label>👤 Cliente</label>
+                            <select id="teamClientFilter" onchange="updateTeamHoursView()">
+                                <option value="all">Todos os Clientes</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>⏰ Tipo de Horas</label>
+                            <select id="teamHoursTypeFilter" onchange="updateTeamHoursView()">
+                                <option value="all">Todos</option>
+                                <option value="normal">📅 Normais</option>
+                                <option value="extra">⏰ Extra</option>
+                                <option value="weekend">🎉 Fim de Semana</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="team-hours-summary">
@@ -1694,6 +1726,18 @@
                         <div class="team-hours-stat sessions">
                             <div class="team-hours-stat-value" id="teamTotalSessions">0</div>
                             <div class="team-hours-stat-label">📝 Sessões</div>
+                        </div>
+                        <div class="team-hours-stat" style="border-left: 3px solid #3498db;">
+                            <div class="team-hours-stat-value" id="teamNormalHours" style="color: #3498db;">0h</div>
+                            <div class="team-hours-stat-label">📅 Normais</div>
+                        </div>
+                        <div class="team-hours-stat" style="border-left: 3px solid #e67e22;">
+                            <div class="team-hours-stat-value" id="teamExtraHours" style="color: #e67e22;">0h</div>
+                            <div class="team-hours-stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="team-hours-stat" style="border-left: 3px solid #9b59b6;">
+                            <div class="team-hours-stat-value" id="teamWeekendHours" style="color: #9b59b6;">0h</div>
+                            <div class="team-hours-stat-label">🎉 Fim Semana</div>
                         </div>
                     </div>
 
@@ -1728,6 +1772,12 @@
                                 <option value="all">Todas</option>
                                 <option value="open">Abertas</option>
                                 <option value="closed">Concluídas</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Cliente</label>
+                            <select id="projectHoursClientFilter" onchange="updateAdminProjectSelect(); updateProjectHoursView()">
+                                <option value="all">Todos os Clientes</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -1789,6 +1839,18 @@
                         <div class="horas-obra-stat">
                             <div class="horas-obra-stat-value" id="totalProjectsUsers">0</div>
                             <div class="horas-obra-stat-label">Utilizadores</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #3498db;">
+                            <div class="horas-obra-stat-value" id="totalProjectsNormalHours" style="color: #3498db;">0h 0m</div>
+                            <div class="horas-obra-stat-label">📅 Normais</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #e67e22;">
+                            <div class="horas-obra-stat-value" id="totalProjectsExtraHours" style="color: #e67e22;">0h 0m</div>
+                            <div class="horas-obra-stat-label">⏰ Extra</div>
+                        </div>
+                        <div class="horas-obra-stat" style="border-left: 3px solid #9b59b6;">
+                            <div class="horas-obra-stat-value" id="totalProjectsWeekendHours" style="color: #9b59b6;">0h 0m</div>
+                            <div class="horas-obra-stat-label">🎉 Fim Semana</div>
                         </div>
                     </div>
 

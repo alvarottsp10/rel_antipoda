@@ -98,7 +98,6 @@ body {
 
 
 
-/* Logo Antípoda (esquerda) */
 
 .header-logo {
 
@@ -132,7 +131,6 @@ body {
 
 
 
-/* Título (centro) */
 
 .header-title {
 
@@ -166,7 +164,6 @@ body {
 
 
 
-/* Foto de Perfil (direita) */
 
 .header-user-photo {
 
@@ -256,7 +253,6 @@ body {
 
 
 
-/* Responsivo */
 
 @media (max-width: 768px) {
 
@@ -4442,7 +4438,6 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Reaberturas Styles */
 .reopen-stats-summary {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -4700,7 +4695,6 @@ input:focus, select:focus, textarea:focus {
         justify-content: flex-start;
     }
 }
-/* Reopen Users Table (Admin) */
 .reopen-users-table {
     background: white;
     border-radius: 8px;
@@ -4783,7 +4777,6 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* Admin Reopens Styles */
 .reopen-stat-card.total {
     border-left-color: var(--primary-color);
 }
@@ -4986,7 +4979,6 @@ input:focus, select:focus, textarea:focus {
     }
 }
 
-/* ==================== HORAS POR OBRA ==================== */
 
 .filters-grid {
     display: grid;
@@ -5338,9 +5330,7 @@ input:focus, select:focus, textarea:focus {
         grid-template-columns: 1fr 1fr;
     }
 }
-/* ==================== NOVAS FUNCIONALIDADES ==================== */
 
-/* Meta Diária */
 .daily-goal-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 12px;
@@ -5403,7 +5393,6 @@ input:focus, select:focus, textarea:focus {
     color: #495057;
 }
 
-/* Pesquisa no Histórico */
 .history-search-container {
     margin-bottom: 15px;
 }
@@ -5422,7 +5411,6 @@ input:focus, select:focus, textarea:focus {
     border-color: #667eea;
 }
 
-/* Gráfico Semanal */
 .weekly-chart-container {
     margin-top: 15px;
 }
@@ -5492,7 +5480,6 @@ input:focus, select:focus, textarea:focus {
     color: #495057;
 }
 
-/* Botão Duplicar */
 .btn-success.btn-small {
     background: #27ae60;
     color: white;
@@ -5502,7 +5489,6 @@ input:focus, select:focus, textarea:focus {
     background: #219a52;
 }
 
-/* Favoritos nos selects */
 optgroup {
     font-weight: 600;
     color: #495057;
@@ -5512,7 +5498,6 @@ optgroup[label="⭐ Favoritos"] {
     background: #fff9e6;
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
     .daily-goal-header {
         flex-direction: column;
@@ -5534,9 +5519,7 @@ optgroup[label="⭐ Favoritos"] {
     }
 }
 
-/* ==================== FUNCIONALIDADES ÚTEIS ==================== */
 
-/* Indicador de Horas Extra */
 .extra-hours-indicator {
     margin-top: 10px;
     padding: 10px 15px;
@@ -5553,7 +5536,6 @@ optgroup[label="⭐ Favoritos"] {
     50% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
 }
 
-/* Resumo do Dia Anterior */
 .yesterday-summary {
     background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     border-left: 4px solid #667eea;
@@ -5603,7 +5585,6 @@ optgroup[label="⭐ Favoritos"] {
     color: #666;
 }
 
-/* Painel Última Sessão */
 .last-session-panel {
     background: #fff;
     border: 1px solid #e9ecef;
@@ -5633,7 +5614,6 @@ optgroup[label="⭐ Favoritos"] {
     font-weight: 500;
 }
 
-/* Resumo Semanal */
 .weekly-summary-box {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -5658,7 +5638,6 @@ optgroup[label="⭐ Favoritos"] {
     gap: 10px;
 }
 
-/* Aviso de Sessão Longa */
 .long-session-warning {
     position: fixed;
     bottom: 20px;
@@ -5704,7 +5683,6 @@ optgroup[label="⭐ Favoritos"] {
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* Notas Rápidas em Obras */
 .project-notes-section {
     margin-top: 10px;
     padding-top: 10px;
@@ -5726,14 +5704,12 @@ optgroup[label="⭐ Favoritos"] {
     margin-bottom: 3px;
 }
 
-/* Botão pequeno melhorado */
 .btn-tiny {
     padding: 3px 8px;
     font-size: 11px;
     border-radius: 4px;
 }
 
-/* Toast de Confirmação */
 .toast-notification {
     position: fixed;
     bottom: 20px;
@@ -5760,7 +5736,6 @@ optgroup[label="⭐ Favoritos"] {
     to { transform: translate(-50%, 0); opacity: 1; }
 }
 
-/* Responsivo */
 @media (max-width: 768px) {
     .last-session-panel {
         flex-direction: column;
