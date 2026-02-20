@@ -18,6 +18,79 @@ const subcategories = {
     'orcamentacao': ['Orçamento', 'Ordem de produção']
 };
 
+
+// ============================================================
+// GESTÃO DE SUBCATEGORIAS PERSONALIZADAS
+// ============================================================
+function getCustomSubcategories() {
+    const data = localStorage.getItem('customSubcategories');
+    return data ? JSON.parse(data) : {};
+}
+
+function saveCustomSubcategory(department, name) {
+    if (!department || !name || !name.trim()) return;
+    const custom = getCustomSubcategories();
+    if (!custom[department]) custom[department] = [];
+    const trimmed = name.trim();
+    if (!custom[department].includes(trimmed)) {
+        custom[department].push(trimmed);
+        localStorage.setItem('customSubcategories', JSON.stringify(custom));
+        console.log(`✅ Subcategoria guardada: "${trimmed}" em ${department}`);
+    }
+}
+
+function getAllSubcategoriesForDept(department) {
+    const defaults = subcategories[department] || [];
+    const custom = getCustomSubcategories();
+    const customForDept = custom[department] || [];
+    const all = [...defaults];
+    customForDept.forEach(c => { if (!all.includes(c)) all.push(c); });
+    return all;
+}
+
+function getAllSubcategoriesMerged() {
+    const allSubs = new Set();
+    const custom = getCustomSubcategories();
+    Object.values(subcategories).forEach(subs => subs.forEach(s => allSubs.add(s)));
+    Object.values(custom).forEach(subs => subs.forEach(s => allSubs.add(s)));
+    return Array.from(allSubs).sort((a, b) => a.localeCompare(b, 'pt'));
+}
+
+function populateSubcategorySelect(selectEl, department, includeCustomOption = true, currentValue = '') {
+    if (!selectEl) return;
+    const allSubs = department && department !== 'all'
+        ? getAllSubcategoriesForDept(department)
+        : getAllSubcategoriesMerged();
+    
+    selectEl.innerHTML = '<option value="">Selecione a subcategoria</option>';
+    allSubs.forEach(sub => {
+        selectEl.innerHTML += `<option value="${sub}">${sub}</option>`;
+    });
+    if (includeCustomOption) {
+        selectEl.innerHTML += '<option value="__custom__">✏️ Outro (escrever manualmente)...</option>';
+    }
+    if (currentValue) {
+        const exists = Array.from(selectEl.options).some(o => o.value === currentValue);
+        if (exists) {
+            selectEl.value = currentValue;
+        } else if (currentValue && includeCustomOption) {
+            selectEl.value = '__custom__';
+        }
+    }
+}
+
+function populateFilterSubcategorySelect(selectEl, department) {
+    if (!selectEl) return;
+    const allSubs = department && department !== 'all'
+        ? getAllSubcategoriesForDept(department)
+        : getAllSubcategoriesMerged();
+    
+    selectEl.innerHTML = '<option value="all">Todas</option>';
+    allSubs.forEach(sub => {
+        selectEl.innerHTML += `<option value="${sub}">${sub}</option>`;
+    });
+}
+
 function showConfirm(title, message, onConfirm) {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmMessage').textContent = message;
@@ -508,48 +581,114 @@ function updateSubcategories() {
     const projectType = document.getElementById('projectType').value;
     const subcategoryGroup = document.getElementById('subcategoryGroup');
     const subcategorySelect = document.getElementById('subcategory');
-    if (projectType && subcategories[projectType] && subcategories[projectType].length > 0) {
+    const allSubs = getAllSubcategoriesForDept(projectType);
+    if (projectType && allSubs.length > 0) {
         subcategoryGroup.style.display = 'block';
-        subcategorySelect.innerHTML = '<option value="">Selecione a subcategoria</option>';
-        subcategories[projectType].forEach(sub => {
-            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-        });
+        populateSubcategorySelect(subcategorySelect, projectType, true);
     } else {
         subcategoryGroup.style.display = 'none';
         subcategorySelect.value = '';
     }
+    toggleCustomSubcategory();
 }
 
 function updateEditSubcategories() {
     const projectType = document.getElementById('editProjectType').value;
     const subcategoryGroup = document.getElementById('editSubcategoryGroup');
     const subcategorySelect = document.getElementById('editSubcategory');
-    if (projectType && subcategories[projectType] && subcategories[projectType].length > 0) {
+    const allSubs = getAllSubcategoriesForDept(projectType);
+    if (projectType && allSubs.length > 0) {
         subcategoryGroup.style.display = 'block';
-        subcategorySelect.innerHTML = '<option value="">Selecione a subcategoria</option>';
-        subcategories[projectType].forEach(sub => {
-            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-        });
+        populateSubcategorySelect(subcategorySelect, projectType, true);
     } else {
         subcategoryGroup.style.display = 'none';
         subcategorySelect.value = '';
     }
+    toggleEditCustomSubcategory();
 }
 
 function updateManualSubcategories() {
     const projectType = document.getElementById('manualProjectType').value;
     const subcategoryGroup = document.getElementById('manualSubcategoryGroup');
     const subcategorySelect = document.getElementById('manualSubcategory');
-    if (projectType && subcategories[projectType] && subcategories[projectType].length > 0) {
+    const allSubs = getAllSubcategoriesForDept(projectType);
+    if (projectType && allSubs.length > 0) {
         subcategoryGroup.style.display = 'block';
-        subcategorySelect.innerHTML = '<option value="">Selecione a subcategoria</option>';
-        subcategories[projectType].forEach(sub => {
-            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-        });
+        populateSubcategorySelect(subcategorySelect, projectType, true);
     } else {
         subcategoryGroup.style.display = 'none';
         subcategorySelect.value = '';
     }
+    toggleManualCustomSubcategory();
+}
+
+function toggleCustomSubcategory() {
+    const subcategorySelect = document.getElementById('subcategory');
+    const customInput = document.getElementById('customSubcategoryInput');
+    if (!subcategorySelect || !customInput) return;
+    if (subcategorySelect.value === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+    } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+    }
+}
+
+function toggleEditCustomSubcategory() {
+    const subcategorySelect = document.getElementById('editSubcategory');
+    const customInput = document.getElementById('editCustomSubcategoryInput');
+    if (!subcategorySelect || !customInput) return;
+    if (subcategorySelect.value === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+    } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+    }
+}
+
+function toggleManualCustomSubcategory() {
+    const subcategorySelect = document.getElementById('manualSubcategory');
+    const customInput = document.getElementById('manualCustomSubcategoryInput');
+    if (!subcategorySelect || !customInput) return;
+    if (subcategorySelect.value === '__custom__') {
+        customInput.style.display = 'block';
+        customInput.focus();
+    } else {
+        customInput.style.display = 'none';
+        customInput.value = '';
+    }
+}
+
+function getSubcategoryValue() {
+    const subcategorySelect = document.getElementById('subcategory');
+    if (!subcategorySelect) return '';
+    if (subcategorySelect.value === '__custom__') {
+        const customInput = document.getElementById('customSubcategoryInput');
+        return customInput ? customInput.value.trim() : '';
+    }
+    return subcategorySelect.value;
+}
+
+function getEditSubcategoryValue() {
+    const subcategorySelect = document.getElementById('editSubcategory');
+    if (!subcategorySelect) return '';
+    if (subcategorySelect.value === '__custom__') {
+        const customInput = document.getElementById('editCustomSubcategoryInput');
+        return customInput ? customInput.value.trim() : '';
+    }
+    return subcategorySelect.value;
+}
+
+function getManualSubcategoryValue() {
+    const subcategorySelect = document.getElementById('manualSubcategory');
+    if (!subcategorySelect) return '';
+    if (subcategorySelect.value === '__custom__') {
+        const customInput = document.getElementById('manualCustomSubcategoryInput');
+        return customInput ? customInput.value.trim() : '';
+    }
+    return subcategorySelect.value;
 }
 
 function startWork() {
@@ -608,7 +747,11 @@ function startWork() {
     if (workType === 'project') {
         timerState.projectId = projectId;
         timerState.projectType = projectType;
-        timerState.subcategory = document.getElementById('subcategory').value || '';
+        const subcatVal = getSubcategoryValue();
+        if (subcatVal && document.getElementById('projectType')) {
+            saveCustomSubcategory(document.getElementById('projectType').value, subcatVal);
+        }
+        timerState.subcategory = subcatVal;
     } else {
         timerState.internalCategory = document.getElementById('internalCategory').value;
         timerState.internalDescription = document.getElementById('internalDescription').value;
@@ -818,7 +961,7 @@ function saveWorkSession(startTime, endTime, duration, comment = '') {
             session.projectName = getDepartmentName(projectType);
             session.workCode = project.workCode;
             session.workName = project.name;
-            session.subcategory = document.getElementById('subcategory').value || '';
+            session.subcategory = getSubcategoryValue();
         }
     } else {
         const internalCategory = document.getElementById('internalCategory').value;
@@ -864,7 +1007,15 @@ function resumeActiveTimer() {
         document.getElementById('projectType').value = state.projectType || '';
         updateSubcategories();
         if (state.subcategory) {
-            document.getElementById('subcategory').value = state.subcategory;
+            const subcatSelect = document.getElementById('subcategory');
+            const existingOpt = Array.from(subcatSelect.options).find(o => o.value === state.subcategory);
+            if (existingOpt) {
+                subcatSelect.value = state.subcategory;
+            } else {
+                subcatSelect.value = '__custom__';
+                const customInput = document.getElementById('customSubcategoryInput');
+                if (customInput) { customInput.value = state.subcategory; customInput.style.display = 'block'; }
+            }
         }
     }
 
@@ -902,20 +1053,21 @@ function resumeActiveTimer() {
     }
 
     updateTimerDisplay();
-    timerPaused = false;
+    // Não forçar timerPaused=false — o estado já foi definido acima (pode estar pausado)
     timerInterval = setInterval(() => {
         if (!timerPaused) {
             timerSeconds++;
             updateTimerDisplay();
         }
     }, 1000);
-    startInactivityMonitor();
+    if (state.workType === 'project') { startInactivityMonitor(); }
 }
 
 function resetActivityTimer() { lastActivityTime = Date.now(); }
 
 function recalculateTimerFromStartTime() {
     if (!timerInterval || !startTime) return;
+    if (timerPaused) return;
     
     const now = new Date();
     timerSeconds = Math.floor((now - startTime) / 1000);
@@ -1120,7 +1272,15 @@ function editSession(sessionId) {
             updateEditSubcategories();
         }
         if (session.subcategory) {
-            document.getElementById('editSubcategory').value = session.subcategory;
+            const editSubcatSelect = document.getElementById('editSubcategory');
+            const existingOpt = Array.from(editSubcatSelect.options).find(o => o.value === session.subcategory);
+            if (existingOpt) {
+                editSubcatSelect.value = session.subcategory;
+            } else {
+                editSubcatSelect.value = '__custom__';
+                const customInput = document.getElementById('editCustomSubcategoryInput');
+                if (customInput) { customInput.value = session.subcategory; customInput.style.display = 'block'; }
+            }
         }
     }
     const startDate = new Date(session.startTime);
@@ -1196,7 +1356,9 @@ function saveEdit() {
                 history[sessionIndex].projectName = getDepartmentName(projectType);
                 history[sessionIndex].workCode = project.workCode;
                 history[sessionIndex].workName = project.name;
-                history[sessionIndex].subcategory = document.getElementById('editSubcategory').value || '';
+                const editSubcatVal = getEditSubcategoryValue();
+                if (editSubcatVal) saveCustomSubcategory(document.getElementById('editProjectType').value, editSubcatVal);
+                history[sessionIndex].subcategory = editSubcatVal;
             }
             delete history[sessionIndex].internalCategory;
             delete history[sessionIndex].internalCategoryName;
@@ -1300,7 +1462,8 @@ function saveManualEntry() {
     if (workType === 'project') {
         const projectId = document.getElementById('manualProjectSelect').value;
         const projectType = document.getElementById('manualProjectType').value;
-        const subcategory = document.getElementById('manualSubcategory').value || '';
+        const subcategory = getManualSubcategoryValue();
+        if (subcategory) saveCustomSubcategory(document.getElementById('manualProjectType').value, subcategory);
         if (!projectId) {
             errorDiv.textContent = '⚠️ Por favor, selecione uma obra.';
             errorDiv.classList.remove('hidden');
@@ -2453,6 +2616,9 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
                 updateTeamHoursView();
             }
         } else if (subTabName === 'obras') {
+            if (typeof updateAdminSubcategories === 'function') {
+                updateAdminSubcategories();
+            }
             if (typeof updateProjectHoursView === 'function') {
                 updateProjectHoursView();
             }
@@ -3148,25 +3314,16 @@ function updateHorasPorObraSubcategories() {
     const subcategorySelect = document.getElementById('horasObraSubcategoryFilter');
     const subcategoryGroup = document.getElementById('horasObraSubcategoryGroup');
     
-    subcategorySelect.innerHTML = '<option value="all">Todas</option>';
+    const allSubs = department !== 'all'
+        ? getAllSubcategoriesForDept(department)
+        : getAllSubcategoriesMerged();
     
-    if (department !== 'all' && subcategories[department] && subcategories[department].length > 0) {
+    if (allSubs.length > 0) {
         subcategoryGroup.style.display = 'flex';
-        subcategories[department].forEach(sub => {
-            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-        });
+        populateFilterSubcategorySelect(subcategorySelect, department !== 'all' ? department : null);
     } else {
-        subcategoryGroup.style.display = department === 'all' ? 'flex' : 'none';
-        
-        if (department === 'all') {
-            const allSubs = new Set();
-            Object.values(subcategories).forEach(subs => {
-                subs.forEach(sub => allSubs.add(sub));
-            });
-            Array.from(allSubs).sort().forEach(sub => {
-                subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-            });
-        }
+        subcategoryGroup.style.display = 'none';
+        subcategorySelect.innerHTML = '<option value="all">Todas</option>';
     }
 }
 
@@ -4320,6 +4477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => updateHeaderPhoto(), 200);
     }
 });
+
 
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {

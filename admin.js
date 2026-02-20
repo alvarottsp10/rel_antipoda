@@ -1737,30 +1737,48 @@ function updateAdminSubcategories() {
     
     subcategorySelect.innerHTML = '<option value="all">Todas</option>';
     
-    const subcategories = {
+    // Subcategorias default
+    const defaultSubcategories = {
         'projeto': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
         'eletrico': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
         'desenvolvimento': [],
         'orcamentacao': ['Orçamento', 'Ordem de produção']
     };
     
-    if (department !== 'all' && subcategories[department] && subcategories[department].length > 0) {
-        if (subcategoryGroup) subcategoryGroup.style.display = 'flex';
-        subcategories[department].forEach(sub => {
-            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-        });
-    } else {
-        if (subcategoryGroup) subcategoryGroup.style.display = department === 'all' ? 'flex' : 'none';
-        
-        if (department === 'all') {
-            const allSubs = new Set();
-            Object.values(subcategories).forEach(subs => {
-                subs.forEach(sub => allSubs.add(sub));
-            });
-            Array.from(allSubs).sort().forEach(sub => {
+    // Subcategorias personalizadas persistidas
+    const customData = localStorage.getItem('customSubcategories');
+    const customSubcategories = customData ? JSON.parse(customData) : {};
+    
+    function getMergedSubcats(dept) {
+        const defaults = defaultSubcategories[dept] || [];
+        const custom = customSubcategories[dept] || [];
+        const all = [...defaults];
+        custom.forEach(c => { if (!all.includes(c)) all.push(c); });
+        return all;
+    }
+    
+    function getAllMerged() {
+        const allSubs = new Set();
+        Object.keys(defaultSubcategories).forEach(dept => getMergedSubcats(dept).forEach(s => allSubs.add(s)));
+        Object.values(customSubcategories).forEach(subs => subs.forEach(s => allSubs.add(s)));
+        return Array.from(allSubs).sort((a, b) => a.localeCompare(b, 'pt'));
+    }
+    
+    if (department !== 'all') {
+        const subs = getMergedSubcats(department);
+        if (subs.length > 0) {
+            if (subcategoryGroup) subcategoryGroup.style.display = 'flex';
+            subs.forEach(sub => {
                 subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
             });
+        } else {
+            if (subcategoryGroup) subcategoryGroup.style.display = 'none';
         }
+    } else {
+        if (subcategoryGroup) subcategoryGroup.style.display = 'flex';
+        getAllMerged().forEach(sub => {
+            subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+        });
     }
 }
 

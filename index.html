@@ -283,11 +283,12 @@
 
                     <label>Subcategoria</label>
 
-                    <select id="editSubcategory">
+                    <select id="editSubcategory" onchange="toggleEditCustomSubcategory()">
 
                         <option value="">Selecione a subcategoria</option>
 
                     </select>
+                    <input type="text" id="editCustomSubcategoryInput" placeholder="Escreva a subcategoria..." style="display:none; margin-top: 8px; width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
 
                 </div>
 
@@ -435,11 +436,12 @@
 
                     <label>Subcategoria</label>
 
-                    <select id="manualSubcategory">
+                    <select id="manualSubcategory" onchange="toggleManualCustomSubcategory()">
 
                         <option value="">Selecione a subcategoria</option>
 
                     </select>
+                    <input type="text" id="manualCustomSubcategoryInput" placeholder="Escreva a subcategoria..." style="display:none; margin-top: 8px; width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
 
                 </div>
 
@@ -963,9 +965,10 @@
                     </div>
                     <div class="form-group" id="subcategoryGroup" style="display: none;">
                         <label for="subcategory">Subcategoria</label>
-                        <select id="subcategory">
+                        <select id="subcategory" onchange="toggleCustomSubcategory()">
                             <option value="">Selecione a subcategoria</option>
                         </select>
+                        <input type="text" id="customSubcategoryInput" placeholder="Escreva a subcategoria..." style="display:none; margin-top: 8px; width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                     </div>
                 </div>
 
