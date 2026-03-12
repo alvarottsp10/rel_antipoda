@@ -14,17 +14,17 @@
 
     --primary-color: #2c3e50;
 
-    --secondary-color: #3498db;
+    --secondary-color: #c0392b;
 
-    --accent-color: #e74c3c;
+    --accent-color: #a93226;
 
     --success-color: #27ae60;
 
     --warning-color: #f39c12;
 
-    --internal-color: #9b59b6;
+    --internal-color: #2980b9;
 
-    --admin-color: #e67e22;
+    --admin-color: #b03a3a;
 
     --bg-color: #ecf0f1;
 
@@ -40,7 +40,7 @@ body {
 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ffffff;
 
     min-height: 100vh;
 
@@ -516,7 +516,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-primary:hover {
 
-    background: #2980b9;
+    background: #a93226;
 
     transform: translateY(-2px);
 
@@ -556,7 +556,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-danger:hover {
 
-    background: #c0392b;
+    background: #8e2026;
 
 }
 
@@ -574,7 +574,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-warning:hover {
 
-    background: #e67e22;
+    background: #b03a3a;
 
 }
 
@@ -592,7 +592,7 @@ input:focus, select:focus, textarea:focus {
 
 .btn-admin:hover {
 
-    background: #d35400;
+    background: #8e2c2c;
 
 }
 
@@ -678,7 +678,7 @@ input:focus, select:focus, textarea:focus {
 
 .timer-display {
 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #962d32 100%);
 
     color: white;
 
@@ -738,7 +738,7 @@ input:focus, select:focus, textarea:focus {
 
 .work-timer.internal {
 
-    background: linear-gradient(135deg, #f5f0ff 0%, #e8d9ff 100%);
+    background: linear-gradient(135deg, #fdf0f0 0%, #f5d5d5 100%);
 
     border-color: var(--internal-color);
 
@@ -962,7 +962,7 @@ input:focus, select:focus, textarea:focus {
 
     border-left-color: var(--internal-color);
 
-    background: linear-gradient(135deg, #fdfbff 0%, #f9f5ff 100%);
+    background: linear-gradient(135deg, #fdf8f8 0%, #faf0f0 100%);
 
 }
 
@@ -1028,7 +1028,7 @@ input:focus, select:focus, textarea:focus {
 
     font-size: 12px;
 
-    color: #3498db;
+    color: #c0392b;
 
     font-weight: 600;
 
@@ -1102,7 +1102,7 @@ input:focus, select:focus, textarea:focus {
 
 .history-item .badge-edited {
 
-    background: #3498db;
+    background: #c0392b;
 
     color: white;
 
@@ -1122,7 +1122,7 @@ input:focus, select:focus, textarea:focus {
 
 .history-item .badge-extra {
 
-    background: #e67e22;
+    background: #b03a3a;
 
     color: white;
 
@@ -1132,7 +1132,7 @@ input:focus, select:focus, textarea:focus {
 
 .history-item .badge-weekend {
 
-    background: #9b59b6;
+    background: #2980b9;
 
     color: white;
 
@@ -2164,7 +2164,7 @@ input:focus, select:focus, textarea:focus {
 
     border-color: var(--admin-color);
 
-    background: linear-gradient(135deg, #fff5f0 0%, #ffe8d9 100%);
+    background: linear-gradient(135deg, #fff5f5 0%, #fde8e8 100%);
 
 }
 
@@ -2270,7 +2270,7 @@ input:focus, select:focus, textarea:focus {
 
     padding: 20px;
 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #962d32 100%);
 
     border-radius: 12px;
 
@@ -2420,9 +2420,9 @@ input:focus, select:focus, textarea:focus {
 
 
 
-.stat-holiday { border-color: #3498db; }
+.stat-holiday { border-color: #c0392b; }
 
-.stat-holiday .stat-value { color: #3498db; }
+.stat-holiday .stat-value { color: #c0392b; }
 
 
 
@@ -2476,7 +2476,7 @@ input:focus, select:focus, textarea:focus {
 
 .quick-mark-vacation:hover {
 
-    background: #e67e22;
+    background: #b03a3a;
 
     transform: translateY(-2px);
 
@@ -2844,7 +2844,7 @@ input:focus, select:focus, textarea:focus {
 
     border-radius: 6px;
 
-    border-left: 3px solid #3498db;
+    border-left: 3px solid #c0392b;
 
     margin-bottom: 15px;
 
@@ -3101,7 +3101,7 @@ input:focus, select:focus, textarea:focus {
 
     border-radius: 50%;
 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #962d32 100%);
 
     display: flex;
 
@@ -3160,7 +3160,7 @@ input:focus, select:focus, textarea:focus {
 
 .hours-summary-panel {
 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #c0392b 0%, #962d32 100%);
 
     border-radius: 12px;
 
@@ -3625,13 +3625,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 .admin-only-tab {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
     color: white;
     border: none;
 }
 
 .admin-only-tab:hover {
-    background: linear-gradient(135deg, #d35400 0%, var(--admin-color) 100%);
+    background: linear-gradient(135deg, #8e2c2c 0%, var(--admin-color) 100%);
 }
 
 .admin-only-tab.hidden {
@@ -3640,7 +3640,7 @@ input:focus, select:focus, textarea:focus {
 
 .admin-panel {
     border-left: 4px solid var(--admin-color);
-    background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+    background: linear-gradient(135deg, #fff8f8 0%, #fff 100%);
 }
 
 .filter-section.team-hours-filters {
@@ -3818,7 +3818,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .project-hours-row.header {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
     color: white;
     font-weight: 600;
     font-size: 12px;
@@ -3827,7 +3827,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .project-hours-row.header:hover {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
 }
 
 .project-info-col {
@@ -3982,7 +3982,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .team-hours-row.header {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
     color: white;
     font-weight: 600;
     font-size: 12px;
@@ -3990,7 +3990,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .team-hours-row.header:hover {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
 }
 
 .team-hours-row .user-name-col {
@@ -4130,7 +4130,7 @@ input:focus, select:focus, textarea:focus {
 
 .user-card.admin-user {
     border-left-color: var(--admin-color);
-    background: linear-gradient(135deg, #fff9f5 0%, #fff 100%);
+    background: linear-gradient(135deg, #fff8f8 0%, #fff 100%);
 }
 
 .user-card .user-header {
@@ -4204,7 +4204,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-admin:hover {
-    background: #d35400;
+    background: #8e2c2c;
 }
 
 .empty-team-data {
@@ -4261,7 +4261,7 @@ input:focus, select:focus, textarea:focus {
     gap: 15px;
     margin-bottom: 20px;
     padding: 15px;
-    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    background: linear-gradient(135deg, #b03a3a 0%, #8e2c2c 100%);
     border-radius: 12px;
     color: white;
 }
@@ -4374,7 +4374,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .team-day-modal-header {
-    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    background: linear-gradient(135deg, #b03a3a 0%, #8e2c2c 100%);
     margin: -20px -25px 20px -25px;
     padding: 20px 25px;
     color: white;
@@ -4715,7 +4715,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .reopen-users-row.header {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
     color: white;
     font-weight: 600;
     font-size: 12px;
@@ -4805,7 +4805,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .admin-reopen-row.header {
-    background: linear-gradient(135deg, var(--admin-color) 0%, #d35400 100%);
+    background: linear-gradient(135deg, var(--admin-color) 0%, #8e2c2c 100%);
     color: white;
     font-weight: 600;
     font-size: 12px;
@@ -5172,15 +5172,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .horas-obra-breakdown-item.hours-type-normal {
-    border-left: 3px solid #3498db;
+    border-left: 3px solid #c0392b;
 }
 
 .horas-obra-breakdown-item.hours-type-extra {
-    border-left: 3px solid #e67e22;
+    border-left: 3px solid #b03a3a;
 }
 
 .horas-obra-breakdown-item.hours-type-weekend {
-    border-left: 3px solid #9b59b6;
+    border-left: 3px solid #2980b9;
 }
 
 .horas-obra-ht-badge {
@@ -5195,17 +5195,17 @@ input:focus, select:focus, textarea:focus {
 
 .horas-obra-ht-badge.normal {
     background: #ebf5fb;
-    color: #3498db;
+    color: #c0392b;
 }
 
 .horas-obra-ht-badge.extra {
     background: #fdf2e9;
-    color: #e67e22;
+    color: #b03a3a;
 }
 
 .horas-obra-ht-badge.weekend {
     background: #f4ecf7;
-    color: #9b59b6;
+    color: #2980b9;
 }
 
 .horas-obra-card-ht-mini {
@@ -5224,17 +5224,17 @@ input:focus, select:focus, textarea:focus {
 
 .ht-mini.normal {
     background: #ebf5fb;
-    color: #3498db;
+    color: #c0392b;
 }
 
 .ht-mini.extra {
     background: #fdf2e9;
-    color: #e67e22;
+    color: #b03a3a;
 }
 
 .ht-mini.weekend {
     background: #f4ecf7;
-    color: #9b59b6;
+    color: #2980b9;
 }
 
 .horas-obra-breakdown-label {
@@ -5375,7 +5375,7 @@ input:focus, select:focus, textarea:focus {
 
 .daily-goal-fill {
     height: 100%;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
+    background: linear-gradient(90deg, #c0392b, #2ecc71);
     border-radius: 10px;
     transition: width 0.5s ease, background-color 0.3s ease;
 }
@@ -5408,7 +5408,7 @@ input:focus, select:focus, textarea:focus {
 
 .history-search-container input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #c0392b;
 }
 
 .weekly-chart-container {
@@ -5459,12 +5459,12 @@ input:focus, select:focus, textarea:focus {
 }
 
 .weekly-bar-project {
-    background: linear-gradient(180deg, #667eea, #764ba2);
+    background: linear-gradient(180deg, #c0392b, #962d32);
     transition: height 0.3s ease;
 }
 
 .weekly-bar-internal {
-    background: linear-gradient(180deg, #ff7675, #fd79a8);
+    background: linear-gradient(180deg, #c0392b, #e57373);
     transition: height 0.3s ease;
 }
 
@@ -5538,7 +5538,7 @@ optgroup[label="⭐ Favoritos"] {
 
 .yesterday-summary {
     background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #c0392b;
     border-radius: 8px;
     padding: 12px 15px;
     margin-bottom: 15px;
@@ -5577,7 +5577,7 @@ optgroup[label="⭐ Favoritos"] {
 
 .yesterday-content strong {
     font-size: 1.3em;
-    color: #667eea;
+    color: #c0392b;
 }
 
 .yesterday-content span {
@@ -5642,7 +5642,7 @@ optgroup[label="⭐ Favoritos"] {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: linear-gradient(135deg, #f39c12, #e67e22);
+    background: linear-gradient(135deg, #f39c12, #b03a3a);
     color: white;
     padding: 15px 20px;
     border-radius: 10px;
@@ -5758,4 +5758,29 @@ optgroup[label="⭐ Favoritos"] {
         bottom: 20px;
         max-width: none;
     }
+}
+.timer-start-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 4px;
+    justify-content: center;
+}
+
+.btn-edit-start {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: #7f8c8d;
+    transition: background 0.2s;
+}
+
+.btn-edit-start:hover {
+    background: rgba(0,0,0,0.08);
+    color: #2c3e50;
 }

@@ -25,7 +25,7 @@
 
             <h2>⚠️ Inatividade Detectada</h2>
 
-            <p>Não detectámos actividade há <strong id="inactivityTime">5 minutos</strong>.</p>
+            <p>Não detectámos actividade há <strong id="inactivityTime">1 hora</strong>.</p>
 
             <p>O timer foi <strong>pausado automaticamente</strong> para garantir precisão no registo de horas.</p>
 
@@ -47,6 +47,22 @@
 
         </div>
 
+    </div>
+
+    <div id="editStartTimeModal" class="modal">
+        <div class="modal-content">
+            <h2>✏️ Corrigir Hora de Início</h2>
+            <p style="font-size: 14px; color: #6c757d; margin-bottom: 15px;">Use isto se esqueceu de iniciar o timer à hora certa. O contador será ajustado automaticamente.</p>
+            <div class="form-group">
+                <label>Nova hora de início:</label>
+                <input type="datetime-local" id="newStartTimeInput" class="form-control">
+            </div>
+            <div id="editStartTimeError" class="error-message hidden"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="confirmEditStartTime()">✓ Confirmar</button>
+                <button class="btn btn-secondary" onclick="closeEditStartTimeModal()">✗ Cancelar</button>
+            </div>
+        </div>
     </div>
 
 
@@ -906,6 +922,10 @@
                 <div class="work-timer" id="workTimerDisplay">
                     <div class="status" id="timerStatus">Parado</div>
                     <div class="timer" id="workTimer">00:00:00</div>
+                    <div id="timerStartInfo" class="timer-start-info hidden">
+                        <span id="timerStartDisplay"></span>
+                        <button class="btn-edit-start" id="editStartTimeBtn" onclick="openEditStartTime()" title="Corrigir hora de início">✏️</button>
+                    </div>
                     <div class="timer-controls">
                         <button class="btn btn-success" id="startBtn" onclick="startWork()">Iniciar</button>
                         <button class="btn btn-warning hidden" id="pauseBtn" onclick="pauseWork()">⏸️ Pausar</button>

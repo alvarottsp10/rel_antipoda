@@ -8,8 +8,10 @@ let inactivityTimer = null;
 let lastActivityTime = Date.now();
 let timerPaused = false;
 let pausedSeconds = 0;
+let totalPausedMs = 0;
+let pauseStartTime = null;
 let windowIsVisible = true; 
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000;
+const INACTIVITY_TIMEOUT = 60 * 60 * 1000;
 
 const subcategories = {
     'projeto': ['Horas Design', 'Documentação para Aprovação', 'Documentação para Fabrico', 'Documentação Técnica', 'Horas Aditamento', 'Horas de Não Conformidade'],
@@ -734,6 +736,8 @@ function startWork() {
     timerSeconds = 0;
     timerPaused = false;
     pausedSeconds = 0;
+    totalPausedMs = 0;
+    pauseStartTime = null;
 
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const hoursType = document.getElementById('hoursType').value;
@@ -784,6 +788,9 @@ function startWork() {
         document.getElementById('floatingTimer').classList.add('internal');
     }
 
+    updateTimerStartDisplay();
+    document.getElementById('timerStartInfo').classList.remove('hidden');
+
     timerInterval = setInterval(() => {
         if (!timerPaused) {
             timerSeconds++;
@@ -802,7 +809,7 @@ function stopWork() {
     document.title = 'Folha de Controlo de Obra - Relógio';
     stopInactivityMonitor();
     const endTime = new Date();
-    const duration = timerSeconds;
+    const duration = Math.max(0, Math.floor((endTime - startTime - totalPausedMs) / 1000));
     saveWorkSession(startTime, endTime, duration);
     localStorage.removeItem('activeTimer');
     updateHoursCounter();
@@ -828,10 +835,13 @@ function stopWork() {
     document.getElementById('floatingTimer').classList.add('hidden');
     document.getElementById('floatingTimer').classList.remove('internal');
     document.getElementById('workTimerDisplay').classList.remove('internal');
+    document.getElementById('timerStartInfo').classList.add('hidden');
 
     timerSeconds = 0;
     timerPaused = false;
     pausedSeconds = 0;
+    totalPausedMs = 0;
+    pauseStartTime = null;
     updateTimerDisplay();
 
     if (workType === 'project') {
@@ -852,6 +862,7 @@ function pauseWork() {
     
     timerPaused = true;
     pausedSeconds = 0;
+    pauseStartTime = new Date();
     
     document.getElementById('pauseBtn').classList.add('hidden');
     document.getElementById('resumeBtn').classList.remove('hidden');
@@ -864,6 +875,7 @@ function pauseWork() {
         timerState.paused = true;
         timerState.pausedAt = new Date().toISOString();
         timerState.timerSeconds = timerSeconds;
+        timerState.totalPausedMs = totalPausedMs;
         localStorage.setItem('activeTimer', JSON.stringify(timerState));
     }
     
@@ -873,6 +885,10 @@ function pauseWork() {
 function resumeWork() {
     if (!timerInterval) return;
     
+    if (pauseStartTime) {
+        totalPausedMs += Date.now() - pauseStartTime;
+        pauseStartTime = null;
+    }
     timerPaused = false;
     pausedSeconds = 0;
     lastActivityTime = Date.now();
@@ -886,6 +902,7 @@ function resumeWork() {
     const timerState = JSON.parse(localStorage.getItem('activeTimer'));
     if (timerState) {
         timerState.paused = false;
+        timerState.totalPausedMs = totalPausedMs;
         delete timerState.pausedAt;
         localStorage.setItem('activeTimer', JSON.stringify(timerState));
     }
@@ -988,7 +1005,8 @@ function resumeActiveTimer() {
 
     startTime = new Date(state.startTime);
     const now = new Date();
-    timerSeconds = Math.floor((now - startTime) / 1000);
+    totalPausedMs = state.totalPausedMs || 0;
+    timerSeconds = Math.max(0, Math.floor((now - startTime - totalPausedMs) / 1000));
 
     if (state.workType === 'internal') {
         document.getElementById('workTypeInternal').checked = true;
@@ -1023,7 +1041,8 @@ function resumeActiveTimer() {
     
     if (state.paused) {
         timerPaused = true;
-        timerSeconds = state.timerSeconds || timerSeconds;
+        pauseStartTime = new Date();
+        timerSeconds = state.timerSeconds || 0;
         document.getElementById('pauseBtn').classList.add('hidden');
         document.getElementById('resumeBtn').classList.remove('hidden');
         document.getElementById('stopBtn').classList.remove('hidden');
@@ -1052,6 +1071,9 @@ function resumeActiveTimer() {
         document.getElementById('workTimerDisplay').classList.add('internal');
     }
 
+    updateTimerStartDisplay();
+    document.getElementById('timerStartInfo').classList.remove('hidden');
+
     updateTimerDisplay();
     // Não forçar timerPaused=false — o estado já foi definido acima (pode estar pausado)
     timerInterval = setInterval(() => {
@@ -1070,7 +1092,9 @@ function recalculateTimerFromStartTime() {
     if (timerPaused) return;
     
     const now = new Date();
-    timerSeconds = Math.floor((now - startTime) / 1000);
+    const currentPausedMs = pauseStartTime ? (now - pauseStartTime) : 0;
+    const adjusted = Math.floor((now - startTime - totalPausedMs - currentPausedMs) / 1000);
+    timerSeconds = Math.max(0, adjusted);
     updateTimerDisplay();
 }
 
@@ -1106,6 +1130,7 @@ function checkInactivity() {
 function pauseTimerForInactivity() {
     timerPaused = true;
     pausedSeconds = 0;
+    pauseStartTime = new Date();
     document.getElementById('inactivityModal').classList.add('show');
     document.getElementById('timerStatus').textContent = 'Pausado (Inatividade)';
     document.getElementById('timerStatus').classList.remove('active');
@@ -1121,6 +1146,10 @@ function updatePausedDuration() {
 }
 
 function resumeTimer() {
+    if (pauseStartTime) {
+        totalPausedMs += Date.now() - pauseStartTime;
+        pauseStartTime = null;
+    }
     timerPaused = false;
     lastActivityTime = Date.now();
     pausedSeconds = 0;
@@ -2548,6 +2577,7 @@ function showMainTab(event, tabName) {
         showSubTab(null, 'dados', 'overview', true);
         loadWorkHistory();
         updateStats();
+        updateMonthStats();
         updateDadosAdminStats();
         updateHoursCounter();
     } else if (tabName === 'obras') {
@@ -2637,7 +2667,9 @@ function showSubTab(event, parentTab, subTabName, programmatic = false) {
             }
         }
     } else if (parentTab === 'dados') {
-        if (subTabName === 'reports') {
+        if (subTabName === 'overview') {
+            updateMonthStats();
+        } else if (subTabName === 'reports') {
             updateReports();
         } else if (subTabName === 'export') {
             updateExportStats();
@@ -3869,204 +3901,182 @@ function updateWeeklyChart() {
 }
 
 
-function drawDonutChart(canvasId, projectHours, internalHours) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 80;
-    const innerRadius = 50;
-    
-    const total = projectHours + internalHours;
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (total === 0) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = '#e9ecef';
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
-        
-        ctx.fillStyle = '#95a5a6';
-        ctx.font = 'bold 14px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('Sem dados', centerX, centerY);
-        return;
-    }
-    
-    const projectAngle = (projectHours / total) * 2 * Math.PI;
-    const internalAngle = (internalHours / total) * 2 * Math.PI;
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + projectAngle);
-    ctx.arc(centerX, centerY, innerRadius, -Math.PI / 2 + projectAngle, -Math.PI / 2, true);
-    ctx.closePath();
-    const gradientProject = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradientProject.addColorStop(0, '#667eea');
-    gradientProject.addColorStop(1, '#764ba2');
-    ctx.fillStyle = gradientProject;
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, -Math.PI / 2 + projectAngle, -Math.PI / 2 + projectAngle + internalAngle);
-    ctx.arc(centerX, centerY, innerRadius, -Math.PI / 2 + projectAngle + internalAngle, -Math.PI / 2 + projectAngle, true);
-    ctx.closePath();
-    const gradientInternal = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradientInternal.addColorStop(0, '#ff7675');
-    gradientInternal.addColorStop(1, '#fd79a8');
-    ctx.fillStyle = gradientInternal;
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    
-    const projectPercent = Math.round((projectHours / total) * 100);
-    const internalPercent = Math.round((internalHours / total) * 100);
-    
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    ctx.fillStyle = '#667eea';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(projectPercent + '%', centerX, centerY - 12);
-    ctx.font = '10px Arial';
-    ctx.fillStyle = '#7f8c8d';
-    ctx.fillText('Projeto', centerX, centerY - 0);
-    
-    ctx.fillStyle = '#ff7675';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText(internalPercent + '%', centerX, centerY + 12);
-    ctx.font = '10px Arial';
-    ctx.fillStyle = '#7f8c8d';
-    ctx.fillText('Interno', centerX, centerY + 24);
+function computePercents(items, total) {
+    const result = items.map((item, i) => {
+        if (i === items.length - 1) {
+            const prev = items.slice(0, i).reduce((s, it) => s + Math.round((it.seconds / total) * 100), 0);
+            return 100 - prev;
+        }
+        return Math.round((item.seconds / total) * 100);
+    });
+    return result;
 }
 
-function drawHoursTypeDonutChart(canvasId, normalHours, extraHours, weekendHours) {
+function drawDonutChart(canvasId, projectSeconds, internalSeconds) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
-    
+
+    const total = projectSeconds + internalSeconds;
+
+    const items = [];
+    if (projectSeconds > 0) items.push({ label: 'Projeto', seconds: projectSeconds, color: '#667eea' });
+    if (internalSeconds > 0) items.push({ label: 'Interno', seconds: internalSeconds, color: '#e74c3c' });
+
+    const legendH = items.length * 28;
+    canvas.width = 200;
+    canvas.height = 200 + legendH;
+
     const ctx = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 80;
-    const innerRadius = 50;
-    
-    const total = normalHours + extraHours + weekendHours;
-    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
+    const cx = 100, cy = 90, r = 72, ir = 44;
+
     if (total === 0) {
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
         ctx.fillStyle = '#e9ecef';
         ctx.fill();
-        
         ctx.beginPath();
-        ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ffffff';
+        ctx.arc(cx, cy, ir, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
         ctx.fill();
-        
         ctx.fillStyle = '#95a5a6';
-        ctx.font = 'bold 14px Arial';
+        ctx.font = 'bold 12px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('Sem dados', centerX, centerY);
+        ctx.fillText('Sem dados', cx, cy);
         return;
     }
-    
-    let startAngle = -Math.PI / 2;
-    
-    const colors = {
-        normal: '#3498db',   
-        extra: '#e67e22',     
-        weekend: '#9b59b6'
-    };
-    
-    if (normalHours > 0) {
-        const angle = (normalHours / total) * 2 * Math.PI;
+
+    let angle = -Math.PI / 2;
+    items.forEach(item => {
+        const seg = (item.seconds / total) * 2 * Math.PI;
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
-        ctx.arc(centerX, centerY, innerRadius, startAngle + angle, startAngle, true);
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, angle, angle + seg);
         ctx.closePath();
-        ctx.fillStyle = colors.normal;
+        ctx.fillStyle = item.color;
         ctx.fill();
-        startAngle += angle;
-    }
-    
-    if (extraHours > 0) {
-        const angle = (extraHours / total) * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
-        ctx.arc(centerX, centerY, innerRadius, startAngle + angle, startAngle, true);
-        ctx.closePath();
-        ctx.fillStyle = colors.extra;
-        ctx.fill();
-        startAngle += angle;
-    }
-    
-    if (weekendHours > 0) {
-        const angle = (weekendHours / total) * 2 * Math.PI;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + angle);
-        ctx.arc(centerX, centerY, innerRadius, startAngle + angle, startAngle, true);
-        ctx.closePath();
-        ctx.fillStyle = colors.weekend;
-        ctx.fill();
-    }
-    
+        angle += seg;
+    });
+
     ctx.beginPath();
-    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = '#ffffff';
+    ctx.arc(cx, cy, ir, 0, 2 * Math.PI);
+    ctx.fillStyle = '#fff';
     ctx.fill();
-    
-    const normalPercent = Math.round((normalHours / total) * 100);
-    const extraPercent = Math.round((extraHours / total) * 100);
-    const weekendPercent = Math.round((weekendHours / total) * 100);
-    
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText(formatHoursMinutes(total), cx, cy - 7);
     ctx.font = '10px Arial';
-    
-    let yOffset = -18;
-    
-    if (normalHours > 0) {
-        ctx.fillStyle = colors.normal;
+    ctx.fillStyle = '#7f8c8d';
+    ctx.fillText('total', cx, cy + 7);
+
+    const percents = computePercents(items, total);
+    const ly = cy + r + 20;
+    items.forEach((item, i) => {
+        const y = ly + i * 28;
+        ctx.beginPath();
+        ctx.arc(18, y, 7, 0, 2 * Math.PI);
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.label, 32, y);
+        ctx.fillStyle = item.color;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(percents[i] + '%', 196, y);
+    });
+}
+
+function drawHoursTypeDonutChart(canvasId, normalSeconds, extraSeconds, weekendSeconds) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    const total = normalSeconds + extraSeconds + weekendSeconds;
+
+    const allItems = [
+        { label: 'Normal',      seconds: normalSeconds,  color: '#3498db' },
+        { label: 'Extra',       seconds: extraSeconds,   color: '#e67e22' },
+        { label: 'Fim Semana',  seconds: weekendSeconds, color: '#9b59b6' }
+    ];
+    const items = allItems.filter(item => item.seconds > 0);
+
+    const legendH = items.length * 28;
+    canvas.width = 200;
+    canvas.height = 200 + legendH;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const cx = 100, cy = 90, r = 72, ir = 44;
+
+    if (total === 0) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+        ctx.fillStyle = '#e9ecef';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, ir, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.fillStyle = '#95a5a6';
         ctx.font = 'bold 12px Arial';
-        ctx.fillText(normalPercent + '%', centerX, centerY + yOffset);
-        ctx.font = '9px Arial';
-        ctx.fillStyle = '#7f8c8d';
-        ctx.fillText('Normal', centerX, centerY + yOffset + 11);
-        yOffset += 22;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Sem dados', cx, cy);
+        return;
     }
-    
-    if (extraHours > 0) {
-        ctx.fillStyle = colors.extra;
-        ctx.font = 'bold 12px Arial';
-        ctx.fillText(extraPercent + '%', centerX, centerY + yOffset);
-        ctx.font = '9px Arial';
-        ctx.fillStyle = '#7f8c8d';
-        ctx.fillText('Extra', centerX, centerY + yOffset + 11);
-        yOffset += 22;
-    }
-    
-    if (weekendHours > 0) {
-        ctx.fillStyle = colors.weekend;
-        ctx.font = 'bold 12px Arial';
-        ctx.fillText(weekendPercent + '%', centerX, centerY + yOffset);
-        ctx.font = '9px Arial';
-        ctx.fillStyle = '#7f8c8d';
-        ctx.fillText('F.Semana', centerX, centerY + yOffset + 11);
-    }
+
+    let angle = -Math.PI / 2;
+    items.forEach(item => {
+        const seg = (item.seconds / total) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, angle, angle + seg);
+        ctx.closePath();
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        angle += seg;
+    });
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, ir, 0, 2 * Math.PI);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText(formatHoursMinutes(total), cx, cy - 7);
+    ctx.font = '10px Arial';
+    ctx.fillStyle = '#7f8c8d';
+    ctx.fillText('total', cx, cy + 7);
+
+    const percents = computePercents(items, total);
+    const ly = cy + r + 20;
+    items.forEach((item, i) => {
+        const y = ly + i * 28;
+        ctx.beginPath();
+        ctx.arc(18, y, 7, 0, 2 * Math.PI);
+        ctx.fillStyle = item.color;
+        ctx.fill();
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(item.label, 32, y);
+        ctx.fillStyle = item.color;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(percents[i] + '%', 196, y);
+    });
 }
 
 function updatePieCharts() {
@@ -4502,3 +4512,74 @@ window.addEventListener('focus', function() {
     recalculateTimerFromStartTime();
     console.log('🟢 Janela ganhou foco - deteção de inatividade RETOMADA + Timer atualizado');
 });
+
+const modalCloseMap = {
+    'editModal': closeEditModal,
+    'manualEntryModal': closeManualEntryModal,
+    'commentsModal': closeCommentsModal,
+    'newProjectModal': closeNewProjectModal,
+    'reopenProjectModal': closeReopenProjectModal
+};
+
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('modal')) return;
+    if (!e.target.classList.contains('show')) return;
+    const closeFn = modalCloseMap[e.target.id];
+    if (closeFn) closeFn();
+});
+function updateTimerStartDisplay() {
+    if (!startTime) return;
+    const h = String(startTime.getHours()).padStart(2, '0');
+    const m = String(startTime.getMinutes()).padStart(2, '0');
+    const d = String(startTime.getDate()).padStart(2, '0');
+    const mo = String(startTime.getMonth() + 1).padStart(2, '0');
+    const el = document.getElementById('timerStartDisplay');
+    if (el) el.textContent = `Iniciado às ${h}:${m} (${d}/${mo})`;
+}
+
+function openEditStartTime() {
+    if (!startTime) return;
+    const input = document.getElementById('newStartTimeInput');
+    input.value = formatDateTimeLocal(startTime);
+    input.max = formatDateTimeLocal(new Date());
+    document.getElementById('editStartTimeError').classList.add('hidden');
+    document.getElementById('editStartTimeModal').classList.add('show');
+}
+
+function closeEditStartTimeModal() {
+    document.getElementById('editStartTimeModal').classList.remove('show');
+}
+
+function confirmEditStartTime() {
+    const errorDiv = document.getElementById('editStartTimeError');
+    errorDiv.classList.add('hidden');
+    const val = document.getElementById('newStartTimeInput').value;
+    if (!val) {
+        errorDiv.textContent = '⚠️ Por favor, selecione uma hora.';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    const newStart = new Date(val);
+    const now = new Date();
+    if (newStart >= now) {
+        errorDiv.textContent = '⚠️ A hora de início tem de ser anterior à hora atual.';
+        errorDiv.classList.remove('hidden');
+        return;
+    }
+    startTime = newStart;
+    totalPausedMs = 0;
+    pauseStartTime = timerPaused ? new Date() : null;
+    const elapsed = Math.max(0, Math.floor((now - startTime) / 1000));
+    timerSeconds = elapsed;
+    updateTimerDisplay();
+    updateTimerStartDisplay();
+    const timerState = localStorage.getItem('activeTimer');
+    if (timerState) {
+        const state = JSON.parse(timerState);
+        state.startTime = startTime.toISOString();
+        state.totalPausedMs = 0;
+        localStorage.setItem('activeTimer', JSON.stringify(state));
+    }
+    closeEditStartTimeModal();
+    showToastNotification('Hora de início atualizada!', 'success');
+}
